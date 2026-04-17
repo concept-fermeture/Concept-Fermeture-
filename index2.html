@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept Fermeture — Suivi de projet</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--or:#C9A96E;--or-light:#e2c99a;--or-dim:rgba(201,169,110,0.15);--nuit:#141820;--nuit2:#1e2535;--gris:#9aa3b0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--nuit);color:#f8f6f2;min-height:100vh;}
+.hidden{display:none!important;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:opacity .15s;font-weight:500;}
+.btn:hover{opacity:.83;}
+.btn-gold{background:var(--or);color:var(--nuit);}
+.btn-ghost{background:rgba(255,255,255,0.06);color:#f8f6f2;border:1px solid rgba(255,255,255,0.1);}
+.btn-outline{background:transparent;color:var(--or);border:1px solid var(--or);}
+.btn-danger{background:rgba(192,57,43,0.12);color:#e74c3c;border:1px solid rgba(192,57,43,0.3);}
+input,textarea{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#f8f6f2;font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;width:100%;transition:border-color .2s;outline:none;}
+input:focus,textarea:focus{border-color:var(--or);}
+input::placeholder,textarea::placeholder{color:var(--gris);}
+label{display:block;font-size:11px;color:var(--gris);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase;}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);}
+
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.login-box{width:100%;max-width:370px;background:var(–nuit2);border:1px solid rgba(201,169,110,0.2);border-radius:20px;padding:40px 28px;text-align:center;}
+.login-title{font-family:‘Cormorant Garamond’,serif;font-size:26px;color:var(–or);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(–gris);margin-bottom:30px;}
+.login-error{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e74c3c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;}
+.code-inputs{display:flex;gap:8px;justify-content:center;margin-bottom:20px;}
+.code-digit{width:46px;height:56px;text-align:center;font-size:22px;font-weight:600;letter-spacing:0;border-radius:10px;padding:0;}
+
+/* ADMIN */
+#admin-view{min-height:100vh;display:flex;flex-direction:column;}
+.admin-header{background:var(–nuit2);border-bottom:1px solid rgba(201,169,110,0.2);padding:0 18px;display:flex;align-items:center;justify-content:space-between;height:58px;}
+.admin-brand{font-family:‘Cormorant Garamond’,serif;font-size:18px;color:var(–or);}
+.admin-body{flex:1;padding:20px 16px;max-width:860px;margin:0 auto;width:100%;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+.stat-card{background:var(–nuit2);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;}
+.stat-num{font-family:‘Cormorant Garamond’,serif;font-size:34px;color:var(–or);line-height:1;}
+.stat-label{font-size:11px;color:var(–gris);margin-top:4px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
+.section-title{font-family:‘Cormorant Garamond’,serif;font-size:20px;color:var(–or);}
+.client-card{background:var(–nuit2);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:15px 17px;margin-bottom:10px;cursor:pointer;transition:border-color .2s,transform .15s;display:flex;align-items:center;gap:13px;}
+.client-card:hover{border-color:rgba(201,169,110,0.3);transform:translateY(-1px);}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(–or-dim);border:1px solid var(–or);display:flex;align-items:center;justify-content:center;font-family:‘Cormorant Garamond’,serif;font-size:18px;color:var(–or);flex-shrink:0;}
+.prog-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:var(–or-dim);color:var(–or);margin-bottom:5px;}
+.prog-bar-wrap{width:90px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;}
+.prog-bar-fill{height:100%;background:var(–or);border-radius:2px;}
+.empty-state{text-align:center;padding:50px 20px;color:var(–gris);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,12,18,0.88);backdrop-filter:blur(5px);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:12px;}
+.modal{background:var(–nuit2);border:1px solid rgba(201,169,110,0.25);border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:20px 22px 16px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:‘Cormorant Garamond’,serif;font-size:20px;color:var(–or);}
+.modal-close{background:none;border:none;color:var(–gris);font-size:26px;cursor:pointer;line-height:1;padding:4px;}
+.modal-body{padding:22px;}
+.modal-footer{padding:14px 22px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;justify-content:flex-end;}
+.field{margin-bottom:16px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.code-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.3);border-radius:10px;padding:10px 16px;margin-bottom:6px;width:100%;justify-content:space-between;}
+.code-value{font-family:‘Cormorant Garamond’,serif;font-size:26px;color:var(–or);letter-spacing:6px;}
+.copy-mini{background:none;border:none;color:var(–or);cursor:pointer;font-size:16px;}
+.code-hint{font-size:11px;color:var(–gris);margin-bottom:18px;}
+.step-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.step-row:last-child{border-bottom:none;}
+.step-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+.step-dot.done{background:var(–or);color:var(–nuit);}
+.step-dot.pending{background:rgba(255,255,255,0.06);color:var(–gris);border:1px solid rgba(255,255,255,0.1);}
+.toggle{width:44px;height:26px;border-radius:13px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;}
+.toggle.on{background:var(–or);}
+.toggle.off{background:rgba(255,255,255,0.12);}
+.toggle::after{content:’’;position:absolute;width:20px;height:20px;border-radius:50%;background:white;top:3px;transition:left .2s;}
+.toggle.on::after{left:21px;}
+.toggle.off::after{left:3px;}
+.date-input{width:128px;flex-shrink:0;padding:6px 9px;font-size:12px;}
+.mini-prog{background:rgba(201,169,110,0.08);border-radius:10px;padding:12px 14px;margin-bottom:18px;}
+
+/* CLIENT VIEW */
+#client-view{min-height:100vh;display:flex;flex-direction:column;}
+.client-header{background:var(–nuit2);border-bottom:1px solid rgba(201,169,110,0.2);padding:18px 20px;text-align:center;}
+.client-brand{font-family:‘Cormorant Garamond’,serif;font-size:22px;color:var(–or);margin-bottom:3px;}
+.client-slogan{font-size:11px;color:var(–gris);letter-spacing:.08em;text-transform:uppercase;}
+.client-body{flex:1;padding:26px 18px;max-width:560px;margin:0 auto;width:100%;}
+.op-card{background:var(–nuit2);border:1px solid rgba(201,169,110,0.2);border-radius:14px;padding:18px;margin-bottom:26px;}
+.op-bar{height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.op-fill{height:100%;background:linear-gradient(90deg,var(–or),var(–or-light));border-radius:3px;transition:width .9s cubic-bezier(.4,0,.2,1);}
+.timeline{position:relative;padding-left:42px;}
+.timeline::before{content:’’;position:absolute;left:13px;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.06);}
+.tl-item{position:relative;margin-bottom:18px;animation:fadeIn .4s ease both;}
+@keyframes fadeIn{from{transform:translateX(-10px);opacity:0}to{transform:translateX(0);opacity:1}}
+.tl-dot{position:absolute;left:-42px;top:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+.tl-dot.done{background:var(–or);color:var(–nuit);box-shadow:0 0 14px rgba(201,169,110,0.4);}
+.tl-dot.active{background:var(–nuit2);color:var(–or);border:2px solid var(–or);animation:pulse 2s infinite;}
+.tl-dot.pending{background:rgba(255,255,255,0.04);color:var(–gris);border:1px solid rgba(255,255,255,0.1);}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,0.4)}50%{box-shadow:0 0 0 8px rgba(201,169,110,0)}}
+.tl-content{background:var(–nuit2);border-radius:12px;padding:13px 15px;}
+.tl-content.done{border:1px solid rgba(201,169,110,0.2);}
+.tl-content.active{border:1px solid rgba(201,169,110,0.4);}
+.tl-content.pending{border:1px solid rgba(255,255,255,0.06);}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.badge-done{background:rgba(39,174,96,0.15);color:#2ecc71;}
+.badge-active{background:var(–or-dim);color:var(–or);}
+.badge-pending{background:rgba(255,255,255,0.05);color:var(–gris);}
+.client-footer{text-align:center;padding:18px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:#4A5568;}
+.client-footer a{color:var(–or);text-decoration:none;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;}
+.spinner{width:40px;height:40px;border:3px solid rgba(201,169,110,0.2);border-top-color:var(–or);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.3);border-radius:2px;}
+</style>
+
+</head>
+<body>
+
+<!-- LOADING -->
+
+<div id="loading-view">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div style="color:var(--gris);font-size:13px">Chargement…</div>
+  </div>
+</div>
+
+<!-- LOGIN ADMIN -->
+
+<div id="login-view" class="hidden">
+  <div class="login-wrap">
+    <div class="login-box">
+      <svg width="58" height="67" viewBox="0 0 100 115" style="margin-bottom:16px"><polygon points="50,5 95,27.5 95,87.5 50,110 5,87.5 5,27.5" fill="rgba(201,169,110,0.1)" stroke="#C9A96E" stroke-width="2.5"/><text x="50" y="70" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#C9A96E">CF</text></svg>
+      <div class="login-title">Concept Fermeture</div>
+      <div class="login-sub">Accès administrateur</div>
+      <div id="login-error" class="login-error hidden">Mot de passe incorrect.</div>
+      <div class="field" style="text-align:left;margin-bottom:18px">
+        <label>Mot de passe</label>
+        <input type="password" id="login-pwd" placeholder="••••••••" style="text-align:center;letter-spacing:4px" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="doLogin()">Accéder →</button>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.07)">
+        <div style="font-size:12px;color:var(--gris);margin-bottom:12px">Vous êtes client ?</div>
+        <button class="btn btn-outline" style="width:100%;justify-content:center;font-size:13px" onclick="showClientLogin()">Accéder à mon dossier</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN CLIENT -->
+
+<div id="client-login-view" class="hidden">
+  <div class="login-wrap">
+    <div class="login-box">
+      <svg width="58" height="67" viewBox="0 0 100 115" style="margin-bottom:16px"><polygon points="50,5 95,27.5 95,87.5 50,110 5,87.5 5,27.5" fill="rgba(201,169,110,0.1)" stroke="#C9A96E" stroke-width="2.5"/><text x="50" y="70" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#C9A96E">CF</text></svg>
+      <div class="login-title">Mon dossier</div>
+      <div class="login-sub">Entrez votre code à 6 chiffres</div>
+      <div id="client-error" class="login-error hidden">Code incorrect. Vérifiez et réessayez.</div>
+      <div class="code-inputs">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" onkeyup="codeNav(this,0)" oninput="codeInput(this,0)">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" onkeyup="codeNav(this,1)" oninput="codeInput(this,1)">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" onkeyup="codeNav(this,2)" oninput="codeInput(this,2)">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" onkeyup="codeNav(this,3)" oninput="codeInput(this,3)">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" onkeyup="codeNav(this,4)" oninput="codeInput(this,4)">
+        <input class="code-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]*" onkeyup="codeNav(this,5)" oninput="codeInput(this,5)">
+      </div>
+      <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="submitClientCode()">Voir mon dossier →</button>
+      <button onclick="showLoginView()" style="background:none;border:none;color:var(--gris);font-size:12px;margin-top:16px;cursor:pointer;font-family:inherit">← Retour</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+
+<div id="admin-view" class="hidden">
+  <div class="admin-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="30" height="35" viewBox="0 0 100 115"><polygon points="50,5 95,27.5 95,87.5 50,110 5,87.5 5,27.5" fill="rgba(201,169,110,0.1)" stroke="#C9A96E" stroke-width="2.5"/><text x="50" y="70" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#C9A96E">CF</text></svg>
+      <span class="admin-brand">Concept Fermeture <span style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--gris);font-weight:400">· Admin</span></span>
+    </div>
+    <button class="btn btn-ghost" onclick="doLogout()" style="font-size:12px;padding:7px 13px;">Déconnexion</button>
+  </div>
+  <div class="admin-body">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Clients</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Terminés</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">Avancement</div></div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Mes clients</div>
+      <button class="btn btn-gold" onclick="openNewModal()">+ Nouveau</button>
+    </div>
+    <input type="text" id="search-input" placeholder="🔍  Rechercher…" oninput="renderClients()" style="margin-bottom:13px;">
+    <div id="clients-list"></div>
+  </div>
+</div>
+
+<!-- CLIENT VIEW -->
+
+<div id="client-view" class="hidden">
+  <div class="client-header">
+    <svg width="44" height="51" viewBox="0 0 100 115" style="margin-bottom:10px"><polygon points="50,5 95,27.5 95,87.5 50,110 5,87.5 5,27.5" fill="rgba(201,169,110,0.1)" stroke="#C9A96E" stroke-width="2.5"/><text x="50" y="70" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#C9A96E">CF</text></svg>
+    <div class="client-brand">Concept Fermeture</div>
+    <div class="client-slogan">Plus qu'un projet, une relation de confiance</div>
+  </div>
+  <div class="client-body" id="client-body"></div>
+  <div class="client-footer">
+    <a href="tel:+32493526285">+32 493 52 62 85</a> &nbsp;·&nbsp;
+    <a href="mailto:concept-fermeture@outlook.com">concept-fermeture@outlook.com</a>
+  </div>
+</div>
+
+<!-- MODAL NOUVEAU CLIENT -->
+
+<div id="modal-new" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Nouveau client</div><button class="modal-close" onclick="closeModal('modal-new')">×</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div><label>Prénom</label><input type="text" id="new-prenom" placeholder="Jean"></div>
+        <div><label>Nom</label><input type="text" id="new-nom" placeholder="Dupont"></div>
+      </div>
+      <div class="field"><label>Type de projet</label><input type="text" id="new-projet" placeholder="Clôture Valu, carport…"></div>
+      <div class="field-row">
+        <div><label>Téléphone</label><input type="tel" id="new-tel" placeholder="+32…"></div>
+        <div><label>Email</label><input type="email" id="new-email" placeholder="jean@…"></div>
+      </div>
+      <div class="field"><label>Notes internes</label><textarea id="new-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-new')">Annuler</button>
+      <button class="btn btn-gold" onclick="createClient()">Créer le dossier</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DÉTAIL -->
+
+<div id="modal-detail" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="detail-title"></div><button class="modal-close" onclick="closeModal('modal-detail')">×</button></div>
+    <div class="modal-body">
+      <div class="mini-prog">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--gris)">Avancement</span>
+          <span style="color:var(--or);font-weight:600" id="detail-pct">0%</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px">
+          <div id="detail-prog-bar" style="height:100%;background:var(--or);border-radius:2px;transition:width .3s;width:0%"></div>
+        </div>
+      </div>
+      <label style="margin-bottom:8px">Code d'accès client</label>
+      <div class="code-badge">
+        <span class="code-value" id="detail-code">——</span>
+        <button class="copy-mini" onclick="copyCode()" title="Copier">📋</button>
+      </div>
+      <div class="code-hint">📱 Envoie ce code au client avec le lien du site. Il le saisit pour voir son dossier en temps réel.</div>
+      <label>Étapes du projet</label>
+      <div id="detail-steps"></div>
+      <div class="field" style="margin-top:16px"><label>Notes internes</label><textarea id="detail-notes" rows="2"></textarea></div>
+      <div id="detail-contact" style="margin-top:10px;padding:10px 13px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:12px;color:var(--gris);display:none;gap:16px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="deleteClient()">Supprimer</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" onclick="closeModal('modal-detail')">Fermer</button>
+      <button class="btn btn-gold" onclick="saveDetail()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- FIREBASE -->
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ─── FIREBASE CONFIG ────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
+  authDomain: "concept-fermeture.firebaseapp.com",
+  projectId: "concept-fermeture",
+  storageBucket: "concept-fermeture.firebasestorage.app",
+  messagingSenderId: "589266667315",
+  appId: "1:589266667315:web:c78a7bb91ae87f0bbba046"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const COLLECTION = 'clients';
+
+// ─── CONFIG ─────────────────────────────────────────────
+const ADMIN_PWD = 'CF2026';
+const STEPS = [
+  {id:'devis',      name:'Devis signé',      icon:'✍️'},
+  {id:'acompte',    name:'Acompte reçu',      icon:'💳'},
+  {id:'mesurage',   name:'Mesurage',           icon:'📐'},
+  {id:'planif',     name:'Planification',      icon:'📅'},
+  {id:'pose',       name:'Pose',               icon:'🔧'},
+  {id:'facturation',name:'Facturation finale', icon:'🧾'},
+];
+
+// ─── STATE ──────────────────────────────────────────────
+let clients = [];
+let currentDetailId = null;
+
+function genCode(){ return String(Math.floor(100000+Math.random()*900000)); }
+function today(){ return new Date().toISOString().split('T')[0]; }
+function fmtDate(d){ return d?new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):''; }
+function progressPct(c){ return Math.round(STEPS.filter(s=>c.steps[s.id]?.done).length/STEPS.length*100); }
+function doneCount(c){ return STEPS.filter(s=>c.steps[s.id]?.done).length; }
+
+// ─── INIT ───────────────────────────────────────────────
+async function init(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('client')==='1'){
+    hide('loading-view'); showClientLogin(); return;
+  }
+  const authed = sessionStorage.getItem('cf_admin');
+  if(authed){
+    await loadClients();
+    hide('loading-view'); showAdminView();
+  } else {
+    hide('loading-view'); showLoginView();
+  }
+}
+
+// ─── FIRESTORE ──────────────────────────────────────────
+async function loadClients(){
+  try {
+    const snap = await db.collection(COLLECTION).orderBy('createdAt','desc').get();
+    clients = snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ clients=[]; }
+}
+
+async function saveClient(c){
+  const {id,...data} = c;
+  await db.collection(COLLECTION).doc(id).set(data);
+}
+
+async function removeClient(id){
+  await db.collection(COLLECTION).doc(id).delete();
+}
+
+// ─── LOGIN ADMIN ────────────────────────────────────────
+function showLoginView(){ show('login-view');hide('admin-view');hide('client-view');hide('client-login-view');hide('loading-view'); }
+function showClientLogin(){ show('client-login-view');hide('login-view');hide('admin-view');hide('client-view'); setTimeout(()=>document.querySelectorAll('.code-digit')[0].focus(),100); }
+
+async function doLogin(){
+  const pwd=document.getElementById('login-pwd').value;
+  if(pwd===ADMIN_PWD){
+    show('loading-view'); hide('login-view');
+    sessionStorage.setItem('cf_admin','1');
+    document.getElementById('login-error').classList.add('hidden');
+    await loadClients();
+    hide('loading-view'); showAdminView();
+  } else {
+    document.getElementById('login-error').classList.remove('hidden');
+    document.getElementById('login-pwd').value='';
+  }
+}
+function doLogout(){ sessionStorage.removeItem('cf_admin'); showLoginView(); }
+
+// ─── CLIENT CODE ────────────────────────────────────────
+function codeInput(el,idx){
+  el.value=el.value.replace(/[^0-9]/g,'');
+  const digits=document.querySelectorAll('.code-digit');
+  if(el.value&&idx<5) digits[idx+1].focus();
+  if(Array.from(digits).every(d=>d.value.length===1)) setTimeout(submitClientCode,100);
+}
+function codeNav(el,idx){
+  const digits=document.querySelectorAll('.code-digit');
+  if(el.value===''&&idx>0) digits[idx-1].focus();
+}
+
+async function submitClientCode(){
+  const code=Array.from(document.querySelectorAll('.code-digit')).map(d=>d.value).join('');
+  if(code.length<6) return;
+  show('loading-view'); hide('client-login-view');
+  try {
+    const snap = await db.collection(COLLECTION).where('code','==',code).limit(1).get();
+    hide('loading-view');
+    if(!snap.empty){
+      document.getElementById('client-error').classList.add('hidden');
+      const c={id:snap.docs[0].id,...snap.docs[0].data()};
+      renderClientView(c);
+    } else {
+      show('client-login-view'); hide('loading-view');
+      document.getElementById('client-error').classList.remove('hidden');
+      document.querySelectorAll('.code-digit').forEach(d=>d.value='');
+      document.querySelectorAll('.code-digit')[0].focus();
+    }
+  } catch(e){
+    hide('loading-view'); show('client-login-view');
+    showToast('Erreur de connexion','#e74c3c');
+  }
+}
+
+// ─── ADMIN VIEW ──────────────────────────────────────────
+function showAdminView(){ show('admin-view');hide('login-view');hide('client-view');hide('client-login-view'); renderClients(); }
+
+function renderClients(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  const filtered=clients.filter(c=>(c.prenom+' '+c.nom+' '+(c.projet||'')).toLowerCase().includes(q));
+  const total=clients.length;
+  const done=clients.filter(c=>progressPct(c)===100).length;
+  const avgs=clients.map(c=>progressPct(c));
+  const avg=avgs.length?Math.round(avgs.reduce((a,b)=>a+b,0)/avgs.length):null;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-done').textContent=done;
+  document.getElementById('stat-avg').textContent=avg!==null?avg+'%':'—';
+  const el=document.getElementById('clients-list');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty-state"><div style="font-size:44px;margin-bottom:12px">📂</div><div>${clients.length===0?'Aucun client encore.':'Aucun résultat.'}</div></div>`;
+    return;
+  }
+  el.innerHTML=filtered.map(c=>{
+    const pct=progressPct(c),dc=doneCount(c);
+    const init=(c.prenom[0]||'')+(c.nom[0]||'');
+    return `<div class="client-card" onclick="openDetail('${c.id}')">
+      <div class="avatar">${init}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:500;font-size:15px;margin-bottom:2px">${c.prenom} ${c.nom}</div>
+        <div style="font-size:12px;color:var(--gris)">${c.projet||'Projet non précisé'} · <strong style="color:var(--or)">${c.code}</strong></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="prog-pill">${dc}/${STEPS.length} étapes</div>
+        <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── NEW CLIENT ──────────────────────────────────────────
+function openNewModal(){
+  ['new-prenom','new-nom','new-projet','new-tel','new-email','new-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-new').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('new-prenom').focus(),100);
+}
+
+async function createClient(){
+  const prenom=document.getElementById('new-prenom').value.trim();
+  const nom=document.getElementById('new-nom').value.trim();
+  if(!prenom||!nom){showToast('Prénom et nom requis','#e74c3c');return;}
+  const steps={};STEPS.forEach(s=>{steps[s.id]={done:false,date:''};});
+  const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+  const c={id,code:genCode(),prenom,nom,
+    projet:document.getElementById('new-projet').value.trim(),
+    tel:document.getElementById('new-tel').value.trim(),
+    email:document.getElementById('new-email').value.trim(),
+    notes:document.getElementById('new-notes').value.trim(),
+    steps,createdAt:new Date().toISOString()};
+  closeModal('modal-new');
+  showToast('⏳ Enregistrement…','#4A5568');
+  await saveClient(c);
+  clients.unshift(c);
+  renderClients();
+  showToast('✅ Client créé !');
+  setTimeout(()=>openDetail(c.id),200);
+}
+
+// ─── DETAIL ──────────────────────────────────────────────
+function openDetail(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  currentDetailId=id;
+  document.getElementById('detail-title').textContent=`${c.prenom} ${c.nom}`;
+  document.getElementById('detail-code').textContent=c.code;
+  document.getElementById('detail-notes').value=c.notes||'';
+  const contact=document.getElementById('detail-contact');
+  contact.innerHTML=(c.tel?`<span>📞 ${c.tel}</span>`:'')+' '+(c.email?`<span>✉️ ${c.email}</span>`:'');
+  contact.style.display=(c.tel||c.email)?'flex':'none';
+  document.getElementById('detail-steps').innerHTML=STEPS.map((s,i)=>{
+    const st=c.steps[s.id]||{done:false,date:''};
+    return `<div class="step-row">
+      <div class="step-dot ${st.done?'done':'pending'}" id="dot-${s.id}">${st.done?'✓':i+1}</div>
+      <span style="flex:1;font-size:14px">${s.icon} ${s.name}</span>
+      <input type="date" class="date-input" id="date-${s.id}" value="${st.date||''}" ${!st.done?'disabled':''}>
+      <button class="toggle ${st.done?'on':'off'}" id="tog-${s.id}" onclick="toggleStep('${s.id}')"></button>
+    </div>`;
+  }).join('');
+  updateMiniProg(c);
+  document.getElementById('modal-detail').classList.remove('hidden');
+}
+
+function updateMiniProg(c){
+  const pct=progressPct(c);
+  document.getElementById('detail-pct').textContent=pct+'%';
+  document.getElementById('detail-prog-bar').style.width=pct+'%';
+}
+
+function toggleStep(sid){
+  const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
+  c.steps[sid].done=!c.steps[sid].done;
+  if(c.steps[sid].done&&!c.steps[sid].date){c.steps[sid].date=today();document.getElementById('date-'+sid).value=c.steps[sid].date;}
+  document.getElementById('tog-'+sid).className='toggle '+(c.steps[sid].done?'on':'off');
+  document.getElementById('dot-'+sid).className='step-dot '+(c.steps[sid].done?'done':'pending');
+  document.getElementById('dot-'+sid).textContent=c.steps[sid].done?'✓':(STEPS.findIndex(x=>x.id===sid)+1);
+  document.getElementById('date-'+sid).disabled=!c.steps[sid].done;
+  updateMiniProg(c);renderClients();
+}
+
+async function saveDetail(){
+  const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
+  STEPS.forEach(s=>{const d=document.getElementById('date-'+s.id);if(d)c.steps[s.id].date=d.value;});
+  c.notes=document.getElementById('detail-notes').value;
+  closeModal('modal-detail');
+  showToast('⏳ Enregistrement…','#4A5568');
+  await saveClient(c);
+  renderClients();
+  showToast('✅ Enregistré — le client voit les mises à jour en temps réel !');
+}
+
+async function deleteClient(){
+  if(!confirm('Supprimer ce client définitivement ?'))return;
+  await removeClient(currentDetailId);
+  clients=clients.filter(x=>x.id!==currentDetailId);
+  closeModal('modal-detail');renderClients();showToast('Client supprimé','#e74c3c');
+}
+
+function copyCode(){
+  const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
+  navigator.clipboard.writeText(c.code);showToast('📋 Code copié !');
+}
+
+// ─── CLIENT VIEW ──────────────────────────────────────────
+function renderClientView(c){
+  show('client-view');hide('client-login-view');hide('loading-view');
+  const pct=progressPct(c);
+  const activeIdx=STEPS.findIndex(s=>!c.steps[s.id]?.done);
+  const tl=STEPS.map((s,i)=>{
+    const st=c.steps[s.id]||{done:false,date:''};
+    const isActive=i===activeIdx;
+    const state=st.done?'done':isActive?'active':'pending';
+    const dateStr=st.date?fmtDate(st.date):'';
+    const badge=state==='done'
+      ?`<span class="badge badge-done">✓ Terminé${dateStr?' · '+dateStr:''}</span>`
+      :state==='active'?`<span class="badge badge-active">⏳ En cours</span>`
+      :`<span class="badge badge-pending">À venir</span>`;
+    return `<div class="tl-item" style="animation-delay:${i*.07}s">
+      <div class="tl-dot ${state}">${st.done?'✓':isActive?'●':i+1}</div>
+      <div class="tl-content ${state}">
+        <div style="font-size:15px;font-weight:500;margin-bottom:5px">${s.icon} ${s.name}</div>
+        ${badge}
+      </div>
+    </div>`;
+  }).join('');
+  const statusMsg=pct===100
+    ?'✅ Votre projet est <strong>terminé</strong> — merci de votre confiance !'
+    :activeIdx>=0?`⏳ Étape en cours : <strong>${STEPS[activeIdx].name}</strong>`
+    :'Votre projet est bien pris en charge.';
+  document.getElementById('client-body').innerHTML=`
+    <div style="margin-bottom:26px">
+      <div style="font-size:11px;color:var(--or);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Suivi de votre projet</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:30px;margin-bottom:6px">Bonjour ${c.prenom} ${c.nom} 👋</div>
+      ${c.projet?`<div style="font-size:13px;color:var(--gris)">📌 ${c.projet}</div>`:''}
+    </div>
+    <div class="op-card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+        <span style="font-size:13px;color:var(--gris)">Avancement global</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--or)">${pct}%</span>
+      </div>
+      <div class="op-bar"><div class="op-fill" id="op-fill" style="width:0%"></div></div>
+      <div style="font-size:13px;color:var(--gris);margin-top:10px">${statusMsg}</div>
+    </div>
+    <div class="timeline">${tl}</div>`;
+  requestAnimationFrame(()=>setTimeout(()=>{const f=document.getElementById('op-fill');if(f)f.style.width=pct+'%';},100));
+}
+
+// ─── UTILS ───────────────────────────────────────────────
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function showToast(msg,color='#27ae60'){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.background=color;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id);}));
+
+init();
+</script>
+
+</body>
+</html>
