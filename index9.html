@@ -176,10 +176,11 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
 
 
 <div id="admin-login-panel" class="hidden">
+  <input type="password" name="fake" style="display:none" tabindex="-1">
   <div id="login-error" class="login-error hidden">Mot de passe incorrect.</div>
   <div class="field" style="text-align:left;margin-bottom:16px">
-    <label>Mot de passe administrateur</label>
-    <input type="password" id="login-pwd" placeholder="••••••••" style="text-align:center;letter-spacing:4px" onkeydown="if(event.key==='Enter')doLogin()">
+    <label>Mot de passe</label>
+    <input type="password" id="login-pwd" placeholder="Mot de passe" autocomplete="off" style="text-align:center;letter-spacing:4px" onkeydown="if(event.key===&apos;Enter&apos;)doLogin()">
   </div>
   <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="doLogin()">Accéder →</button>
   <button onclick="hideAdminLogin()" style="background:none;border:none;color:var(--gris);font-size:12px;margin-top:12px;cursor:pointer;font-family:inherit;width:100%">← Retour</button>
@@ -402,7 +403,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
   <div class="modal">
     <div class="modal-header"><div class="modal-title">⚙️ Paramètres</div><button class="modal-close" onclick="closeModal('modal-settings')">×</button></div>
     <div class="modal-body">
-      <div class="field"><label>Mot de passe actuel</label><input type="password" id="settings-old-pwd" placeholder="••••••••"></div>
+      <div class="field"><label>Mot de passe actuel</label><input type="password" id="settings-old-pwd" placeholder="Mot de passe"></div>
       <div class="field"><label>Nouveau mot de passe</label><input type="password" id="settings-new-pwd" placeholder="Minimum 6 caractères"></div>
       <div class="field"><label>Confirmer</label><input type="password" id="settings-confirm-pwd" placeholder="Répétez"></div>
       <div id="settings-error" class="login-error hidden"></div>
