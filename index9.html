@@ -117,7 +117,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
 @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(201,169,110,0.15)}50%{box-shadow:0 0 0 8px rgba(201,169,110,0.05)}}
 .tl-content{background:var(--card);border-radius:14px;padding:14px 16px;border:1px solid var(--border);}
 .tl-content.done{border-color:rgba(201,169,110,0.25);background:rgba(201,169,110,0.06);}
-.tl-content.active{border-color:var(--or);background:linear-gradient(135deg,#fffdf7,#fff8ee);box-shadow:0 4px 20px rgba(201,169,110,0.12);}
+.tl-content.active{border-color:var(--or);background:rgba(201,169,110,0.08);box-shadow:0 4px 20px rgba(201,169,110,0.12);}
 .tl-content.pending{background:rgba(255,255,255,0.02);}
 .tl-name{font-size:15px;font-weight:500;margin-bottom:6px;}
 .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;}
@@ -815,15 +815,20 @@ function renderClientView(c){
     const dateStr=st.date?fmtDate(st.date):"";
     const isNew=st.updatedAt&&(new Date()-new Date(st.updatedAt))<48*3600*1000&&st.done;
     const newBadge=isNew?`<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:#e74c3c;color:white;margin-left:6px;animation:blink 1s infinite">NOUVEAU</span>`:"";
+    const isFuture=st.date&&new Date(st.date)>new Date();
     const badge=state==="done"
-      ?`<span class="badge badge-done">✓ Terminé${dateStr?" · "+dateStr:""}</span>${newBadge}`
+      ?(isFuture
+        ?`<span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa">📅 Planifié · ${dateStr}</span>${newBadge}`
+        :`<span class="badge badge-done">✓ Terminé${dateStr?" · "+dateStr:""}</span>${newBadge}`)
       :state==="active"?`<span class="badge badge-active">⏳ En cours</span>`
       :`<span class="badge badge-pending">À venir</span>`;
     const msg=st.msg?`<div class="tl-msg">💬 ${st.msg}</div>`:"";
     const activeInd=isActive?`<div class="active-label"><div class="active-dot-pulse"></div>Étape en cours</div>`:"";
+    const dotContent=st.done?(isFuture?"📅":"✓"):isActive?"●":i+1;
+    const dotState=isFuture?"active":state;
     return `<div class="tl-item" style="animation-delay:${i*.07}s">
-      <div class="tl-dot ${state}">${st.done?"✓":isActive?"●":i+1}</div>
-      <div class="tl-content ${state}">${activeInd}<div class="tl-name">${s.icon} ${s.name}</div>${badge}${msg}</div>
+      <div class="tl-dot ${dotState}">${dotContent}</div>
+      <div class="tl-content ${isFuture?"active":state}">${activeInd}<div class="tl-name">${s.icon} ${s.name}</div>${badge}${msg}</div>
     </div>`;
   }).join("");
   const statusMsg=pct===100?"🎉 Votre projet est <strong>terminé</strong> — merci de votre confiance !":activeIdx>=0?`Étape en cours : <strong>${STEPS[activeIdx].name}</strong>`:"Votre projet est bien pris en charge.";
