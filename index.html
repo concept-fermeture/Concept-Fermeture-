@@ -458,6 +458,14 @@ const STEPS=[
 
 let clients=[],currentDetailId=null,ADMIN_PWD="CF2026",currentTab="actifs",activeFilter="all",currentPhoto=null;
 
+function fmtLastLogin(iso){
+  if(!iso) return "Jamais connecté";
+  const d=new Date(iso),n=new Date(),m=Math.round((n-d)/60000);
+  if(m<1) return "Connecté à l\'instant";
+  if(m<60) return "Connecté il y a "+m+"min";
+  if(m<1440) return "Connecté il y a "+Math.round(m/60)+"h";
+  return "Connecté il y a "+Math.round(m/1440)+"j";
+}
 function genCode(){return String(Math.floor(100000+Math.random()*900000));}
 function today(){return new Date().toISOString().split("T")[0];}
 function fmtDate(d){return d?new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}
