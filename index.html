@@ -514,7 +514,13 @@ async function submitClientCode(){
   try{
     const snap=await db.collection("clients").where("code","==",code).limit(1).get();
     hide("loading-view");
-    if(!snap.empty){document.getElementById("client-error").classList.add("hidden");renderClientView({id:snap.docs[0].id,...snap.docs[0].data()});}
+    if(!snap.empty){
+      document.getElementById("client-error").classList.add("hidden");
+      const clientData={id:snap.docs[0].id,...snap.docs[0].data()};
+      // Save last connection time
+      db.collection("clients").doc(snap.docs[0].id).update({lastLogin:new Date().toISOString()}).catch(()=>{});
+      renderClientView(clientData);
+    }
     else{show("client-login-view");document.getElementById("client-error").classList.remove("hidden");document.querySelectorAll(".code-digit").forEach(d=>d.value="");document.querySelectorAll(".code-digit")[0].focus();}
   }catch(e){hide("loading-view");show("client-login-view");showToast("Erreur de connexion","#e74c3c");}
 }
@@ -613,6 +619,22 @@ function openDetail(id){
   document.getElementById("edit-projet").value=c.projet||"";
   document.getElementById("edit-projet-note").value=c.projetNote||"";
   document.getElementById("edit-datefin").value=c.dateFin||"";
+  const llEl=document.getElementById("detail-last-login");
+  if(c.lastLogin){
+    const ll=new Date(c.lastLogin);
+    const now=new Date();
+    const diffMin=Math.round((now-ll)/60000);
+    let when="";
+    if(diffMin<1) when="À l'instant";
+    else if(diffMin<60) when=`Il y a ${diffMin} min`;
+    else if(diffMin<1440) when=`Il y a ${Math.round(diffMin/60)}h`;
+    else when=`Il y a ${Math.round(diffMin/1440)} jour(s)`;
+    llEl.innerHTML=`👁️ Dernière connexion : <strong>${when}</strong> (${ll.toLocaleDateString("fr-FR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})})`;
+    llEl.style.display="block";
+  } else {
+    llEl.innerHTML="👁️ Jamais connecté";
+    llEl.style.display="block";
+  }
   document.getElementById("archive-btn").textContent=c.archived?"📋 Désarchiver":"📦 Archiver";
   const prev=document.getElementById("photo-preview");
   const removeBtn=document.getElementById("photo-remove-btn");
