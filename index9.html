@@ -237,7 +237,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
       <button class="tab" id="tab-archives" onclick="switchTab('archives')">📦 Archives</button>
     </div>
     <div class="section-header">
-      <div class="section-title" id="section-title-text">Mes clients</div>
+      <div class="section-title" id="section-title-text">Avant projet</div>
       <button class="btn btn-gold btn-sm" onclick="openNewModal()" id="btn-nouveau">+ Nouveau</button>
     </div>
     <input type="text" id="search-input" placeholder="🔍  Rechercher un client…" oninput="renderClients()" style="margin-bottom:10px;">
@@ -534,11 +534,19 @@ function showAdminView(){show("admin-view");hide("login-view");hide("client-view
 
 function switchTab(tab){
   currentTab=tab;activeFilter="all";
-  document.getElementById("tab-actifs").className="tab"+(tab==="actifs"?" active":"");
-  document.getElementById("tab-archives").className="tab"+(tab==="archives"?" active":"");
-  document.getElementById("btn-nouveau").style.display=tab==="actifs"?"":"none";
-  document.getElementById("section-title-text").textContent=tab==="actifs"?"Mes clients":"Archives";
-  document.getElementById("filter-bar").style.display=tab==="actifs"?"flex":"none";
+  ["avant","projet","archives"].forEach(t=>{
+    const el=document.getElementById("tab-"+t);
+    if(el) el.className="tab"+(t===tab?" active":"");
+  });
+  const titles={avant:"Avant projet",projet:"Projets en cours",archives:"Archives"};
+  const stEl=document.getElementById("section-title-text");
+  if(stEl) stEl.textContent=titles[tab]||"";
+  document.getElementById("btn-nouveau").style.display=tab==="archives"?"none":"";
+  const fb=document.getElementById("filter-bar");
+  if(fb) fb.classList.add("hidden");
+  const fbtn=document.getElementById("filter-btn");
+  if(fbtn){fbtn.style.color="";fbtn.style.borderColor="";}
+  buildFilterBar();
   renderClients();
 }
 
@@ -555,6 +563,7 @@ function renderClients(){
   let list=clients.filter(c=>{
     if(currentTab==="archives") return !!c.archived;
     if(currentTab==="avant") return !c.archived&&c.mode==="avant";
+    // "projet" tab = not archived, not avant (includes old clients without mode)
     return !c.archived&&c.mode!=="avant";
   });
   if(activeFilter!=="all"&&currentTab!=="archives"){
@@ -863,7 +872,7 @@ function renderClientView(c){
     const isFuture=st.date&&new Date(st.date)>new Date();
     const badge=state==="done"
       ?(isFuture
-        ?`<span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa">📅 Planifié · ${dateStr}</span>${newBadge}`
+        ?`<span class="badge" style="background:rgba(59,130,246,0.15);color:var(--text2)">📅 Planifié · ${dateStr}</span>${newBadge}`
         :`<span class="badge badge-done">✓ Terminé${dateStr?" · "+dateStr:""}</span>${newBadge}`)
       :state==="active"?`<span class="badge badge-active">⏳ En cours</span>`
       :`<span class="badge badge-pending">À venir</span>`;
