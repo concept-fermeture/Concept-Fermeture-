@@ -301,8 +301,8 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
       </div>
       <div class="field"><label>Type de dossier</label>
         <select id="new-mode">
-          <option value="projet">🔧 Projet en cours (après signature)</option>
-          <option value="avant">📋 Avant projet (prospect / devis)</option>
+          <option value="projet">🔧 Projet en cours</option>
+          <option value="avant">📋 Avant projet (prospect)</option>
         </select>
       </div>
       <div class="field"><label>Type de projet</label>
@@ -355,7 +355,6 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
         <button class="copy-mini" onclick="copyCode()">📋</button>
       </div>
       <div class="code-hint">📱 Envoie ce code au client avec le lien du site.</div>
-      <div id="detail-last-login" style="font-size:12px;color:var(--gris);margin:8px 0 16px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;border-left:3px solid var(--or)"></div>
       <hr class="section-sep">
       <label style="color:var(--or);margin-bottom:12px">Informations client</label>
       <div class="field-row">
@@ -364,8 +363,8 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
       </div>
       <div class="field"><label>Type de dossier</label>
         <select id="new-mode">
-          <option value="projet">🔧 Projet en cours (après signature)</option>
-          <option value="avant">📋 Avant projet (prospect / devis)</option>
+          <option value="projet">🔧 Projet en cours</option>
+          <option value="avant">📋 Avant projet (prospect)</option>
         </select>
       </div>
       <div class="field"><label>Type de projet</label>
@@ -460,14 +459,14 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
 const STEPS_AVANT=[
-  {id:"contact", name:"Prise de contact",                   icon:"📞"},
-  {id:"rdv",     name:"Rendez-vous planifié",               icon:"📅"},
-  {id:"visite",  name:"Visite technique",                   icon:"📐"},
-  {id:"etude",   name:"Devis en étude",                     icon:"📝"},
-  {id:"envoye",  name:"Devis envoyé",                       icon:"📨"},
+  {id:"contact", name:"Prise de contact",                        icon:"📞"},
+  {id:"rdv",     name:"Rendez-vous planifié",                    icon:"📅"},
+  {id:"visite",  name:"Visite technique",                        icon:"📐"},
+  {id:"etude",   name:"Devis en étude",                          icon:"📝"},
+  {id:"envoye",  name:"Devis envoyé",                            icon:"📨"},
   {id:"dispo",   name:"À votre disposition pour toute question", icon:"🕐"},
 ];
-const STEPS_PROJET=[
+const STEPS=[
   {id:"devis",name:"Devis signé",icon:"✍️"},
   {id:"acompte",name:"Acompte reçu",icon:"💳"},
   {id:"mesurage",name:"Mesurage",icon:"📐"},
@@ -480,15 +479,11 @@ const STEPS_PROJET=[
 
 let clients=[],currentDetailId=null,ADMIN_PWD="CF2026",currentTab="actifs",activeFilter="all",currentPhoto=null;
 
-function fmtLastLogin(iso){
-  if(!iso) return "Jamais connecté";
-  const d=new Date(iso),n=new Date(),m=Math.round((n-d)/60000);
-  if(m<1) return "Connecté à l\'instant";
-  if(m<60) return "Connecté il y a "+m+"min";
-  if(m<1440) return "Connecté il y a "+Math.round(m/60)+"h";
-  return "Connecté il y a "+Math.round(m/1440)+"j";
+function getSteps(c){
+  if(!c||!c.steps) return STEPS;
+  if(c.mode==="avant") return STEPS_AVANT;
+  return STEPS;
 }
-function getSteps(c){return (c&&c.mode==="avant")?STEPS_AVANT:STEPS_PROJET;}
 function genCode(){return String(Math.floor(100000+Math.random()*900000));}
 function today(){return new Date().toISOString().split("T")[0];}
 function fmtDate(d){return d?new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}
@@ -545,13 +540,7 @@ async function submitClientCode(){
   try{
     const snap=await db.collection("clients").where("code","==",code).limit(1).get();
     hide("loading-view");
-    if(!snap.empty){
-      document.getElementById("client-error").classList.add("hidden");
-      const clientData={id:snap.docs[0].id,...snap.docs[0].data()};
-      // Save last connection time
-      db.collection("clients").doc(snap.docs[0].id).update({lastLogin:new Date().toISOString()}).catch(()=>{});
-      renderClientView(clientData);
-    }
+    if(!snap.empty){document.getElementById("client-error").classList.add("hidden");renderClientView({id:snap.docs[0].id,...snap.docs[0].data()});}
     else{show("client-login-view");document.getElementById("client-error").classList.remove("hidden");document.querySelectorAll(".code-digit").forEach(d=>d.value="");document.querySelectorAll(".code-digit")[0].focus();}
   }catch(e){hide("loading-view");show("client-login-view");showToast("Erreur de connexion","#e74c3c");}
 }
@@ -595,28 +584,29 @@ function renderClients(){
   const el=document.getElementById("clients-list");
   if(!list.length){el.innerHTML=`<div class="empty-state"><div style="font-size:44px;margin-bottom:12px">${currentTab==="archives"?"📦":"📂"}</div><div>${currentTab==="archives"?"Aucun dossier archivé.":clients.length===0?"Aucun client encore.":"Aucun résultat."}</div></div>`;return;}
   el.innerHTML=list.map(c=>{
-    try{
-    const pct=progressPct(c)||0,dc=doneCount(c)||0,init=(c.prenom[0]||"")+(c.nom[0]||"");
+    const pct=progressPct(c),dc=doneCount(c),init=(c.prenom[0]||"")+(c.nom[0]||"");
     const df=c.dateFin?`<span style="font-size:11px;color:var(--or);font-weight:500">📅 ${fmtDate(c.dateFin)}</span>`:"";
-    const stars=c.satisfaction?`<span style="font-size:11px">${"⭐".repeat(c.satisfaction)}</span>`:"";
     const modeBadge=c.mode==="avant"?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(59,130,246,0.15);color:#60a5fa;font-weight:600">📋 Avant projet</span>`:"";
-    let lastUpd=null;try{lastUpd=c.steps?Object.values(c.steps).filter(s=>s.updatedAt||s.date).map(s=>new Date(s.updatedAt||s.date)).filter(d=>!isNaN(d)).sort((a,b)=>b-a)[0]:null;}catch(e){}
-    const daysSinceUpd=lastUpd?Math.floor((new Date()-lastUpd)/86400000):999;
-    const alertBadge=(!c.archived&&pct(c)<100&&daysSinceUpd>=3)?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(192,57,43,0.2);color:#e74c3c;font-weight:600">⚠️ ${daysSinceUpd}j sans mise à jour</span>`:"";
-    }catch(e){return '';}
+    let alertBadge="";
+    try{
+      const dates=Object.values(c.steps||{}).map(s=>s.updatedAt||s.date).filter(Boolean).map(d=>new Date(d)).filter(d=>!isNaN(d));
+      const lastUpd=dates.length?new Date(Math.max(...dates)):new Date(c.createdAt||0);
+      const days=Math.floor((new Date()-lastUpd)/86400000);
+      if(!c.archived&&progressPct(c)<100&&days>=3) alertBadge=`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(192,57,43,0.2);color:#e74c3c;font-weight:600">⚠️ ${days}j sans mise à jour</span>`;
+    }catch(e){}
+    const stars=c.satisfaction?`<span style="font-size:11px">${"⭐".repeat(c.satisfaction)}</span>`:"";
     return `<div class="client-card${c.archived?" archived-card":""}" onclick="openDetail('${c.id}')">
       <div class="avatar">${init}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:15px;margin-bottom:2px">${c.prenom} ${c.nom} ${c.archived?"<span style='font-size:11px;color:var(--gris)'>(archivé)</span>":""}</div>
         <div style="font-size:12px;color:var(--gris)">${c.projet||("Projet non précisé")}${c.projetNote?" — "+c.projetNote:""} · <strong style="color:var(--or)">${c.code}</strong></div>
-        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${df}${stars}${modeBadge}${alertBadge}</div>
+        <div style="display:flex;gap:8px;margin-top:2px">${df}${stars}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div class="prog-pill">${dc}/${STEPS.length} étapes</div>
         <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
       </div>
     </div>`;
-    }catch(e){return "";}
   }).join("");
 }
 
@@ -634,7 +624,7 @@ async function createClient(){
   if(!prenom||!nom){showToast("Prénom et nom requis","#e74c3c");return;}
   if(!document.getElementById("rgpd-consent").checked){showToast("Veuillez cocher le consentement RGPD","#e74c3c");return;}
   const mode=document.getElementById("new-mode")?document.getElementById("new-mode").value:"projet";
-  const stepsArr=mode==="avant"?STEPS_AVANT:STEPS_PROJET;
+  const stepsArr=(mode==="avant")?STEPS_AVANT:STEPS;
   const steps={};stepsArr.forEach(s=>{steps[s.id]={done:false,date:"",msg:""};});
   const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
   const c={id,code:genCode(),prenom,nom,
@@ -659,25 +649,9 @@ function openDetail(id){
   document.getElementById("edit-projet").value=c.projet||"";
   document.getElementById("edit-projet-note").value=c.projetNote||"";
   document.getElementById("edit-datefin").value=c.dateFin||"";
-  const llEl=document.getElementById("detail-last-login");
-  if(c.lastLogin){
-    const ll=new Date(c.lastLogin);
-    const now=new Date();
-    const diffMin=Math.round((now-ll)/60000);
-    let when="";
-    if(diffMin<1) when="À l'instant";
-    else if(diffMin<60) when=`Il y a ${diffMin} min`;
-    else if(diffMin<1440) when=`Il y a ${Math.round(diffMin/60)}h`;
-    else when=`Il y a ${Math.round(diffMin/1440)} jour(s)`;
-    llEl.innerHTML=`👁️ Dernière connexion : <strong>${when}</strong> (${ll.toLocaleDateString("fr-FR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})})`;
-    llEl.style.display="block";
-  } else {
-    llEl.innerHTML="👁️ Jamais connecté";
-    llEl.style.display="block";
-  }
   document.getElementById("archive-btn").textContent=c.archived?"📋 Désarchiver":"📦 Archiver";
-  const convertBtn=document.getElementById("convert-btn");
-  if(convertBtn) convertBtn.style.display=c.mode==="avant"?"inline-flex":"none";
+  const cvBtn=document.getElementById("convert-btn");
+  if(cvBtn) cvBtn.style.display=(c.mode==="avant")?"inline-flex":"none";
   const prev=document.getElementById("photo-preview");
   const removeBtn=document.getElementById("photo-remove-btn");
   if(c.photo){prev.src=c.photo;prev.style.display="block";removeBtn.style.display="inline-flex";}
@@ -783,7 +757,7 @@ async function toggleArchive(){
 async function duplicateClient(){
   const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
   const mode=document.getElementById("new-mode")?document.getElementById("new-mode").value:"projet";
-  const stepsArr=mode==="avant"?STEPS_AVANT:STEPS_PROJET;
+  const stepsArr=(mode==="avant")?STEPS_AVANT:STEPS;
   const steps={};stepsArr.forEach(s=>{steps[s.id]={done:false,date:"",msg:""};});
   const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
   const copy={...c,id,code:genCode(),steps,archived:false,satisfaction:null,photo:"",createdAt:new Date().toISOString(),
@@ -795,11 +769,14 @@ async function duplicateClient(){
 
 async function convertToProject(){
   const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
-  if(!confirm("Convertir ce dossier en projet en cours ? Les étapes seront remises à zéro."))return;
-  const newSteps={};STEPS_PROJET.forEach(s=>{newSteps[s.id]={done:false,date:"",msg:""};});
+  if(!confirm("Convertir en projet en cours ? Les étapes seront remises à zéro."))return;
+  const newSteps={};STEPS.forEach(s=>{newSteps[s.id]={done:false,date:"",msg:""};});
   c.mode="projet";c.steps=newSteps;
-  closeModal("modal-detail");showToast("⏳ Conversion…","#9ca3af");
-  await saveClient(c);renderClients();
+  closeModal("modal-detail");
+  showToast("⏳ Conversion…","#9ca3af");
+  await saveClient(c);
+  clients=clients.map(x=>x.id===c.id?c:x);
+  renderClients();
   showToast("✅ Dossier converti en projet !");
   setTimeout(()=>openDetail(c.id),300);
 }
