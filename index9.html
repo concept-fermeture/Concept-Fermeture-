@@ -232,7 +232,8 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
       <div class="stat-card"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">Avancement</div></div>
     </div>
     <div class="tabs">
-      <button class="tab active" id="tab-actifs" onclick="switchTab('actifs')">📋 Dossiers actifs</button>
+      <button class="tab active" id="tab-projet" onclick="switchTab('projet')">🔧 Projets en cours</button>
+      <button class="tab" id="tab-avant" onclick="switchTab('avant')">📋 Avant projet</button>
       <button class="tab" id="tab-archives" onclick="switchTab('archives')">📦 Archives</button>
     </div>
     <div class="section-header">
@@ -299,12 +300,6 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
         <div><label>Prénom</label><input type="text" id="new-prenom" placeholder="Jean"></div>
         <div><label>Nom</label><input type="text" id="new-nom" placeholder="Dupont"></div>
       </div>
-      <div class="field"><label>Type de dossier</label>
-        <select id="new-mode">
-          <option value="projet">🔧 Projet en cours</option>
-          <option value="avant">📋 Avant projet (prospect)</option>
-        </select>
-      </div>
       <div class="field"><label>Type de projet</label>
         <select id="new-projet" style="font-size:16px">
           <option value="">Sélectionner…</option>
@@ -360,12 +355,6 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
       <div class="field-row">
         <div><label>Prénom</label><input type="text" id="edit-prenom"></div>
         <div><label>Nom</label><input type="text" id="edit-nom"></div>
-      </div>
-      <div class="field"><label>Type de dossier</label>
-        <select id="new-mode">
-          <option value="projet">🔧 Projet en cours</option>
-          <option value="avant">📋 Avant projet (prospect)</option>
-        </select>
       </div>
       <div class="field"><label>Type de projet</label>
         <select id="edit-projet" style="font-size:16px">
@@ -480,8 +469,7 @@ const STEPS=[
 let clients=[],currentDetailId=null,ADMIN_PWD="CF2026",currentTab="actifs",activeFilter="all",currentPhoto=null;
 
 function getSteps(c){
-  if(!c||!c.steps) return STEPS;
-  if(c.mode==="avant") return STEPS_AVANT;
+  if(c&&c.mode==="avant") return STEPS_AVANT;
   return STEPS;
 }
 function genCode(){return String(Math.floor(100000+Math.random()*900000));}
@@ -545,7 +533,7 @@ async function submitClientCode(){
   }catch(e){hide("loading-view");show("client-login-view");showToast("Erreur de connexion","#e74c3c");}
 }
 
-function showAdminView(){show("admin-view");hide("login-view");hide("client-view");hide("client-login-view");buildFilterBar();renderClients();}
+function showAdminView(){show("admin-view");hide("login-view");hide("client-view");hide("client-login-view");currentTab="projet";["projet","avant","archives"].forEach(t=>{const el=document.getElementById("tab-"+t);if(el)el.className="tab"+(t==="projet"?" active":"");});buildFilterBar();renderClients();}
 
 function switchTab(tab){
   currentTab=tab;activeFilter="all";
@@ -586,21 +574,20 @@ function renderClients(){
   el.innerHTML=list.map(c=>{
     const pct=progressPct(c),dc=doneCount(c),init=(c.prenom[0]||"")+(c.nom[0]||"");
     const df=c.dateFin?`<span style="font-size:11px;color:var(--or);font-weight:500">📅 ${fmtDate(c.dateFin)}</span>`:"";
-    const modeBadge=c.mode==="avant"?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(59,130,246,0.15);color:#60a5fa;font-weight:600">📋 Avant projet</span>`:"";
+    const stars=c.satisfaction?`<span style="font-size:11px">${"⭐".repeat(c.satisfaction)}</span>`:"";
     let alertBadge="";
     try{
       const dates=Object.values(c.steps||{}).map(s=>s.updatedAt||s.date).filter(Boolean).map(d=>new Date(d)).filter(d=>!isNaN(d));
       const lastUpd=dates.length?new Date(Math.max(...dates)):new Date(c.createdAt||0);
       const days=Math.floor((new Date()-lastUpd)/86400000);
-      if(!c.archived&&progressPct(c)<100&&days>=3) alertBadge=`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(192,57,43,0.2);color:#e74c3c;font-weight:600">⚠️ ${days}j sans mise à jour</span>`;
+      if(days>=3&&progressPct(c)<100) alertBadge=`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(192,57,43,0.2);color:#e74c3c;font-weight:600">⚠️ ${days}j</span>`;
     }catch(e){}
-    const stars=c.satisfaction?`<span style="font-size:11px">${"⭐".repeat(c.satisfaction)}</span>`:"";
     return `<div class="client-card${c.archived?" archived-card":""}" onclick="openDetail('${c.id}')">
       <div class="avatar">${init}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:15px;margin-bottom:2px">${c.prenom} ${c.nom} ${c.archived?"<span style='font-size:11px;color:var(--gris)'>(archivé)</span>":""}</div>
         <div style="font-size:12px;color:var(--gris)">${c.projet||("Projet non précisé")}${c.projetNote?" — "+c.projetNote:""} · <strong style="color:var(--or)">${c.code}</strong></div>
-        <div style="display:flex;gap:8px;margin-top:2px">${df}${stars}</div>
+        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${df}${stars}${alertBadge}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div class="prog-pill">${dc}/${STEPS.length} étapes</div>
@@ -623,8 +610,8 @@ async function createClient(){
   const nom=document.getElementById("new-nom").value.trim();
   if(!prenom||!nom){showToast("Prénom et nom requis","#e74c3c");return;}
   if(!document.getElementById("rgpd-consent").checked){showToast("Veuillez cocher le consentement RGPD","#e74c3c");return;}
-  const mode=document.getElementById("new-mode")?document.getElementById("new-mode").value:"projet";
-  const stepsArr=(mode==="avant")?STEPS_AVANT:STEPS;
+  const mode=currentTab==="avant"?"avant":"projet";
+  const stepsArr=mode==="avant"?STEPS_AVANT:STEPS;
   const steps={};stepsArr.forEach(s=>{steps[s.id]={done:false,date:"",msg:""};});
   const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
   const c={id,code:genCode(),prenom,nom,
@@ -756,8 +743,8 @@ async function toggleArchive(){
 
 async function duplicateClient(){
   const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
-  const mode=document.getElementById("new-mode")?document.getElementById("new-mode").value:"projet";
-  const stepsArr=(mode==="avant")?STEPS_AVANT:STEPS;
+  const mode=currentTab==="avant"?"avant":"projet";
+  const stepsArr=mode==="avant"?STEPS_AVANT:STEPS;
   const steps={};stepsArr.forEach(s=>{steps[s.id]={done:false,date:"",msg:""};});
   const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
   const copy={...c,id,code:genCode(),steps,archived:false,satisfaction:null,photo:"",createdAt:new Date().toISOString(),
@@ -769,16 +756,16 @@ async function duplicateClient(){
 
 async function convertToProject(){
   const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
-  if(!confirm("Convertir en projet en cours ? Les étapes seront remises à zéro."))return;
+  if(!confirm("Convertir en projet en cours ? Les étapes travaux seront initialisées."))return;
   const newSteps={};STEPS.forEach(s=>{newSteps[s.id]={done:false,date:"",msg:""};});
   c.mode="projet";c.steps=newSteps;
   closeModal("modal-detail");
   showToast("⏳ Conversion…","#9ca3af");
   await saveClient(c);
   clients=clients.map(x=>x.id===c.id?c:x);
-  renderClients();
+  switchTab("projet");
   showToast("✅ Dossier converti en projet !");
-  setTimeout(()=>openDetail(c.id),300);
+  setTimeout(()=>openDetail(c.id),400);
 }
 function copyCode(){const c=clients.find(x=>x.id===currentDetailId);if(!c)return;navigator.clipboard.writeText(c.code);showToast("📋 Code copié !");}
 
