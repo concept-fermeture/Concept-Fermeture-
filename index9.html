@@ -505,12 +505,18 @@ async function init(){
   // Timeout safety - never stay stuck on loading
   const timeout=setTimeout(()=>{hide("loading-view");showLoginView();},8000);
   try{
-    const d=await db.collection("settings").doc("admin").get();
-    if(d.exists&&d.data().pwd)PWD=d.data().pwd;
+    const settingsPromise=db.collection("settings").doc("admin").get();
+    const settingsTimeout=new Promise((_,r)=>setTimeout(()=>r("timeout"),3000));
+    const d=await Promise.race([settingsPromise,settingsTimeout]);
+    if(d&&d.exists&&d.data&&d.data().pwd)PWD=d.data().pwd;
   }catch(e){}
   clearTimeout(timeout);
   if(sessionStorage.getItem("cf_admin")){
-    await loadClients();hide("loading-view");showAdminView();
+    try{
+      const loadTimeout=new Promise((_,r)=>setTimeout(()=>r("timeout"),6000));
+      await Promise.race([loadClients(),loadTimeout]);
+    }catch(e){clients=[];}
+    hide("loading-view");showAdminView();
   }else{hide("loading-view");showLoginView();}
 }
 
