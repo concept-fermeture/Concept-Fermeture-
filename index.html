@@ -41,9 +41,9 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
 .admin-header{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px;}
 .admin-brand{font-family:"Cormorant Garamond",serif;font-size:20px;color:var(--text);}
 .admin-body{padding:22px 16px;max-width:860px;margin:0 auto;}
-.tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;margin-bottom:20px;border:1px solid var(--border);}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,0.2);border-radius:12px;padding:4px;margin-bottom:18px;border:1px solid rgba(201,169,110,0.12);}
 .tab{flex:1;padding:10px;border-radius:9px;border:none;font-family:"DM Sans",sans-serif;font-size:13px;cursor:pointer;font-weight:500;transition:all .2s;background:transparent;color:var(--gris);}
-.tab.active{background:rgba(255,255,255,0.1);color:var(--text);}
+.tab.active{background:linear-gradient(135deg,var(--nuit2),var(--nuit3));color:var(--text);border:1px solid var(--or-border);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;}
 .stat-num{font-family:"Cormorant Garamond",serif;font-size:36px;color:var(--or);line-height:1;}
@@ -117,7 +117,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
 @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(201,169,110,0.15)}50%{box-shadow:0 0 0 8px rgba(201,169,110,0.05)}}
 .tl-content{background:var(--card);border-radius:14px;padding:14px 16px;border:1px solid var(--border);}
 .tl-content.done{border-color:rgba(201,169,110,0.25);background:rgba(201,169,110,0.06);}
-.tl-content.active{border-color:var(--or);background:rgba(201,169,110,0.08);box-shadow:0 4px 20px rgba(201,169,110,0.12);}
+.tl-content.active{border-color:var(--or);background:linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.04));box-shadow:0 4px 24px rgba(201,169,110,0.12),inset 0 1px 0 rgba(201,169,110,0.1);}
 .tl-content.pending{background:rgba(255,255,255,0.02);}
 .tl-name{font-size:15px;font-weight:500;margin-bottom:6px;}
 .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;}
@@ -133,7 +133,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
 .stars-input{display:flex;justify-content:center;gap:8px;margin:16px 0;}
 .star-btn{font-size:32px;cursor:pointer;transition:transform .15s;background:none;border:none;}
 .star-btn:hover{transform:scale(1.2);}
-.pdf-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(255,255,255,0.06);border:1.5px solid var(--border);color:var(--text);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:16px;transition:all .2s;}
+.pdf-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;background:rgba(201,169,110,0.05);border:1px solid var(--or-border);color:var(--text2);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:16px;transition:all .2s;}
 .pdf-btn:hover{border-color:var(--or);color:var(--or);background:rgba(201,169,110,0.1);}
 .client-footer{text-align:center;padding:20px;border-top:1px solid var(--border);font-size:11px;color:var(--gris);line-height:2.2;background:var(--card);margin-top:20px;}
 .client-footer a{color:var(--or);text-decoration:none;font-weight:500;}
@@ -232,11 +232,12 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
       <div class="stat-card"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">Avancement</div></div>
     </div>
     <div class="tabs">
-      <button class="tab active" id="tab-actifs" onclick="switchTab('actifs')">📋 Dossiers actifs</button>
+      <button class="tab active" id="tab-avant" onclick="switchTab('avant')">📋 Avant projet</button>
+      <button class="tab" id="tab-projet" onclick="switchTab('projet')">🔧 En cours</button>
       <button class="tab" id="tab-archives" onclick="switchTab('archives')">📦 Archives</button>
     </div>
     <div class="section-header">
-      <div class="section-title" id="section-title-text">Mes clients</div>
+      <div class="section-title" id="section-title-text">Avant projet</div>
       <button class="btn btn-gold btn-sm" onclick="openNewModal()" id="btn-nouveau">+ Nouveau</button>
     </div>
     <input type="text" id="search-input" placeholder="🔍  Rechercher un client…" oninput="renderClients()" style="margin-bottom:10px;">
@@ -299,12 +300,6 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
         <div><label>Prénom</label><input type="text" id="new-prenom" placeholder="Jean"></div>
         <div><label>Nom</label><input type="text" id="new-nom" placeholder="Dupont"></div>
       </div>
-      <div class="field"><label>Type de dossier</label>
-        <select id="new-mode">
-          <option value="projet">🔧 Projet en cours (après signature)</option>
-          <option value="avant">📋 Avant projet (prospect / devis)</option>
-        </select>
-      </div>
       <div class="field"><label>Type de projet</label>
         <select id="new-projet" style="font-size:16px">
           <option value="">Sélectionner…</option>
@@ -355,18 +350,11 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
         <button class="copy-mini" onclick="copyCode()">📋</button>
       </div>
       <div class="code-hint">📱 Envoie ce code au client avec le lien du site.</div>
-      <div id="detail-last-login" style="font-size:12px;color:var(--gris);margin:8px 0 16px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;border-left:3px solid var(--or)"></div>
       <hr class="section-sep">
       <label style="color:var(--or);margin-bottom:12px">Informations client</label>
       <div class="field-row">
         <div><label>Prénom</label><input type="text" id="edit-prenom"></div>
         <div><label>Nom</label><input type="text" id="edit-nom"></div>
-      </div>
-      <div class="field"><label>Type de dossier</label>
-        <select id="new-mode">
-          <option value="projet">🔧 Projet en cours (après signature)</option>
-          <option value="avant">📋 Avant projet (prospect / devis)</option>
-        </select>
       </div>
       <div class="field"><label>Type de projet</label>
         <select id="edit-projet" style="font-size:16px">
@@ -402,7 +390,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
     <div class="modal-footer">
       <button class="btn btn-danger btn-sm" onclick="deleteClient()">Supprimer</button>
       <button class="btn btn-ghost btn-sm" id="archive-btn" onclick="toggleArchive()">📦 Archiver</button>
-      <button class="btn btn-ghost btn-sm" id="convert-btn" onclick="convertToProject()" style="display:none">🔧 Convertir en projet</button>
+      <button class="btn btn-outline btn-sm" id="convert-btn" onclick="convertToProject()" style="display:none">🔧 Convertir en projet</button>
       <button class="btn btn-ghost btn-sm" onclick="duplicateClient()">📋 Dupliquer</button>
       <div style="flex:1"></div>
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-detail')">Fermer</button>
@@ -460,14 +448,14 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
 const STEPS_AVANT=[
-  {id:"contact", name:"Prise de contact",                   icon:"📞"},
-  {id:"rdv",     name:"Rendez-vous planifié",               icon:"📅"},
-  {id:"visite",  name:"Visite technique",                   icon:"📐"},
-  {id:"etude",   name:"Devis en étude",                     icon:"📝"},
-  {id:"envoye",  name:"Devis envoyé",                       icon:"📨"},
+  {id:"contact", name:"Prise de contact",                        icon:"📞"},
+  {id:"rdv",     name:"Rendez-vous planifié",                    icon:"📅"},
+  {id:"visite",  name:"Visite technique",                        icon:"📐"},
+  {id:"etude",   name:"Devis en étude",                          icon:"📝"},
+  {id:"envoye",  name:"Devis envoyé",                            icon:"📨"},
   {id:"dispo",   name:"À votre disposition pour toute question", icon:"🕐"},
 ];
-const STEPS_PROJET=[
+const STEPS=[
   {id:"devis",name:"Devis signé",icon:"✍️"},
   {id:"acompte",name:"Acompte reçu",icon:"💳"},
   {id:"mesurage",name:"Mesurage",icon:"📐"},
@@ -480,15 +468,7 @@ const STEPS_PROJET=[
 
 let clients=[],currentDetailId=null,ADMIN_PWD="CF2026",currentTab="actifs",activeFilter="all",currentPhoto=null;
 
-function fmtLastLogin(iso){
-  if(!iso) return "Jamais connecté";
-  const d=new Date(iso),n=new Date(),m=Math.round((n-d)/60000);
-  if(m<1) return "Connecté à l\'instant";
-  if(m<60) return "Connecté il y a "+m+"min";
-  if(m<1440) return "Connecté il y a "+Math.round(m/60)+"h";
-  return "Connecté il y a "+Math.round(m/1440)+"j";
-}
-function getSteps(c){return c.mode==="avant"?STEPS_AVANT:STEPS_PROJET;}
+function getSteps(c){ return (c&&c.mode==="avant")?STEPS_AVANT:STEPS; }
 function genCode(){return String(Math.floor(100000+Math.random()*900000));}
 function today(){return new Date().toISOString().split("T")[0];}
 function fmtDate(d){return d?new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}
@@ -545,13 +525,7 @@ async function submitClientCode(){
   try{
     const snap=await db.collection("clients").where("code","==",code).limit(1).get();
     hide("loading-view");
-    if(!snap.empty){
-      document.getElementById("client-error").classList.add("hidden");
-      const clientData={id:snap.docs[0].id,...snap.docs[0].data()};
-      // Save last connection time
-      db.collection("clients").doc(snap.docs[0].id).update({lastLogin:new Date().toISOString()}).catch(()=>{});
-      renderClientView(clientData);
-    }
+    if(!snap.empty){document.getElementById("client-error").classList.add("hidden");renderClientView({id:snap.docs[0].id,...snap.docs[0].data()});}
     else{show("client-login-view");document.getElementById("client-error").classList.remove("hidden");document.querySelectorAll(".code-digit").forEach(d=>d.value="");document.querySelectorAll(".code-digit")[0].focus();}
   }catch(e){hide("loading-view");show("client-login-view");showToast("Erreur de connexion","#e74c3c");}
 }
@@ -560,11 +534,19 @@ function showAdminView(){show("admin-view");hide("login-view");hide("client-view
 
 function switchTab(tab){
   currentTab=tab;activeFilter="all";
-  document.getElementById("tab-actifs").className="tab"+(tab==="actifs"?" active":"");
-  document.getElementById("tab-archives").className="tab"+(tab==="archives"?" active":"");
-  document.getElementById("btn-nouveau").style.display=tab==="actifs"?"":"none";
-  document.getElementById("section-title-text").textContent=tab==="actifs"?"Mes clients":"Archives";
-  document.getElementById("filter-bar").style.display=tab==="actifs"?"flex":"none";
+  ["avant","projet","archives"].forEach(t=>{
+    const el=document.getElementById("tab-"+t);
+    if(el) el.className="tab"+(t===tab?" active":"");
+  });
+  const titles={avant:"Avant projet",projet:"Projets en cours",archives:"Archives"};
+  const stEl=document.getElementById("section-title-text");
+  if(stEl) stEl.textContent=titles[tab]||"";
+  document.getElementById("btn-nouveau").style.display=tab==="archives"?"none":"";
+  const fb=document.getElementById("filter-bar");
+  if(fb) fb.classList.add("hidden");
+  const fbtn=document.getElementById("filter-btn");
+  if(fbtn){fbtn.style.color="";fbtn.style.borderColor="";}
+  buildFilterBar();
   renderClients();
 }
 
@@ -578,9 +560,14 @@ function setFilter(id){activeFilter=id;buildFilterBar();renderClients();}
 
 function renderClients(){
   const q=(document.getElementById("search-input")?.value||"").toLowerCase();
-  let list=clients.filter(c=>!!(c.archived)===( currentTab==="archives"));
-  if(activeFilter!=="all"&&currentTab==="actifs"){
-    list=list.filter(c=>!c.steps[activeFilter]?.done&&STEPS.findIndex(s=>s.id===activeFilter)===STEPS.findIndex(s=>!c.steps[s.id]?.done));
+  let list=clients.filter(c=>{
+    if(currentTab==="archives") return !!c.archived;
+    if(currentTab==="avant") return !c.archived&&c.mode==="avant";
+    // "projet" tab = not archived, not avant (includes old clients without mode)
+    return !c.archived&&c.mode!=="avant";
+  });
+  if(activeFilter!=="all"&&currentTab!=="archives"){
+    list=list.filter(c=>{const st=getSteps(c);return !c.steps[activeFilter]?.done&&st.findIndex(s=>s.id===activeFilter)===st.findIndex(s=>!c.steps[s.id]?.done);});
   }
   list=list.filter(c=>(c.prenom+" "+c.nom+" "+(c.projet||"")).toLowerCase().includes(q));
 
@@ -597,17 +584,15 @@ function renderClients(){
   el.innerHTML=list.map(c=>{
     const pct=progressPct(c),dc=doneCount(c),init=(c.prenom[0]||"")+(c.nom[0]||"");
     const df=c.dateFin?`<span style="font-size:11px;color:var(--or);font-weight:500">📅 ${fmtDate(c.dateFin)}</span>`:"";
+    let alertBadge="";
+    try{const dates=Object.values(c.steps||{}).map(x=>x.updatedAt||x.date).filter(Boolean).map(x=>new Date(x)).filter(x=>!isNaN(x));const last=dates.length?Math.max(...dates):new Date(c.createdAt||0).getTime();const days=Math.floor((Date.now()-last)/86400000);if(!c.archived&&progressPct(c)<100&&days>=3)alertBadge=`<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(192,57,43,0.2);color:#e07060;font-weight:600">⚠️ ${days}j</span>`;}catch(e){}
     const stars=c.satisfaction?`<span style="font-size:11px">${"⭐".repeat(c.satisfaction)}</span>`:"";
-    const modeBadge=c.mode==="avant"?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(59,130,246,0.15);color:#60a5fa;font-weight:600">📋 Avant projet</span>`:"";
-    const lastUpd=c.steps?Object.values(c.steps).filter(s=>s.updatedAt||s.date).map(s=>new Date(s.updatedAt||s.date)).sort((a,b)=>b-a)[0]:null;
-    const daysSinceUpd=lastUpd?Math.floor((new Date()-lastUpd)/86400000):999;
-    const alertBadge=(!c.archived&&pct(c)<100&&daysSinceUpd>=3)?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(192,57,43,0.2);color:#e74c3c;font-weight:600">⚠️ ${daysSinceUpd}j sans mise à jour</span>`:"";
     return `<div class="client-card${c.archived?" archived-card":""}" onclick="openDetail('${c.id}')">
       <div class="avatar">${init}</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:600;font-size:15px;margin-bottom:2px">${c.prenom} ${c.nom} ${c.archived?"<span style='font-size:11px;color:var(--gris)'>(archivé)</span>":""}</div>
         <div style="font-size:12px;color:var(--gris)">${c.projet||("Projet non précisé")}${c.projetNote?" — "+c.projetNote:""} · <strong style="color:var(--or)">${c.code}</strong></div>
-        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">${df}${stars}${modeBadge}${alertBadge}</div>
+        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center">${df}${stars}${alertBadge}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div class="prog-pill">${dc}/${STEPS.length} étapes</div>
@@ -630,8 +615,8 @@ async function createClient(){
   const nom=document.getElementById("new-nom").value.trim();
   if(!prenom||!nom){showToast("Prénom et nom requis","#e74c3c");return;}
   if(!document.getElementById("rgpd-consent").checked){showToast("Veuillez cocher le consentement RGPD","#e74c3c");return;}
-  const mode=document.getElementById("new-mode")?document.getElementById("new-mode").value:"projet";
-  const stepsArr=mode==="avant"?STEPS_AVANT:STEPS_PROJET;
+  const mode=currentTab==="avant"?"avant":"projet";
+  const stepsArr=(mode==="avant")?STEPS_AVANT:STEPS;
   const steps={};stepsArr.forEach(s=>{steps[s.id]={done:false,date:"",msg:""};});
   const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
   const c={id,code:genCode(),prenom,nom,
@@ -656,25 +641,9 @@ function openDetail(id){
   document.getElementById("edit-projet").value=c.projet||"";
   document.getElementById("edit-projet-note").value=c.projetNote||"";
   document.getElementById("edit-datefin").value=c.dateFin||"";
-  const llEl=document.getElementById("detail-last-login");
-  if(c.lastLogin){
-    const ll=new Date(c.lastLogin);
-    const now=new Date();
-    const diffMin=Math.round((now-ll)/60000);
-    let when="";
-    if(diffMin<1) when="À l'instant";
-    else if(diffMin<60) when=`Il y a ${diffMin} min`;
-    else if(diffMin<1440) when=`Il y a ${Math.round(diffMin/60)}h`;
-    else when=`Il y a ${Math.round(diffMin/1440)} jour(s)`;
-    llEl.innerHTML=`👁️ Dernière connexion : <strong>${when}</strong> (${ll.toLocaleDateString("fr-FR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})})`;
-    llEl.style.display="block";
-  } else {
-    llEl.innerHTML="👁️ Jamais connecté";
-    llEl.style.display="block";
-  }
   document.getElementById("archive-btn").textContent=c.archived?"📋 Désarchiver":"📦 Archiver";
-  const convertBtn=document.getElementById("convert-btn");
-  if(convertBtn) convertBtn.style.display=c.mode==="avant"?"inline-flex":"none";
+  const cvBtn=document.getElementById("convert-btn");
+  if(cvBtn)cvBtn.style.display=(c.mode==="avant")?"inline-flex":"none";
   const prev=document.getElementById("photo-preview");
   const removeBtn=document.getElementById("photo-remove-btn");
   if(c.photo){prev.src=c.photo;prev.style.display="block";removeBtn.style.display="inline-flex";}
@@ -779,8 +748,8 @@ async function toggleArchive(){
 
 async function duplicateClient(){
   const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
-  const mode=document.getElementById("new-mode")?document.getElementById("new-mode").value:"projet";
-  const stepsArr=mode==="avant"?STEPS_AVANT:STEPS_PROJET;
+  const mode=currentTab==="avant"?"avant":"projet";
+  const stepsArr=(mode==="avant")?STEPS_AVANT:STEPS;
   const steps={};stepsArr.forEach(s=>{steps[s.id]={done:false,date:"",msg:""};});
   const id=Date.now().toString(36)+Math.random().toString(36).substr(2,4);
   const copy={...c,id,code:genCode(),steps,archived:false,satisfaction:null,photo:"",createdAt:new Date().toISOString(),
@@ -792,13 +761,21 @@ async function duplicateClient(){
 
 async function convertToProject(){
   const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
-  if(!confirm("Convertir ce dossier en projet en cours ? Les étapes seront remises à zéro."))return;
-  const newSteps={};STEPS_PROJET.forEach(s=>{newSteps[s.id]={done:false,date:"",msg:""};});
+  if(!confirm("Convertir en projet en cours ?\nLes étapes travaux seront initialisées."))return;
+  const newSteps={};STEPS.forEach(s=>{newSteps[s.id]={done:false,date:"",msg:""};});
   c.mode="projet";c.steps=newSteps;
-  closeModal("modal-detail");showToast("⏳ Conversion…","#9ca3af");
-  await saveClient(c);renderClients();
-  showToast("✅ Dossier converti en projet !");
-  setTimeout(()=>openDetail(c.id),300);
+  closeModal("modal-detail");
+  showToast("⏳ Conversion…","#9ca3af");
+  await saveClient(c);
+  clients=clients.map(x=>x.id===c.id?c:x);
+  const link="concept-fermeture.github.io/Concept-Fermeture-/index8.html";
+  const msg="Bonjour "+c.prenom+" 👋\n\nVotre devis a été validé, votre projet démarre !\n\nRetrouvez le suivi de vos travaux ici :\n👉 "+link+"\n\nVotre code reste le même : "+c.code+"\n\nAnthony — Concept Fermeture";
+  switchTab("projet");
+  showToast("✅ Converti en projet !");
+  setTimeout(()=>{
+    openDetail(c.id);
+    if(confirm("Envoyer le message WhatsApp au client ?"))window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+  },400);
 }
 function copyCode(){const c=clients.find(x=>x.id===currentDetailId);if(!c)return;navigator.clipboard.writeText(c.code);showToast("📋 Code copié !");}
 
@@ -884,7 +861,7 @@ function renderClientView(c){
   setTimeout(()=>document.getElementById("modal-welcome").classList.remove("hidden"),600);
   const pct=progressPct(c);
   const cStepsV=getSteps(c);
-  const activeIdx=cStepsV.findIndex(s=>!c.steps[s.id]?.done);
+  const activeIdx=cStepsV.findIndex(s=>!c.steps[s.id]||!c.steps[s.id].done);
   const tl=cStepsV.map((s,i)=>{
     const st=c.steps[s.id]||{done:false,date:"",msg:""};
     const isActive=i===activeIdx;
@@ -895,7 +872,7 @@ function renderClientView(c){
     const isFuture=st.date&&new Date(st.date)>new Date();
     const badge=state==="done"
       ?(isFuture
-        ?`<span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa">📅 Planifié · ${dateStr}</span>${newBadge}`
+        ?`<span class="badge" style="background:rgba(201,169,110,0.08);color:var(--text2)">📅 Planifié · ${dateStr}</span>${newBadge}`
         :`<span class="badge badge-done">✓ Terminé${dateStr?" · "+dateStr:""}</span>${newBadge}`)
       :state==="active"?`<span class="badge badge-active">⏳ En cours</span>`
       :`<span class="badge badge-pending">À venir</span>`;
