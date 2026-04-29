@@ -502,7 +502,13 @@ function getDone(c){
 async function init(){
   const p=new URLSearchParams(location.search);
   if(p.get("client")==="1"){hide("loading-view");showClientLogin();return;}
-  try{const d=await db.collection("settings").doc("admin").get();if(d.exists&&d.data().pwd)PWD=d.data().pwd;}catch(e){}
+  // Timeout safety - never stay stuck on loading
+  const timeout=setTimeout(()=>{hide("loading-view");showLoginView();},8000);
+  try{
+    const d=await db.collection("settings").doc("admin").get();
+    if(d.exists&&d.data().pwd)PWD=d.data().pwd;
+  }catch(e){}
+  clearTimeout(timeout);
   if(sessionStorage.getItem("cf_admin")){
     await loadClients();hide("loading-view");showAdminView();
   }else{hide("loading-view");showLoginView();}
