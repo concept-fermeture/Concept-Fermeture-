@@ -227,7 +227,7 @@ input[type=checkbox]{width:18px;height:18px;flex-shrink:0;accent-color:var(--or)
   </div>
   <div class="admin-body">
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">En cours</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Projets / Prospects</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Terminés</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">Avancement</div></div>
     </div>
@@ -472,8 +472,8 @@ function getSteps(c){ return (c&&c.mode==="avant")?STEPS_AVANT:STEPS; }
 function genCode(){return String(Math.floor(100000+Math.random()*900000));}
 function today(){return new Date().toISOString().split("T")[0];}
 function fmtDate(d){return d?new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):""}
-function progressPct(c){return Math.round(STEPS.filter(s=>c.steps[s.id]?.done).length/STEPS.length*100);}
-function doneCount(c){return STEPS.filter(s=>c.steps[s.id]?.done).length;}
+function progressPct(c){if(!c||!c.steps)return 0;const s=getSteps(c);return Math.round(s.filter(x=>c.steps[x.id]&&c.steps[x.id].done).length/s.length*100);}
+function doneCount(c){if(!c||!c.steps)return 0;return getSteps(c).filter(s=>c.steps[s.id]&&c.steps[s.id].done).length;}
 
 async function init(){
   const params=new URLSearchParams(location.search);
@@ -572,10 +572,12 @@ function renderClients(){
   list=list.filter(c=>(c.prenom+" "+c.nom+" "+(c.projet||"")).toLowerCase().includes(q));
 
   const actifs=clients.filter(c=>!c.archived);
-  const done=actifs.filter(c=>progressPct(c)===100).length;
-  const avgs=actifs.map(c=>progressPct(c));
+  const projets=actifs.filter(c=>c.mode!=="avant");
+  const avants=actifs.filter(c=>c.mode==="avant");
+  const done=projets.filter(c=>progressPct(c)===100).length;
+  const avgs=projets.map(c=>progressPct(c));
   const avg=avgs.length?Math.round(avgs.reduce((a,b)=>a+b,0)/avgs.length):null;
-  document.getElementById("stat-total").textContent=actifs.length;
+  document.getElementById("stat-total").textContent=projets.length+(avants.length>0?" +"+avants.length:"");
   document.getElementById("stat-done").textContent=done;
   document.getElementById("stat-avg").textContent=avg!==null?avg+"%":"—";
 
@@ -658,6 +660,7 @@ function openDetail(id){
         <div class="step-dot ${st.done?"done":"pending"}" id="dot-${s.id}">${st.done?"✓":i+1}</div>
         <span style="flex:1;font-size:13px;font-weight:500">${s.icon} ${s.name}</span>
         <input type="date" class="date-input" id="date-${s.id}" value="${st.date||""}" ${!st.done?"disabled":""}>
+        ${st.done&&st.date?`<button onclick="clearStepDate('${s.id}')" style="background:none;border:none;color:var(--gris);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0" title="Effacer la date">✕</button>`:""}
         <button class="toggle ${st.done?"on":"off"}" id="tog-${s.id}" onclick="toggleStep('${s.id}')"></button>
       </div>
       <input type="text" class="step-msg-input" id="msg-${s.id}" value="${st.msg||""}" placeholder="Message visible par le client (optionnel)…">
@@ -721,7 +724,7 @@ async function saveDetail(){
   c.projetNote=document.getElementById("edit-projet-note").value.trim();
   c.dateFin=document.getElementById("edit-datefin").value;
   c.photo=currentPhoto||"";
-  STEPS.forEach(s=>{
+  getSteps(c).forEach(s=>{
     const d=document.getElementById("date-"+s.id);
     const m=document.getElementById("msg-"+s.id);
     if(d)c.steps[s.id].date=d.value;
@@ -885,7 +888,7 @@ function renderClientView(c){
       <div class="tl-content ${isFuture?"active":state}">${activeInd}<div class="tl-name">${s.icon} ${s.name}</div>${badge}${msg}</div>
     </div>`;
   }).join("");
-  const statusMsg=pct===100?"🎉 Votre projet est <strong>terminé</strong> — merci de votre confiance !":activeIdx>=0?`Étape en cours : <strong>${STEPS[activeIdx].name}</strong>`:"Votre projet est bien pris en charge.";
+  const statusMsg=pct===100?"🎉 Votre projet est <strong>terminé</strong> — merci de votre confiance !":activeIdx>=0?`Étape en cours : <strong>${cStepsV[activeIdx].name}</strong>`:"Votre projet est bien pris en charge.";
   const dateFinHtml=c.dateFin?`<div style="margin-top:10px;font-size:13px;color:var(--or);font-weight:500">📅 Date de fin estimée : ${fmtDate(c.dateFin)}</div>`:"";
   const photoHtml=c.photo?`<img src="${c.photo}" class="chantier-photo" alt="Photo du chantier">`:"";
   let satisfactionHtml="";
@@ -926,6 +929,15 @@ function renderClientView(c){
   },100));
 }
 
+function clearStepDate(sid){
+  const c=clients.find(x=>x.id===currentDetailId);if(!c)return;
+  c.steps[sid].date="";
+  c.steps[sid].updatedAt=new Date().toISOString();
+  const d=document.getElementById("date-"+sid);
+  if(d)d.value="";
+  // Refresh the steps display
+  openDetail(currentDetailId);
+}
 function toggleFilters(){
   const fb=document.getElementById("filter-bar");
   const btn=document.getElementById("filter-toggle-btn");
