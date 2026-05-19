@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — CF Planning</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--or:#C9A96E;--or-pale:#FBF7F0;--or-light:#F5EDD8;--nuit:#141820;--nuit-soft:#2C3345;--ardoise:#4A5568;--gris:#8A95A3;--border:#E2D9C8;--bg:#F2EDE4;--white:#FFFFFF;--radius:14px;--shadow:0 2px 20px rgba(20,24,32,0.08);--success:#27AE60;--danger:#E74C3C}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min-height:100vh;padding-bottom:100px}
+  .header{background:var(--nuit);padding:24px 18px 20px;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--or)}
+  .header-brand{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--or);text-transform:uppercase;margin-bottom:4px}
+  .header-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em}
+  .header-title span{color:var(--or)}
+  .header-sub{margin-top:6px;font-size:12px;color:rgba(255,255,255,.4)}
+  .admin-badge{position:absolute;top:24px;right:18px;background:var(--or);color:var(--nuit);font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:20px;text-transform:uppercase}
+  .body{padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+  .section-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+  .section-header{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--or-pale);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+  .section-icon{width:30px;height:30px;border-radius:8px;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+  .section-title{font-size:13px;font-weight:700;color:var(--nuit-soft);letter-spacing:.02em;flex:1}
+  .section-chevron{font-size:11px;color:var(--gris);transition:transform .2s}
+  .section-chevron.open{transform:rotate(180deg)}
+  .poseur-toggle{display:flex;align-items:center;gap:6px;margin-right:8px;flex-shrink:0}
+  .poseur-toggle-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);transition:color .2s}
+  .poseur-toggle-label.on{color:var(--success)}
+  .switch{position:relative;width:34px;height:19px;flex-shrink:0}
+  .switch input{display:none}
+  .switch-track{position:absolute;inset:0;border-radius:20px;background:#D0C8BC;transition:background .2s;cursor:pointer}
+  .switch-track::after{content:'';position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .switch input:checked+.switch-track{background:var(--success)}
+  .switch input:checked+.switch-track::after{transform:translateX(15px)}
+  .section-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+  .section-body.collapsed{display:none}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+  .field input,.field textarea,.field select{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;outline:none;transition:border-color .15s,background .15s;width:100%;-webkit-appearance:none}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--or);background:var(--white)}
+  .field input::placeholder,.field textarea::placeholder{color:#C0B8A8}
+  .field textarea{resize:none;min-height:80px;line-height:1.5}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .toggle-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .toggle-btn{padding:10px;border-radius:9px;border:1.5px solid var(--border);background:var(--or-pale);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--ardoise);cursor:pointer;text-align:center;transition:all .15s}
+  .toggle-btn.active-oui{background:#EAF7EE;border-color:var(--success);color:var(--success)}
+  .toggle-btn.active-non{background:#FDECEA;border-color:var(--danger);color:var(--danger)}
+  .materiel-list{display:flex;flex-direction:column;gap:8px}
+  .materiel-item{display:flex;align-items:center;gap:8px}
+  .materiel-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;outline:none}
+  .materiel-item input:focus{border-color:var(--or);background:var(--white)}
+  .materiel-item input::placeholder{color:#C0B8A8}
+  .btn-del{width:32px;height:32px;border-radius:8px;border:none;background:#FDECEA;color:var(--danger);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .btn-add-mat{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gris);cursor:pointer;width:100%;justify-content:center;transition:border-color .15s,color .15s}
+  .btn-add-mat:hover{border-color:var(--or);color:var(--or)}
+  .attention-list{display:flex;flex-direction:column;gap:8px}
+  .attention-item{display:flex;align-items:flex-start;gap:8px}
+  .attention-prefix{width:28px;height:28px;border-radius:7px;background:#FFF3E0;border:1px solid #F5C47A;color:#D4860A;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:6px}
+  .attention-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:#FFFDF7;border:1.5px solid #F0E4C0;border-radius:9px;padding:9px 12px;outline:none}
+  .attention-item input:focus{border-color:var(--or)}
+  .attention-item input::placeholder{color:#C0B8A8}
+  .statut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .statut-btn{padding:10px 8px;border-radius:9px;border:1.5px solid var(--border);background:var(--or-pale);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--ardoise);cursor:pointer;text-align:center;transition:all .15s}
+  .statut-btn.active{border-color:var(--or);background:var(--or);color:var(--nuit)}
+  .btn-save-wrap{position:fixed;bottom:0;left:0;right:0;padding:12px 14px;background:rgba(242,237,228,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);z-index:100}
+  .btn-save{width:100%;padding:15px;border-radius:12px;border:none;background:var(--nuit);color:var(--or);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+  .btn-save:active{opacity:.85}
+  .btn-save.loading{opacity:.6;pointer-events:none}
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1}
+  .fiches-list{display:flex;flex-direction:column;gap:8px;padding:16px 14px 0}
+  .fiche-item{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+  .fiche-item:active{border-color:var(--or)}
+  .fiche-num{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--or)}
+  .fiche-client{font-size:12px;color:var(--gris)}
+  .fiche-date{font-size:11px;color:var(--gris);font-family:'DM Mono',monospace}
+  .section-title-page{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:0 14px;margin-top:4px}
+  .btn-new{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 14px 0;padding:13px;border-radius:12px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--ardoise);cursor:pointer;transition:all .15s}
+  .btn-new:active{border-color:var(--or);color:var(--or)}
+  .screen{display:none}.screen.active{display:block}
+  .back-btn{background:rgba(255,255,255,.1);border:none;color:var(--or);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;position:absolute;top:24px;right:18px}
+  /* Messages admin */
+  .msg-section{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin:0 14px}
+  .msg-list{padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
+  .msg{display:flex;flex-direction:column;gap:2px;max-width:85%}
+  .msg.poseur{align-self:flex-start}.msg.admin{align-self:flex-end;align-items:flex-end}
+  .msg-bubble{padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+  .msg.poseur .msg-bubble{background:var(--or-pale);color:var(--nuit-soft);border:1px solid var(--border);border-bottom-left-radius:4px}
+  .msg.admin .msg-bubble{background:var(--nuit);color:#fff;border-bottom-right-radius:4px}
+  .msg-who{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .msg-time{font-size:9px;color:var(--gris);font-family:'DM Mono',monospace}
+  .msg-compose{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);align-items:flex-end}
+  .msg-input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;outline:none;resize:none;max-height:80px;line-height:1.4}
+  .msg-input:focus{border-color:var(--or)}
+  .msg-input::placeholder{color:#C0B8A8}
+  .btn-msgsend{width:36px;height:36px;border-radius:50%;border:none;background:var(--nuit);color:var(--or);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ÉCRAN LISTE -->
+<div id="screen-list" class="screen active">
+  <div class="header">
+    <div class="admin-badge">Admin</div>
+    <div class="header-brand">Concept Fermeture</div>
+    <div class="header-title">Planning <span>CF</span></div>
+    <div class="header-sub">Gestion des fiches chantier</div>
+  </div>
+  <button class="btn-new" onclick="newFiche()">+ Nouvelle fiche chantier</button>
+  <div style="height:12px"></div>
+  <div class="section-title-page">Fiches enregistrées</div>
+  <div class="fiches-list" id="fiches-list"><div style="text-align:center;padding:20px;color:var(--gris);font-size:13px">Chargement...</div></div>
+</div>
+
+<!-- ÉCRAN FICHE -->
+<div id="screen-fiche" class="screen">
+  <div class="header" style="padding-right:80px">
+    <div class="header-brand">Concept Fermeture</div>
+    <div class="header-title">Fiche <span>Chantier</span></div>
+    <div class="header-sub">Création · Administration</div>
+    <button class="back-btn" onclick="showList()">← Fiches</button>
+  </div>
+
+  <div class="body">
+    <!-- PROJET GÉNÉRAL -->
+    <div class="section-card">
+      <div class="section-header" onclick="toggleSection(event,this)">
+        <div class="section-icon">📋</div>
+        <div class="section-title">Projet général</div>
+        <div class="poseur-toggle" onclick="event.stopPropagation()">
+          <span class="poseur-toggle-label on" id="lbl_general">Poseur ✓</span>
+          <label class="switch"><input type="checkbox" id="vis_general" checked onchange="updateToggleLabel('general')"><div class="switch-track"></div></label>
+        </div>
+        <div class="section-chevron open">▼</div>
+      </div>
+      <div class="section-body">
+        <div class="field"><div class="field-label">N° Chantier</div><input type="text" id="num_chantier" placeholder="2026187" maxlength="10"></div>
+        <div class="row-2">
+          <div class="field"><div class="field-label">Semaine</div><input type="number" id="semaine" placeholder="22" min="1" max="53"></div>
+          <div class="field"><div class="field-label">Date</div><input type="date" id="date_chantier"></div>
+        </div>
+        <div class="field"><div class="field-label">Client — Nom</div><input type="text" id="client_nom" placeholder="Fabien Jaquet"></div>
+        <div class="field"><div class="field-label">Adresse du chantier</div><input type="text" id="adresse" placeholder="Rue de la Chapelle 17, 6720 Habay-la-Neuve"></div>
+        <div class="field"><div class="field-label">Type de travail</div>
+          <select id="type_travail">
+            <option value="">— Sélectionner —</option>
+            <option>Pose fenêtres / portes</option><option>Pose porte de garage</option>
+            <option>Pose portail / clôture</option><option>Pose carport / pergola</option>
+            <option>Pose garde-corps</option><option>Mesurage</option>
+            <option>SAV / Dépannage</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="field"><div class="field-label">Statut</div>
+          <div class="statut-grid">
+            <button class="statut-btn active" onclick="setStatut(this,'Planifié')">📅 Planifié</button>
+            <button class="statut-btn" onclick="setStatut(this,'En cours')">🔨 En cours</button>
+            <button class="statut-btn" onclick="setStatut(this,'Terminé')">✅ Terminé</button>
+            <button class="statut-btn" onclick="setStatut(this,'Reporté')">⏳ Reporté</button>
+          </div>
+        </div>
+        <div class="field"><div class="field-label">Remarque</div><textarea id="rem_general" placeholder="Remarque complémentaire..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="section-card">
+      <div class="section-header" onclick="toggleSection(event,this)">
+        <div class="section-icon">📞</div>
+        <div class="section-title">Contact sur place</div>
+        <div class="poseur-toggle" onclick="event.stopPropagation()">
+          <span class="poseur-toggle-label on" id="lbl_contact">Poseur ✓</span>
+          <label class="switch"><input type="checkbox" id="vis_contact" checked onchange="updateToggleLabel('contact')"><div class="switch-track"></div></label>
+        </div>
+        <div class="section-chevron open">▼</div>
+      </div>
+      <div class="section-body">
+        <div class="field"><div class="field-label">Nom du contact</div><input type="text" id="contact_nom" placeholder="Fabien Jaquet"></div>
+        <div class="field"><div class="field-label">Téléphone</div><input type="tel" id="contact_tel" placeholder="+32 4XX XX XX XX"></div>
+        <div class="field"><div class="field-label">Client présent sur place ?</div>
+          <div class="toggle-group">
+            <button class="toggle-btn" id="btn_oui" onclick="setPresence('oui')">✅ Oui</button>
+            <button class="toggle-btn" id="btn_non" onclick="setPresence('non')">❌ Non</button>
+          </div>
+        </div>
+        <div class="field" id="field_absent" style="display:none"><div class="field-label">Instructions si absent</div><input type="text" id="absent_instructions" placeholder="Clés chez voisin n°15..."></div>
+        <div class="field"><div class="field-label">Créneau horaire</div>
+          <div class="row-2"><input type="time" id="heure_debut" value="07:00"><input type="time" id="heure_fin" value="12:00"></div>
+        </div>
+        <div class="field"><div class="field-label">Remarque</div><textarea id="rem_contact" placeholder="Remarque complémentaire..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- ACCÈS -->
+    <div class="section-card">
+      <div class="section-header" onclick="toggleSection(event,this)">
+        <div class="section-icon">🔑</div>
+        <div class="section-title">Accès</div>
+        <div class="poseur-toggle" onclick="event.stopPropagation()">
+          <span class="poseur-toggle-label on" id="lbl_acces">Poseur ✓</span>
+          <label class="switch"><input type="checkbox" id="vis_acces" checked onchange="updateToggleLabel('acces')"><div class="switch-track"></div></label>
+        </div>
+        <div class="section-chevron open">▼</div>
+      </div>
+      <div class="section-body">
+        <div class="field"><div class="field-label">Digicode / Code portail</div><input type="text" id="digicode" placeholder="1234#"></div>
+        <div class="field"><div class="field-label">Stationnement</div><input type="text" id="parking" placeholder="Devant le garage..."></div>
+        <div class="field"><div class="field-label">Notes d'accès</div><textarea id="acces_notes" placeholder="Chien dans le jardin..."></textarea></div>
+        <div class="field"><div class="field-label">Remarque</div><textarea id="rem_acces" placeholder="Remarque complémentaire..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- MATÉRIEL -->
+    <div class="section-card">
+      <div class="section-header" onclick="toggleSection(event,this)">
+        <div class="section-icon">📦</div>
+        <div class="section-title">Matériel nécessaire</div>
+        <div class="poseur-toggle" onclick="event.stopPropagation()">
+          <span class="poseur-toggle-label on" id="lbl_materiel">Poseur ✓</span>
+          <label class="switch"><input type="checkbox" id="vis_materiel" checked onchange="updateToggleLabel('materiel')"><div class="switch-track"></div></label>
+        </div>
+        <div class="section-chevron open">▼</div>
+      </div>
+      <div class="section-body">
+        <div class="materiel-list" id="materiel_list"></div>
+        <button class="btn-add-mat" onclick="addMateriel()">+ Ajouter un élément</button>
+        <div class="field"><div class="field-label">Remarque</div><textarea id="rem_materiel" placeholder="Remarque complémentaire..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- POINTS D'ATTENTION -->
+    <div class="section-card">
+      <div class="section-header" onclick="toggleSection(event,this)">
+        <div class="section-icon">⚠️</div>
+        <div class="section-title">Points d'attention</div>
+        <div class="poseur-toggle" onclick="event.stopPropagation()">
+          <span class="poseur-toggle-label on" id="lbl_attention">Poseur ✓</span>
+          <label class="switch"><input type="checkbox" id="vis_attention" checked onchange="updateToggleLabel('attention')"><div class="switch-track"></div></label>
+        </div>
+        <div class="section-chevron open">▼</div>
+      </div>
+      <div class="section-body">
+        <div class="attention-list" id="attention_list"></div>
+        <button class="btn-add-mat" onclick="addAttention()">+ Ajouter un point</button>
+        <div class="field"><div class="field-label">Note libre pour le poseur</div><textarea id="note_poseur" placeholder="Ce que tu as vu au mesurage..."></textarea></div>
+        <div class="field"><div class="field-label">Remarque</div><textarea id="rem_attention" placeholder="Remarque complémentaire..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div style="padding:0 0 8px;margin-top:4px">
+    <div class="section-title-page" style="padding:8px 14px">Messages avec le poseur</div>
+    <div class="msg-section">
+      <div class="msg-list" id="msg-list-admin"><div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div></div>
+      <div class="msg-compose">
+        <textarea class="msg-input" id="msg-input-admin" placeholder="Écrire au poseur..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsgAdmin()}"></textarea>
+        <button class="btn-msgsend" onclick="sendMsgAdmin()">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-save-wrap">
+    <button class="btn-save" id="btn-save" onclick="saveFiche()">💾 Enregistrer la fiche</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDocs, getDoc, onSnapshot, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
+  authDomain: "concept-fermeture.firebaseapp.com",
+  projectId: "concept-fermeture",
+  storageBucket: "concept-fermeture.firebasestorage.app",
+  messagingSenderId: "589266667315",
+  appId: "1:589266667315:web:40ac33df94b69afcbba046"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentStatut = 'Planifié';
+let presence = null;
+let currentDocId = null;
+let unsubMsgs = null;
+
+// ── Sections ──
+window.toggleSection = (event, header) => {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.section-chevron');
+  body.classList.toggle('collapsed');
+  chevron.classList.toggle('open');
+};
+
+window.updateToggleLabel = (key) => {
+  const cb = document.getElementById('vis_'+key);
+  const lbl = document.getElementById('lbl_'+key);
+  if(cb.checked){lbl.textContent='Poseur ✓';lbl.classList.add('on');lbl.style.color=''}
+  else{lbl.textContent='Masqué';lbl.classList.remove('on');lbl.style.color='#BBBBBB'}
+};
+
+window.setStatut = (btn, val) => {
+  document.querySelectorAll('.statut-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentStatut = val;
+};
+
+window.setPresence = (val) => {
+  presence = val;
+  document.getElementById('btn_oui').className='toggle-btn'+(val==='oui'?' active-oui':'');
+  document.getElementById('btn_non').className='toggle-btn'+(val==='non'?' active-non':'');
+  document.getElementById('field_absent').style.display=val==='non'?'flex':'none';
+};
+
+window.addMateriel = (val='') => {
+  const list=document.getElementById('materiel_list');
+  const idx=Date.now();
+  const item=document.createElement('div');
+  item.className='materiel-item';item.id='mat_'+idx;
+  item.innerHTML=`<input type="text" placeholder="Ex: Chevilles béton 10mm..." value="${val}"><button class="btn-del" onclick="document.getElementById('mat_${idx}').remove()">×</button>`;
+  list.appendChild(item);item.querySelector('input').focus();
+};
+
+window.addAttention = (val='') => {
+  const list=document.getElementById('attention_list');
+  const idx=Date.now();
+  const item=document.createElement('div');
+  item.className='attention-item';item.id='att_'+idx;
+  item.innerHTML=`<div class="attention-prefix">⚠️</div><input type="text" placeholder="Ex: Mur en béton armé..." value="${val}"><button class="btn-del" onclick="document.getElementById('att_${idx}').remove()" style="margin-top:6px">×</button>`;
+  list.appendChild(item);item.querySelector('input').focus();
+};
+
+function getMateriel(){return Array.from(document.querySelectorAll('#materiel_list input')).map(i=>i.value.trim()).filter(Boolean)}
+function getAttention(){return Array.from(document.querySelectorAll('#attention_list input')).map(i=>i.value.trim()).filter(Boolean)}
+
+// ── Save ──
+window.saveFiche = async () => {
+  const btn = document.getElementById('btn-save');
+  btn.classList.add('loading'); btn.textContent = '⏳ Enregistrement...';
+  const num = document.getElementById('num_chantier').value.trim() || 'SANS-NUM';
+  const fiche = {
+    num_chantier: num,
+    semaine: document.getElementById('semaine').value,
+    date: document.getElementById('date_chantier').value,
+    client_nom: document.getElementById('client_nom').value,
+    adresse: document.getElementById('adresse').value,
+    type_travail: document.getElementById('type_travail').value,
+    statut: currentStatut,
+    contact_nom: document.getElementById('contact_nom').value,
+    contact_tel: document.getElementById('contact_tel').value,
+    presence: presence,
+    absent_instr: document.getElementById('absent_instructions').value,
+    heure_debut: document.getElementById('heure_debut').value,
+    heure_fin: document.getElementById('heure_fin').value,
+    digicode: document.getElementById('digicode').value,
+    parking: document.getElementById('parking').value,
+    acces_notes: document.getElementById('acces_notes').value,
+    materiel: getMateriel(),
+    attention: getAttention(),
+    note_poseur: document.getElementById('note_poseur').value,
+    rem_general: document.getElementById('rem_general').value,
+    rem_contact: document.getElementById('rem_contact').value,
+    rem_acces: document.getElementById('rem_acces').value,
+    rem_materiel: document.getElementById('rem_materiel').value,
+    rem_attention: document.getElementById('rem_attention').value,
+    visibility: {
+      general: document.getElementById('vis_general').checked,
+      contact: document.getElementById('vis_contact').checked,
+      acces: document.getElementById('vis_acces').checked,
+      materiel: document.getElementById('vis_materiel').checked,
+      attention: document.getElementById('vis_attention').checked,
+    },
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    const docId = currentDocId || num;
+    await setDoc(doc(db,'planning_fiches',docId), fiche);
+    currentDocId = docId;
+    showToast('✅ Fiche '+num+' enregistrée');
+    loadMsgs(docId);
+  } catch(e){ showToast('❌ Erreur: '+e.message) }
+  btn.classList.remove('loading'); btn.textContent = '💾 Enregistrer la fiche';
+};
+
+// ── Liste ──
+async function loadList(){
+  const list = document.getElementById('fiches-list');
+  const snap = await getDocs(collection(db,'planning_fiches'));
+  if(snap.empty){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic">Aucune fiche</div>';return}
+  list.innerHTML='';
+  snap.forEach(d=>{
+    const f=d.data();
+    const item=document.createElement('div');
+    item.className='fiche-item';
+    const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
+    item.innerHTML=`<div><div class="fiche-num">${f.num_chantier||'—'}</div><div class="fiche-client">${f.client_nom||'—'}</div></div><div class="fiche-date">${dateStr}</div>`;
+    item.onclick=()=>loadFiche(d.id,f);
+    list.appendChild(item);
+  });
+}
+
+async function loadFiche(docId, f){
+  currentDocId = docId;
+  document.getElementById('screen-list').classList.remove('active');
+  document.getElementById('screen-fiche').classList.add('active');
+  // Remplir
+  document.getElementById('num_chantier').value = f.num_chantier||'';
+  document.getElementById('semaine').value = f.semaine||'';
+  document.getElementById('date_chantier').value = f.date||'';
+  document.getElementById('client_nom').value = f.client_nom||'';
+  document.getElementById('adresse').value = f.adresse||'';
+  document.getElementById('type_travail').value = f.type_travail||'';
+  document.getElementById('contact_nom').value = f.contact_nom||'';
+  document.getElementById('contact_tel').value = f.contact_tel||'';
+  document.getElementById('absent_instructions').value = f.absent_instr||'';
+  document.getElementById('heure_debut').value = f.heure_debut||'07:00';
+  document.getElementById('heure_fin').value = f.heure_fin||'12:00';
+  document.getElementById('digicode').value = f.digicode||'';
+  document.getElementById('parking').value = f.parking||'';
+  document.getElementById('acces_notes').value = f.acces_notes||'';
+  document.getElementById('note_poseur').value = f.note_poseur||'';
+  document.getElementById('rem_general').value = f.rem_general||'';
+  document.getElementById('rem_contact').value = f.rem_contact||'';
+  document.getElementById('rem_acces').value = f.rem_acces||'';
+  document.getElementById('rem_materiel').value = f.rem_materiel||'';
+  document.getElementById('rem_attention').value = f.rem_attention||'';
+  // Statut
+  currentStatut = f.statut||'Planifié';
+  document.querySelectorAll('.statut-btn').forEach(b=>{b.classList.remove('active');if(b.textContent.includes(currentStatut))b.classList.add('active')});
+  // Présence
+  if(f.presence) setPresence(f.presence);
+  // Visibility toggles
+  const vis = f.visibility||{};
+  ['general','contact','acces','materiel','attention'].forEach(k=>{
+    const cb=document.getElementById('vis_'+k);
+    cb.checked = vis[k]!==false;
+    updateToggleLabel(k);
+  });
+  // Matériel
+  document.getElementById('materiel_list').innerHTML='';
+  (f.materiel||[]).forEach(m=>addMateriel(m));
+  // Attention
+  document.getElementById('attention_list').innerHTML='';
+  (f.attention||[]).forEach(a=>addAttention(a));
+  // Messages
+  loadMsgs(docId);
+}
+
+window.newFiche = () => {
+  currentDocId = null; presence = null; currentStatut = 'Planifié';
+  document.querySelectorAll('input[type=text],input[type=tel],textarea').forEach(el=>el.value='');
+  document.getElementById('date_chantier').value = new Date().toISOString().split('T')[0];
+  document.getElementById('semaine').value = 22;
+  document.getElementById('heure_debut').value = '07:00';
+  document.getElementById('heure_fin').value = '12:00';
+  document.getElementById('materiel_list').innerHTML='';
+  document.getElementById('attention_list').innerHTML='';
+  document.getElementById('msg-list-admin').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
+  document.querySelectorAll('.statut-btn').forEach((b,i)=>{b.classList.remove('active');if(i===0)b.classList.add('active')});
+  ['btn_oui','btn_non'].forEach(id=>document.getElementById(id).className='toggle-btn');
+  document.getElementById('field_absent').style.display='none';
+  ['general','contact','acces','materiel','attention'].forEach(k=>{document.getElementById('vis_'+k).checked=true;updateToggleLabel(k)});
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null}
+  document.getElementById('screen-list').classList.remove('active');
+  document.getElementById('screen-fiche').classList.add('active');
+};
+
+window.showList = () => {
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null}
+  document.getElementById('screen-fiche').classList.remove('active');
+  document.getElementById('screen-list').classList.add('active');
+  loadList();
+};
+
+// ── Messages ──
+function loadMsgs(docId){
+  if(unsubMsgs) unsubMsgs();
+  const msgList = document.getElementById('msg-list-admin');
+  const q = query(collection(db,'planning_fiches',docId,'messages'),orderBy('ts'));
+  unsubMsgs = onSnapshot(q, snap=>{
+    msgList.innerHTML='';
+    if(snap.empty){msgList.innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';return}
+    snap.forEach(d=>{
+      const m=d.data();
+      const div=document.createElement('div');
+      div.className='msg '+(m.role==='admin'?'admin':'poseur');
+      div.innerHTML=`<div class="msg-who">${m.role==='admin'?'Anthony CF':'Poseur'}</div><div class="msg-bubble">${m.text}</div><div class="msg-time">${m.time||''}</div>`;
+      msgList.appendChild(div);
+    });
+    msgList.lastElementChild?.scrollIntoView({behavior:'smooth'});
+  });
+}
+
+window.sendMsgAdmin = async () => {
+  if(!currentDocId){showToast('⚠️ Enregistre la fiche d\'abord');return}
+  const input=document.getElementById('msg-input-admin');
+  const text=input.value.trim();if(!text)return;
+  await addDoc(collection(db,'planning_fiches',currentDocId,'messages'),{
+    role:'admin',text,
+    time:new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'}),
+    ts:Date.now()
+  });
+  input.value='';
+};
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// Init
+loadList();
+</script>
+</body>
+</html>
