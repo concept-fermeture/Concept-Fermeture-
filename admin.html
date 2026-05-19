@@ -6,210 +6,163 @@
 <title>Admin — CF Planning</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--or:#C9A96E;--or-pale:#FBF7F0;--or-light:#F5EDD8;--nuit:#141820;--nuit-soft:#2C3345;--ardoise:#4A5568;--gris:#8A95A3;--border:#E2D9C8;--bg:#F2EDE4;--white:#FFFFFF;--radius:14px;--shadow:0 2px 20px rgba(20,24,32,0.08);--success:#27AE60;--danger:#E74C3C}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min-height:100vh;padding-bottom:100px}
-  .header{background:var(--nuit);padding:24px 18px 20px;position:relative;overflow:hidden}
-  .header::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--or)}
-  .header-brand{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--or);text-transform:uppercase;margin-bottom:4px}
-  .header-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em}
-  .header-title span{color:var(--or)}
-  .header-sub{margin-top:6px;font-size:12px;color:rgba(255,255,255,.4)}
-  .admin-badge{position:absolute;top:24px;right:18px;background:var(--or);color:var(--nuit);font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:20px;text-transform:uppercase}
-  .body{padding:16px 14px;display:flex;flex-direction:column;gap:12px}
-  .section-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
-  .section-header{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--or-pale);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
-  .section-icon{width:30px;height:30px;border-radius:8px;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-  .section-title{font-size:13px;font-weight:700;color:var(--nuit-soft);letter-spacing:.02em;flex:1}
-  .section-chevron{font-size:11px;color:var(--gris);transition:transform .2s}
-  .section-chevron.open{transform:rotate(180deg)}
-  .poseur-toggle{display:flex;align-items:center;gap:6px;margin-right:8px;flex-shrink:0}
-  .poseur-toggle-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);transition:color .2s}
-  .poseur-toggle-label.on{color:var(--success)}
-  .switch{position:relative;width:34px;height:19px;flex-shrink:0}
-  .switch input{display:none}
-  .switch-track{position:absolute;inset:0;border-radius:20px;background:#D0C8BC;transition:background .2s;cursor:pointer}
-  .switch-track::after{content:'';position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  .switch input:checked+.switch-track{background:var(--success)}
-  .switch input:checked+.switch-track::after{transform:translateX(15px)}
-  .section-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
-  .section-body.collapsed{display:none}
-  .field{display:flex;flex-direction:column;gap:5px}
-  .field-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
-  .field input,.field textarea,.field select{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;outline:none;transition:border-color .15s,background .15s;width:100%;-webkit-appearance:none}
-  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--or);background:var(--white)}
-  .field input::placeholder,.field textarea::placeholder{color:#C0B8A8}
-  .field textarea{resize:none;min-height:80px;line-height:1.5}
-  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .toggle-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .toggle-btn{padding:10px;border-radius:9px;border:1.5px solid var(--border);background:var(--or-pale);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--ardoise);cursor:pointer;text-align:center;transition:all .15s}
-  .toggle-btn.active-oui{background:#EAF7EE;border-color:var(--success);color:var(--success)}
-  .toggle-btn.active-non{background:#FDECEA;border-color:var(--danger);color:var(--danger)}
-  .materiel-list{display:flex;flex-direction:column;gap:8px}
-  .materiel-item{display:flex;align-items:center;gap:8px}
-  .materiel-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;outline:none}
-  .materiel-item input:focus{border-color:var(--or);background:var(--white)}
-  .materiel-item input::placeholder{color:#C0B8A8}
-  .btn-del{width:32px;height:32px;border-radius:8px;border:none;background:#FDECEA;color:var(--danger);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-  .btn-add-mat{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gris);cursor:pointer;width:100%;justify-content:center;transition:border-color .15s,color .15s}
-  .btn-add-mat:hover{border-color:var(--or);color:var(--or)}
-  .attention-list{display:flex;flex-direction:column;gap:8px}
-  .attention-item{display:flex;align-items:flex-start;gap:8px}
-  .attention-prefix{width:28px;height:28px;border-radius:7px;background:#FFF3E0;border:1px solid #F5C47A;color:#D4860A;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:6px}
-  .attention-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:#FFFDF7;border:1.5px solid #F0E4C0;border-radius:9px;padding:9px 12px;outline:none}
-  .attention-item input:focus{border-color:var(--or)}
-  .attention-item input::placeholder{color:#C0B8A8}
-  .statut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-  .statut-btn{padding:10px 8px;border-radius:9px;border:1.5px solid var(--border);background:var(--or-pale);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--ardoise);cursor:pointer;text-align:center;transition:all .15s}
-  .statut-btn.active{border-color:var(--or);background:var(--or);color:var(--nuit)}
-  .btn-save-wrap{position:fixed;bottom:0;left:0;right:0;padding:12px 14px;background:rgba(242,237,228,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);z-index:100}
-  .btn-save{width:100%;padding:15px;border-radius:12px;border:none;background:var(--nuit);color:var(--or);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
-  .btn-save:active{opacity:.85}
-  .btn-save.loading{opacity:.6;pointer-events:none}
-  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-  .toast.show{opacity:1}
-  .fiches-list{display:flex;flex-direction:column;gap:8px;padding:16px 14px 0}
-  .fiche-item{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-  .fiche-item:active{border-color:var(--or)}
-  .fiche-num{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--or)}
-  .fiche-client{font-size:12px;color:var(--gris)}
-  .fiche-date{font-size:11px;color:var(--gris);font-family:'DM Mono',monospace}
-  .section-title-page{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:0 14px;margin-top:4px}
-  .btn-new{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 14px 0;padding:13px;border-radius:12px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--ardoise);cursor:pointer;transition:all .15s}
-  .btn-new:active{border-color:var(--or);color:var(--or)}
-  .screen{display:none}.screen.active{display:block}
-  .back-btn{background:rgba(255,255,255,.1);border:none;color:var(--or);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;position:absolute;top:24px;right:18px}
-  /* Messages admin */
-  .msg-section{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin:0 14px}
-  .msg-list{padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
-  .msg{display:flex;flex-direction:column;gap:2px;max-width:85%}
-  .msg.poseur{align-self:flex-start}.msg.admin{align-self:flex-end;align-items:flex-end}
-  .msg-bubble{padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4}
-  .msg.poseur .msg-bubble{background:var(--or-pale);color:var(--nuit-soft);border:1px solid var(--border);border-bottom-left-radius:4px}
-  .msg.admin .msg-bubble{background:var(--nuit);color:#fff;border-bottom-right-radius:4px}
-  .msg-who{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
-  .msg-time{font-size:9px;color:var(--gris);font-family:'DM Mono',monospace}
-  .msg-compose{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);align-items:flex-end}
-  .msg-input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;outline:none;resize:none;max-height:80px;line-height:1.4}
-  .msg-input:focus{border-color:var(--or)}
-  .msg-input::placeholder{color:#C0B8A8}
-  .btn-msgsend{width:36px;height:36px;border-radius:50%;border:none;background:var(--nuit);color:var(--or);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-</style>
-</head>
-<body>
-
-<div id="pin-screen" style="position:fixed;inset:0;background:#141820;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:24px;padding:30px">
-  <div style="font-size:11px;font-weight:700;letter-spacing:.14em;color:#C9A96E;text-transform:uppercase">Concept Fermeture</div>
-  <div style="font-size:24px;font-weight:700;color:#fff;letter-spacing:-.02em">Accès <span style="color:#C9A96E">Admin</span></div>
-  <div id="pin-dots" style="display:flex;gap:12px;margin:8px 0">
-    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
-  </div>
-  <div id="pin-error" style="font-size:12px;color:#E74C3C;height:16px;text-align:center"></div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px">
-    <button class="pin-btn" onclick="pinPress('1')">1</button>
-    <button class="pin-btn" onclick="pinPress('2')">2</button>
-    <button class="pin-btn" onclick="pinPress('3')">3</button>
-    <button class="pin-btn" onclick="pinPress('4')">4</button>
-    <button class="pin-btn" onclick="pinPress('5')">5</button>
-    <button class="pin-btn" onclick="pinPress('6')">6</button>
-    <button class="pin-btn" onclick="pinPress('7')">7</button>
-    <button class="pin-btn" onclick="pinPress('8')">8</button>
-    <button class="pin-btn" onclick="pinPress('9')">9</button>
-    <button class="pin-btn" onclick="pinClear()" style="background:rgba(255,255,255,.08);font-size:18px">⌫</button>
-    <button class="pin-btn" onclick="pinPress('0')">0</button>
-    <button class="pin-btn" onclick="pinClear()" style="background:rgba(255,255,255,.08);font-size:13px">Effacer</button>
-  </div>
-  <div style="font-size:11px;color:rgba(255,255,255,.25);font-style:italic;margin-top:8px">Plus qu'un projet, une relation de confiance</div>
-</div>
-<style>
+:root{--or:#C9A96E;--or-pale:#FBF7F0;--or-light:#F5EDD8;--nuit:#141820;--nuit-soft:#2C3345;--ardoise:#4A5568;--gris:#8A95A3;--border:#E2D9C8;--bg:#F2EDE4;--white:#FFFFFF;--radius:14px;--shadow:0 2px 20px rgba(20,24,32,0.08);--success:#27AE60;--danger:#E74C3C}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min-height:100vh;padding-bottom:100px}
+.screen{display:none}.screen.active{display:block}
+.header{background:var(--nuit);padding:24px 18px 20px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--or)}
+.header-brand{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--or);text-transform:uppercase;margin-bottom:4px}
+.header-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.header-title span{color:var(--or)}
+.header-sub{margin-top:6px;font-size:12px;color:rgba(255,255,255,.4)}
+.badge{position:absolute;top:24px;right:18px;background:var(--or);color:var(--nuit);font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:20px;text-transform:uppercase}
+.back-btn{position:absolute;top:24px;right:18px;background:rgba(255,255,255,.1);border:none;color:var(--or);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.body{padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+.btn-new{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 14px 0;padding:13px;border-radius:12px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--ardoise);cursor:pointer;width:calc(100% - 28px)}
+.btn-new:active{border-color:var(--or);color:var(--or)}
+.section-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:12px 14px 4px}
+.section-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.section-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--or-pale);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.section-icon{width:30px;height:30px;border-radius:8px;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.section-title{font-size:13px;font-weight:700;color:var(--nuit-soft);flex:1}
+.chevron{font-size:11px;color:var(--gris);transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+.tog-wrap{display:flex;align-items:center;gap:6px;margin-right:8px;flex-shrink:0}
+.tog-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.tog-lbl.on{color:var(--success)}
+.sw{position:relative;width:34px;height:19px;flex-shrink:0}
+.sw input{display:none}
+.sw-track{position:absolute;inset:0;border-radius:20px;background:#D0C8BC;transition:background .2s;cursor:pointer}
+.sw-track::after{content:'';position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw input:checked+.sw-track{background:var(--success)}
+.sw input:checked+.sw-track::after{transform:translateX(15px)}
+.section-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.section-body.collapsed{display:none}
+.field{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.field input,.field textarea,.field select{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;outline:none;width:100%;-webkit-appearance:none;transition:border-color .15s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--or);background:var(--white)}
+.field input::placeholder,.field textarea::placeholder{color:#C0B8A8}
+.field textarea{resize:none;min-height:80px;line-height:1.5}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tog-btn{padding:10px;border-radius:9px;border:1.5px solid var(--border);background:var(--or-pale);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--ardoise);cursor:pointer;text-align:center;transition:all .15s}
+.tog-btn.oui{background:#EAF7EE;border-color:var(--success);color:var(--success)}
+.tog-btn.non{background:#FDECEA;border-color:var(--danger);color:var(--danger)}
+.mat-list{display:flex;flex-direction:column;gap:8px}
+.mat-item{display:flex;align-items:center;gap:8px}
+.mat-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;outline:none}
+.mat-item input:focus{border-color:var(--or);background:var(--white)}
+.mat-item input::placeholder{color:#C0B8A8}
+.btn-del{width:32px;height:32px;border-radius:8px;border:none;background:#FDECEA;color:var(--danger);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.btn-add{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gris);cursor:pointer;width:100%;justify-content:center}
+.btn-add:hover{border-color:var(--or);color:var(--or)}
+.att-item{display:flex;align-items:flex-start;gap:8px}
+.att-prefix{width:28px;height:28px;border-radius:7px;background:#FFF3E0;border:1px solid #F5C47A;color:#D4860A;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:6px}
+.att-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:#FFFDF7;border:1.5px solid #F0E4C0;border-radius:9px;padding:9px 12px;outline:none}
+.att-item input:focus{border-color:var(--or)}
+.att-item input::placeholder{color:#C0B8A8}
+.statut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.statut-btn{padding:10px 8px;border-radius:9px;border:1.5px solid var(--border);background:var(--or-pale);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--ardoise);cursor:pointer;text-align:center;transition:all .15s}
+.statut-btn.active{border-color:var(--or);background:var(--or);color:var(--nuit)}
+.msg-list{padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
+.msg{display:flex;flex-direction:column;gap:2px;max-width:85%}
+.msg.p{align-self:flex-start}.msg.a{align-self:flex-end;align-items:flex-end}
+.msg-bubble{padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+.msg.p .msg-bubble{background:var(--or-pale);color:var(--nuit-soft);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.a .msg-bubble{background:var(--nuit);color:#fff;border-bottom-right-radius:4px}
+.msg-who{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.msg-time{font-size:9px;color:var(--gris);font-family:'DM Mono',monospace}
+.msg-compose{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);align-items:flex-end}
+.msg-input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;outline:none;resize:none;max-height:80px;line-height:1.4}
+.msg-input:focus{border-color:var(--or)}
+.msg-input::placeholder{color:#C0B8A8}
+.btn-msgsend{width:36px;height:36px;border-radius:50%;border:none;background:var(--nuit);color:var(--or);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.photos-grid-a{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}
+.btn-save-wrap{position:fixed;bottom:0;left:0;right:0;padding:12px 14px;background:rgba(242,237,228,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);z-index:100}
+.btn-save{width:100%;padding:15px;border-radius:12px;border:none;background:var(--nuit);color:var(--or);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-save:active{opacity:.85}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+/* PIN */
+#pin-screen{position:fixed;inset:0;background:#141820;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;gap:24px;padding:30px}
 .pin-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s}
 .pin-dot.filled{background:#C9A96E}
 .pin-btn{padding:18px;border-radius:12px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;cursor:pointer;transition:background .15s}
 .pin-btn:active{background:rgba(201,169,110,.3)}
 </style>
-<script>
-let pinVal='';
-const CORRECT='9631';
-function pinPress(d){
-  if(pinVal.length>=4)return;
-  pinVal+=d;
-  updateDots();
-  if(pinVal.length===4){
-    if(pinVal===CORRECT){
-      document.getElementById('pin-screen').style.display='none';
-      sessionStorage.setItem('cf_auth','1');
-    } else {
-      document.getElementById('pin-error').textContent='Code incorrect';
-      setTimeout(()=>{pinVal='';updateDots();document.getElementById('pin-error').textContent=''},1200);
-    }
-  }
-}
-function pinClear(){pinVal=pinVal.slice(0,-1);updateDots()}
-function updateDots(){
-  document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<pinVal.length));
-}
-if(sessionStorage.getItem('cf_auth')==='1')document.getElementById('pin-screen').style.display='none';
-</script>
+</head>
+<body>
 
+<!-- PIN -->
+<div id="pin-screen">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.14em;color:#C9A96E;text-transform:uppercase">Concept Fermeture</div>
+  <div style="font-size:24px;font-weight:700;color:#fff">Accès <span style="color:#C9A96E">Admin</span></div>
+  <div id="pin-dots" style="display:flex;gap:12px;margin:8px 0">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div id="pin-error" style="font-size:12px;color:#E74C3C;height:16px;text-align:center"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px">
+    <button class="pin-btn" onclick="pinPress('1')">1</button><button class="pin-btn" onclick="pinPress('2')">2</button><button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button><button class="pin-btn" onclick="pinPress('5')">5</button><button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button><button class="pin-btn" onclick="pinPress('8')">8</button><button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn" onclick="pinClear()" style="background:rgba(255,255,255,.08);font-size:18px">⌫</button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn" onclick="pinVal='';updateDots()" style="background:rgba(255,255,255,.08);font-size:11px">Effacer</button>
+  </div>
+  <div style="font-size:11px;color:rgba(255,255,255,.25);font-style:italic">Plus qu'un projet, une relation de confiance</div>
+</div>
 
-<!-- ÉCRAN LISTE -->
+<!-- LISTE -->
 <div id="screen-list" class="screen active">
   <div class="header">
-    <div class="admin-badge">Admin</div>
+    <div class="badge">Admin</div>
     <div class="header-brand">Concept Fermeture</div>
     <div class="header-title">Planning <span>CF</span></div>
     <div class="header-sub">Gestion des fiches chantier</div>
   </div>
-  <button class="btn-new" onclick="newFiche()">+ Nouvelle fiche chantier</button>
-  <div style="height:12px"></div>
-  <div class="section-title-page">Fiches enregistrées</div>
-  <div class="fiches-list" id="fiches-list"><div style="text-align:center;padding:20px;color:var(--gris);font-size:13px">Chargement...</div></div>
+  <button class="btn-new" id="btn-new-fiche">+ Nouvelle fiche chantier</button>
+  <div class="section-lbl">Fiches enregistrées</div>
+  <div id="fiches-list" style="padding:0 14px;display:flex;flex-direction:column;gap:8px">
+    <div style="text-align:center;padding:20px;color:var(--gris);font-size:13px">Chargement...</div>
+  </div>
 </div>
 
-<!-- ÉCRAN FICHE -->
+<!-- FICHE -->
 <div id="screen-fiche" class="screen">
   <div class="header" style="padding-right:80px">
     <div class="header-brand">Concept Fermeture</div>
     <div class="header-title">Fiche <span>Chantier</span></div>
-    <div class="header-sub">Création · Administration</div>
-    <button class="back-btn" onclick="showList()">← Fiches</button>
+    <div class="header-sub">Administration</div>
+    <button class="back-btn" id="btn-back">← Fiches</button>
   </div>
-
   <div class="body">
-    <!-- PROJET GÉNÉRAL -->
+
+    <!-- PROJET -->
     <div class="section-card">
-      <div class="section-header" onclick="toggleSection(event,this)">
-        <div class="section-icon">📋</div>
-        <div class="section-title">Projet général</div>
-        <div class="poseur-toggle" onclick="event.stopPropagation()">
-          <span class="poseur-toggle-label on" id="lbl_general">Poseur ✓</span>
-          <label class="switch"><input type="checkbox" id="vis_general" checked onchange="updateToggleLabel('general')"><div class="switch-track"></div></label>
-        </div>
-        <div class="section-chevron open">▼</div>
+      <div class="section-hdr" id="hdr-general">
+        <div class="section-icon">📋</div><div class="section-title">Projet général</div>
+        <div class="tog-wrap"><span class="tog-lbl on" id="lbl_general">Poseur ✓</span><label class="sw"><input type="checkbox" id="vis_general" checked><div class="sw-track"></div></label></div>
+        <div class="chevron open">▼</div>
       </div>
-      <div class="section-body">
-        <div class="field"><div class="field-label">N° Chantier</div><input type="text" id="num_chantier" placeholder="2026187" maxlength="10"></div>
+      <div class="section-body" id="body-general">
+        <div class="field"><div class="field-label">N° Chantier</div><input type="text" id="num_chantier" placeholder="2026187"></div>
         <div class="row-2">
-          <div class="field"><div class="field-label">Semaine</div><input type="number" id="semaine" placeholder="22" min="1" max="53"></div>
+          <div class="field"><div class="field-label">Semaine</div><input type="number" id="semaine" placeholder="22"></div>
           <div class="field"><div class="field-label">Date</div><input type="date" id="date_chantier"></div>
         </div>
         <div class="field"><div class="field-label">Client — Nom</div><input type="text" id="client_nom" placeholder="Fabien Jaquet"></div>
-        <div class="field"><div class="field-label">Adresse du chantier</div><input type="text" id="adresse" placeholder="Rue de la Chapelle 17, 6720 Habay-la-Neuve"></div>
+        <div class="field"><div class="field-label">Adresse</div><input type="text" id="adresse" placeholder="Rue de la Chapelle 17, 6720 Habay"></div>
         <div class="field"><div class="field-label">Type de travail</div>
-          <select id="type_travail">
-            <option value="">— Sélectionner —</option>
-            <option>Pose fenêtres / portes</option><option>Pose porte de garage</option>
-            <option>Pose portail / clôture</option><option>Pose carport / pergola</option>
-            <option>Pose garde-corps</option><option>Mesurage</option>
-            <option>SAV / Dépannage</option><option>Autre</option>
-          </select>
+          <select id="type_travail"><option value="">— Sélectionner —</option><option>Pose fenêtres / portes</option><option>Pose porte de garage</option><option>Pose portail / clôture</option><option>Pose carport / pergola</option><option>Pose garde-corps</option><option>Mesurage</option><option>SAV / Dépannage</option><option>Autre</option></select>
         </div>
         <div class="field"><div class="field-label">Statut</div>
           <div class="statut-grid">
-            <button class="statut-btn active" onclick="setStatut(this,'Planifié')">📅 Planifié</button>
-            <button class="statut-btn" onclick="setStatut(this,'En cours')">🔨 En cours</button>
-            <button class="statut-btn" onclick="setStatut(this,'Terminé')">✅ Terminé</button>
-            <button class="statut-btn" onclick="setStatut(this,'Reporté')">⏳ Reporté</button>
+            <button class="statut-btn active" data-statut="Planifié">📅 Planifié</button>
+            <button class="statut-btn" data-statut="En cours">🔨 En cours</button>
+            <button class="statut-btn" data-statut="Terminé">✅ Terminé</button>
+            <button class="statut-btn" data-statut="Reporté">⏳ Reporté</button>
           </div>
         </div>
         <div class="field"><div class="field-label">Remarque</div><textarea id="rem_general" placeholder="Remarque complémentaire..."></textarea></div>
@@ -218,25 +171,18 @@ if(sessionStorage.getItem('cf_auth')==='1')document.getElementById('pin-screen')
 
     <!-- CONTACT -->
     <div class="section-card">
-      <div class="section-header" onclick="toggleSection(event,this)">
-        <div class="section-icon">📞</div>
-        <div class="section-title">Contact sur place</div>
-        <div class="poseur-toggle" onclick="event.stopPropagation()">
-          <span class="poseur-toggle-label on" id="lbl_contact">Poseur ✓</span>
-          <label class="switch"><input type="checkbox" id="vis_contact" checked onchange="updateToggleLabel('contact')"><div class="switch-track"></div></label>
-        </div>
-        <div class="section-chevron open">▼</div>
+      <div class="section-hdr" id="hdr-contact">
+        <div class="section-icon">📞</div><div class="section-title">Contact sur place</div>
+        <div class="tog-wrap"><span class="tog-lbl on" id="lbl_contact">Poseur ✓</span><label class="sw"><input type="checkbox" id="vis_contact" checked><div class="sw-track"></div></label></div>
+        <div class="chevron open">▼</div>
       </div>
-      <div class="section-body">
+      <div class="section-body" id="body-contact">
         <div class="field"><div class="field-label">Nom du contact</div><input type="text" id="contact_nom" placeholder="Fabien Jaquet"></div>
         <div class="field"><div class="field-label">Téléphone</div><input type="tel" id="contact_tel" placeholder="+32 4XX XX XX XX"></div>
-        <div class="field"><div class="field-label">Client présent sur place ?</div>
-          <div class="toggle-group">
-            <button class="toggle-btn" id="btn_oui" onclick="setPresence('oui')">✅ Oui</button>
-            <button class="toggle-btn" id="btn_non" onclick="setPresence('non')">❌ Non</button>
-          </div>
+        <div class="field"><div class="field-label">Client présent ?</div>
+          <div class="tog-group"><button class="tog-btn" id="btn_oui">✅ Oui</button><button class="tog-btn" id="btn_non">❌ Non</button></div>
         </div>
-        <div class="field" id="field_absent" style="display:none"><div class="field-label">Instructions si absent</div><input type="text" id="absent_instructions" placeholder="Clés chez voisin n°15..."></div>
+        <div class="field" id="field_absent" style="display:none"><div class="field-label">Instructions si absent</div><input type="text" id="absent_instr" placeholder="Clés chez voisin n°15..."></div>
         <div class="field"><div class="field-label">Créneau horaire</div>
           <div class="row-2"><input type="time" id="heure_debut" value="07:00"><input type="time" id="heure_fin" value="12:00"></div>
         </div>
@@ -246,16 +192,12 @@ if(sessionStorage.getItem('cf_auth')==='1')document.getElementById('pin-screen')
 
     <!-- ACCÈS -->
     <div class="section-card">
-      <div class="section-header" onclick="toggleSection(event,this)">
-        <div class="section-icon">🔑</div>
-        <div class="section-title">Accès</div>
-        <div class="poseur-toggle" onclick="event.stopPropagation()">
-          <span class="poseur-toggle-label on" id="lbl_acces">Poseur ✓</span>
-          <label class="switch"><input type="checkbox" id="vis_acces" checked onchange="updateToggleLabel('acces')"><div class="switch-track"></div></label>
-        </div>
-        <div class="section-chevron open">▼</div>
+      <div class="section-hdr" id="hdr-acces">
+        <div class="section-icon">🔑</div><div class="section-title">Accès</div>
+        <div class="tog-wrap"><span class="tog-lbl on" id="lbl_acces">Poseur ✓</span><label class="sw"><input type="checkbox" id="vis_acces" checked><div class="sw-track"></div></label></div>
+        <div class="chevron open">▼</div>
       </div>
-      <div class="section-body">
+      <div class="section-body" id="body-acces">
         <div class="field"><div class="field-label">Digicode / Code portail</div><input type="text" id="digicode" placeholder="1234#"></div>
         <div class="field"><div class="field-label">Stationnement</div><input type="text" id="parking" placeholder="Devant le garage..."></div>
         <div class="field"><div class="field-label">Notes d'accès</div><textarea id="acces_notes" placeholder="Chien dans le jardin..."></textarea></div>
@@ -265,336 +207,372 @@ if(sessionStorage.getItem('cf_auth')==='1')document.getElementById('pin-screen')
 
     <!-- MATÉRIEL -->
     <div class="section-card">
-      <div class="section-header" onclick="toggleSection(event,this)">
-        <div class="section-icon">📦</div>
-        <div class="section-title">Matériel nécessaire</div>
-        <div class="poseur-toggle" onclick="event.stopPropagation()">
-          <span class="poseur-toggle-label on" id="lbl_materiel">Poseur ✓</span>
-          <label class="switch"><input type="checkbox" id="vis_materiel" checked onchange="updateToggleLabel('materiel')"><div class="switch-track"></div></label>
-        </div>
-        <div class="section-chevron open">▼</div>
+      <div class="section-hdr" id="hdr-materiel">
+        <div class="section-icon">📦</div><div class="section-title">Matériel nécessaire</div>
+        <div class="tog-wrap"><span class="tog-lbl on" id="lbl_materiel">Poseur ✓</span><label class="sw"><input type="checkbox" id="vis_materiel" checked><div class="sw-track"></div></label></div>
+        <div class="chevron open">▼</div>
       </div>
-      <div class="section-body">
-        <div class="materiel-list" id="materiel_list"></div>
-        <button class="btn-add-mat" onclick="addMateriel()">+ Ajouter un élément</button>
+      <div class="section-body" id="body-materiel">
+        <div class="mat-list" id="mat-list"></div>
+        <button class="btn-add" id="btn-add-mat">+ Ajouter un élément</button>
         <div class="field"><div class="field-label">Remarque</div><textarea id="rem_materiel" placeholder="Remarque complémentaire..."></textarea></div>
       </div>
     </div>
 
-    <!-- POINTS D'ATTENTION -->
+    <!-- ATTENTION -->
     <div class="section-card">
-      <div class="section-header" onclick="toggleSection(event,this)">
-        <div class="section-icon">⚠️</div>
-        <div class="section-title">Points d'attention</div>
-        <div class="poseur-toggle" onclick="event.stopPropagation()">
-          <span class="poseur-toggle-label on" id="lbl_attention">Poseur ✓</span>
-          <label class="switch"><input type="checkbox" id="vis_attention" checked onchange="updateToggleLabel('attention')"><div class="switch-track"></div></label>
-        </div>
-        <div class="section-chevron open">▼</div>
+      <div class="section-hdr" id="hdr-attention">
+        <div class="section-icon">⚠️</div><div class="section-title">Points d'attention</div>
+        <div class="tog-wrap"><span class="tog-lbl on" id="lbl_attention">Poseur ✓</span><label class="sw"><input type="checkbox" id="vis_attention" checked><div class="sw-track"></div></label></div>
+        <div class="chevron open">▼</div>
       </div>
-      <div class="section-body">
-        <div class="attention-list" id="attention_list"></div>
-        <button class="btn-add-mat" onclick="addAttention()">+ Ajouter un point</button>
+      <div class="section-body" id="body-attention">
+        <div class="mat-list" id="att-list"></div>
+        <button class="btn-add" id="btn-add-att">+ Ajouter un point</button>
         <div class="field"><div class="field-label">Note libre pour le poseur</div><textarea id="note_poseur" placeholder="Ce que tu as vu au mesurage..."></textarea></div>
         <div class="field"><div class="field-label">Remarque</div><textarea id="rem_attention" placeholder="Remarque complémentaire..."></textarea></div>
       </div>
     </div>
+
   </div>
 
   <!-- PHOTOS -->
-  <div style="margin:8px 14px 0">
-    <div class="section-title-page" style="padding:0 0 8px">Photos du chantier</div>
-    <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden">
-      <div id="photos-grid-admin" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px"></div>
+  <div style="margin:0 14px 12px">
+    <div class="section-lbl" style="padding:8px 0">Photos du chantier</div>
+    <div class="section-card">
+      <div class="photos-grid-a" id="photos-grid-admin"></div>
       <div id="photos-empty-admin" style="text-align:center;padding:24px;color:var(--gris);font-size:13px;font-style:italic">Aucune photo envoyée par le poseur</div>
     </div>
   </div>
 
   <!-- MESSAGES -->
-  <div style="padding:0 0 8px;margin-top:4px">
-    <div class="section-title-page" style="padding:8px 14px">Messages avec le poseur</div>
-    <div class="msg-section">
-      <div class="msg-list" id="msg-list-admin"><div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div></div>
+  <div style="margin:0 14px 12px">
+    <div class="section-lbl" style="padding:8px 0">Messages avec le poseur</div>
+    <div class="section-card">
+      <div class="msg-list" id="msg-list"></div>
       <div class="msg-compose">
-        <textarea class="msg-input" id="msg-input-admin" placeholder="Écrire au poseur..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsgAdmin()}"></textarea>
-        <button class="btn-msgsend" onclick="sendMsgAdmin()">↑</button>
+        <textarea class="msg-input" id="msg-input" placeholder="Écrire au poseur..." rows="1"></textarea>
+        <button class="btn-msgsend" id="btn-msgsend">↑</button>
       </div>
     </div>
   </div>
 
-  <div class="btn-save-wrap">
-    <button class="btn-save" id="btn-save" onclick="saveFiche()">💾 Enregistrer la fiche</button>
-  </div>
+  <div class="btn-save-wrap"><button class="btn-save" id="btn-save">💾 Enregistrer la fiche</button></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script>
+// ── PIN ──
+let pinVal='';
+function pinPress(d){
+  if(pinVal.length>=4)return;
+  pinVal+=d; updateDots();
+  if(pinVal.length===4){
+    if(pinVal==='9631'){ document.getElementById('pin-screen').style.display='none'; sessionStorage.setItem('cf_auth','1'); }
+    else{ document.getElementById('pin-error').textContent='Code incorrect'; setTimeout(()=>{pinVal='';updateDots();document.getElementById('pin-error').textContent=''},1200); }
+  }
+}
+function pinClear(){pinVal=pinVal.slice(0,-1);updateDots()}
+function updateDots(){document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<pinVal.length))}
+if(sessionStorage.getItem('cf_auth')==='1') document.getElementById('pin-screen').style.display='none';
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDocs, getDoc, onSnapshot, addDoc, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, addDoc, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
-  authDomain: "concept-fermeture.firebaseapp.com",
-  projectId: "concept-fermeture",
-  storageBucket: "concept-fermeture.firebasestorage.app",
-  messagingSenderId: "589266667315",
-  appId: "1:589266667315:web:40ac33df94b69afcbba046"
-};
-
-const app = initializeApp(firebaseConfig);
+const app = initializeApp({
+  apiKey:"AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
+  authDomain:"concept-fermeture.firebaseapp.com",
+  projectId:"concept-fermeture",
+  storageBucket:"concept-fermeture.firebasestorage.app",
+  messagingSenderId:"589266667315",
+  appId:"1:589266667315:web:40ac33df94b69afcbba046"
+});
 const db = getFirestore(app);
 
-let currentStatut = 'Planifié';
-let presence = null;
-let currentDocId = null;
-let unsubMsgs = null;
+let currentStatut='Planifié', presence=null, currentDocId=null, unsubMsgs=null, unsubPhotos=null;
 
-// ── Sections ──
-window.toggleSection = (event, header) => {
-  const body = header.nextElementSibling;
-  const chevron = header.querySelector('.section-chevron');
-  body.classList.toggle('collapsed');
-  chevron.classList.toggle('open');
-};
+// ── Sections toggle ──
+['general','contact','acces','materiel','attention'].forEach(k=>{
+  document.getElementById('hdr-'+k).addEventListener('click', e=>{
+    if(e.target.closest('.tog-wrap')) return;
+    const body=document.getElementById('body-'+k);
+    const chev=document.getElementById('hdr-'+k).querySelector('.chevron');
+    body.classList.toggle('collapsed');
+    chev.classList.toggle('open');
+  });
+  document.getElementById('vis_'+k).addEventListener('change', ()=>{
+    const cb=document.getElementById('vis_'+k);
+    const lbl=document.getElementById('lbl_'+k);
+    lbl.textContent=cb.checked?'Poseur ✓':'Masqué';
+    lbl.className='tog-lbl'+(cb.checked?' on':'');
+    if(!cb.checked) lbl.style.color='#BBBBBB'; else lbl.style.color='';
+  });
+});
 
-window.updateToggleLabel = (key) => {
-  const cb = document.getElementById('vis_'+key);
-  const lbl = document.getElementById('lbl_'+key);
-  if(cb.checked){lbl.textContent='Poseur ✓';lbl.classList.add('on');lbl.style.color=''}
-  else{lbl.textContent='Masqué';lbl.classList.remove('on');lbl.style.color='#BBBBBB'}
-};
+// ── Statut ──
+document.querySelectorAll('.statut-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.statut-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentStatut=btn.dataset.statut;
+  });
+});
 
-window.setStatut = (btn, val) => {
-  document.querySelectorAll('.statut-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); currentStatut = val;
-};
-
-window.setPresence = (val) => {
-  presence = val;
-  document.getElementById('btn_oui').className='toggle-btn'+(val==='oui'?' active-oui':'');
-  document.getElementById('btn_non').className='toggle-btn'+(val==='non'?' active-non':'');
+// ── Présence ──
+document.getElementById('btn_oui').addEventListener('click',()=>setPresence('oui'));
+document.getElementById('btn_non').addEventListener('click',()=>setPresence('non'));
+function setPresence(val){
+  presence=val;
+  document.getElementById('btn_oui').className='tog-btn'+(val==='oui'?' oui':'');
+  document.getElementById('btn_non').className='tog-btn'+(val==='non'?' non':'');
   document.getElementById('field_absent').style.display=val==='non'?'flex':'none';
-};
+}
 
-window.addMateriel = (val='') => {
-  const list=document.getElementById('materiel_list');
-  const idx=Date.now();
-  const item=document.createElement('div');
-  item.className='materiel-item';item.id='mat_'+idx;
-  item.innerHTML=`<input type="text" placeholder="Ex: Chevilles béton 10mm..." value="${val}"><button class="btn-del" onclick="document.getElementById('mat_${idx}').remove()">×</button>`;
-  list.appendChild(item);item.querySelector('input').focus();
-};
+// ── Matériel ──
+document.getElementById('btn-add-mat').addEventListener('click',()=>addMat());
+function addMat(val=''){
+  const list=document.getElementById('mat-list');
+  const id='mat_'+Date.now();
+  const div=document.createElement('div'); div.className='mat-item'; div.id=id;
+  div.innerHTML=`<input type="text" placeholder="Ex: Chevilles béton 10mm..." value="${val}"><button class="btn-del">×</button>`;
+  div.querySelector('.btn-del').onclick=()=>div.remove();
+  list.appendChild(div); div.querySelector('input').focus();
+}
+function getMat(){return Array.from(document.querySelectorAll('#mat-list input')).map(i=>i.value.trim()).filter(Boolean)}
 
-window.addAttention = (val='') => {
-  const list=document.getElementById('attention_list');
-  const idx=Date.now();
-  const item=document.createElement('div');
-  item.className='attention-item';item.id='att_'+idx;
-  item.innerHTML=`<div class="attention-prefix">⚠️</div><input type="text" placeholder="Ex: Mur en béton armé..." value="${val}"><button class="btn-del" onclick="document.getElementById('att_${idx}').remove()" style="margin-top:6px">×</button>`;
-  list.appendChild(item);item.querySelector('input').focus();
-};
-
-function getMateriel(){return Array.from(document.querySelectorAll('#materiel_list input')).map(i=>i.value.trim()).filter(Boolean)}
-function getAttention(){return Array.from(document.querySelectorAll('#attention_list input')).map(i=>i.value.trim()).filter(Boolean)}
+// ── Attention ──
+document.getElementById('btn-add-att').addEventListener('click',()=>addAtt());
+function addAtt(val=''){
+  const list=document.getElementById('att-list');
+  const id='att_'+Date.now();
+  const div=document.createElement('div'); div.className='att-item'; div.id=id;
+  div.innerHTML=`<div class="att-prefix">⚠️</div><input type="text" placeholder="Ex: Mur en béton armé..." value="${val}"><button class="btn-del" style="margin-top:6px">×</button>`;
+  div.querySelector('.btn-del').onclick=()=>div.remove();
+  list.appendChild(div); div.querySelector('input').focus();
+}
+function getAtt(){return Array.from(document.querySelectorAll('#att-list input')).map(i=>i.value.trim()).filter(Boolean)}
 
 // ── Save ──
-window.saveFiche = async () => {
-  const btn = document.getElementById('btn-save');
-  btn.classList.add('loading'); btn.textContent = '⏳ Enregistrement...';
-  const num = document.getElementById('num_chantier').value.trim() || 'SANS-NUM';
-  const fiche = {
-    num_chantier: num,
-    semaine: document.getElementById('semaine').value,
-    date: document.getElementById('date_chantier').value,
-    client_nom: document.getElementById('client_nom').value,
-    adresse: document.getElementById('adresse').value,
-    type_travail: document.getElementById('type_travail').value,
-    statut: currentStatut,
-    contact_nom: document.getElementById('contact_nom').value,
-    contact_tel: document.getElementById('contact_tel').value,
-    presence: presence,
-    absent_instr: document.getElementById('absent_instructions').value,
-    heure_debut: document.getElementById('heure_debut').value,
-    heure_fin: document.getElementById('heure_fin').value,
-    digicode: document.getElementById('digicode').value,
-    parking: document.getElementById('parking').value,
-    acces_notes: document.getElementById('acces_notes').value,
-    materiel: getMateriel(),
-    attention: getAttention(),
-    note_poseur: document.getElementById('note_poseur').value,
-    rem_general: document.getElementById('rem_general').value,
-    rem_contact: document.getElementById('rem_contact').value,
-    rem_acces: document.getElementById('rem_acces').value,
-    rem_materiel: document.getElementById('rem_materiel').value,
-    rem_attention: document.getElementById('rem_attention').value,
-    visibility: {
-      general: document.getElementById('vis_general').checked,
-      contact: document.getElementById('vis_contact').checked,
-      acces: document.getElementById('vis_acces').checked,
-      materiel: document.getElementById('vis_materiel').checked,
-      attention: document.getElementById('vis_attention').checked,
+document.getElementById('btn-save').addEventListener('click', async()=>{
+  const btn=document.getElementById('btn-save');
+  btn.textContent='⏳ Enregistrement...'; btn.style.opacity='.6';
+  const num=document.getElementById('num_chantier').value.trim()||'SANS-NUM';
+  const fiche={
+    num_chantier:num,
+    semaine:document.getElementById('semaine').value,
+    date:document.getElementById('date_chantier').value,
+    client_nom:document.getElementById('client_nom').value,
+    adresse:document.getElementById('adresse').value,
+    type_travail:document.getElementById('type_travail').value,
+    statut:currentStatut,
+    contact_nom:document.getElementById('contact_nom').value,
+    contact_tel:document.getElementById('contact_tel').value,
+    presence,
+    absent_instr:document.getElementById('absent_instr').value,
+    heure_debut:document.getElementById('heure_debut').value,
+    heure_fin:document.getElementById('heure_fin').value,
+    digicode:document.getElementById('digicode').value,
+    parking:document.getElementById('parking').value,
+    acces_notes:document.getElementById('acces_notes').value,
+    materiel:getMat(), attention:getAtt(),
+    note_poseur:document.getElementById('note_poseur').value,
+    rem_general:document.getElementById('rem_general').value,
+    rem_contact:document.getElementById('rem_contact').value,
+    rem_acces:document.getElementById('rem_acces').value,
+    rem_materiel:document.getElementById('rem_materiel').value,
+    rem_attention:document.getElementById('rem_attention').value,
+    visibility:{
+      general:document.getElementById('vis_general').checked,
+      contact:document.getElementById('vis_contact').checked,
+      acces:document.getElementById('vis_acces').checked,
+      materiel:document.getElementById('vis_materiel').checked,
+      attention:document.getElementById('vis_attention').checked,
     },
-    updated_at: new Date().toISOString(),
+    updated_at:new Date().toISOString()
   };
-  try {
-    const docId = currentDocId || num;
-    await setDoc(doc(db,'planning_fiches',docId), fiche);
-    currentDocId = docId;
-    showToast('✅ Fiche '+num+' enregistrée');
-    loadMsgs(docId);
-  loadPhotosAdmin(docId);
-  } catch(e){ showToast('❌ Erreur: '+e.message) }
-  btn.classList.remove('loading'); btn.textContent = '💾 Enregistrer la fiche';
-};
+  try{
+    const docId=currentDocId||num;
+    await setDoc(doc(db,'planning_fiches',docId),fiche,{merge:true});
+    currentDocId=docId;
+    startListeners(docId);
+    toast('✅ Fiche '+num+' enregistrée');
+  }catch(e){toast('❌ '+e.message)}
+  btn.textContent='💾 Enregistrer la fiche'; btn.style.opacity='1';
+});
 
 // ── Liste ──
 async function loadList(){
-  const list = document.getElementById('fiches-list');
+  const list=document.getElementById('fiches-list');
   list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px">Chargement...</div>';
-  const snap = await getDocs(collection(db,'planning_fiches'));
-  if(snap.empty){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic">Aucune fiche</div>';return}
+  const snap=await getDocs(collection(db,'planning_fiches'));
   list.innerHTML='';
+  if(snap.empty){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic">Aucune fiche</div>';return}
   snap.forEach(d=>{
     const f=d.data();
     const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
     const item=document.createElement('div');
-    item.style.cssText='background:#fff;border:1px solid #E2D9C8;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:8px';
-    // Info zone
+    item.style.cssText='background:#fff;border:1px solid #E2D9C8;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px';
+    // Info
     const info=document.createElement('div');
     info.style.cssText='flex:1;cursor:pointer;min-width:0';
-    info.innerHTML=`<div style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.client_nom||'—'} · ${dateStr}</div>`;
-    info.onclick=()=>loadFiche(d.id,f);
-    // Duplicate btn
-    const btnDup=document.createElement('button');
-    btnDup.innerHTML='⧉';
-    btnDup.title='Dupliquer';
-    btnDup.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center';
-    btnDup.onclick=()=>dupFiche(f);
-    // Delete btn
-    const btnDel=document.createElement('button');
-    btnDel.innerHTML='🗑';
-    btnDel.title='Supprimer';
-    btnDel.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center';
-    btnDel.onclick=()=>delFiche(d.id,f.num_chantier);
-    item.appendChild(info);
-    item.appendChild(btnDup);
-    item.appendChild(btnDel);
+    info.innerHTML=`<div style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
+    info.onclick=()=>openFiche(d.id,f);
+    // Dup
+    const bDup=document.createElement('button');
+    bDup.innerHTML='⧉'; bDup.title='Dupliquer';
+    bDup.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:16px;cursor:pointer;flex-shrink:0';
+    bDup.onclick=()=>dupFiche(f);
+    // Del
+    const bDel=document.createElement('button');
+    bDel.innerHTML='🗑'; bDel.title='Supprimer';
+    bDel.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;flex-shrink:0';
+    bDel.onclick=()=>delFiche(d.id,f.num_chantier);
+    item.appendChild(info); item.appendChild(bDup); item.appendChild(bDel);
     list.appendChild(item);
   });
 }
 
-async function loadFiche(docId, f){
-  currentDocId = docId;
+// ── Open fiche ──
+function openFiche(docId,f){
+  currentDocId=docId;
+  fillForm(f);
   document.getElementById('screen-list').classList.remove('active');
   document.getElementById('screen-fiche').classList.add('active');
-  // Remplir
-  document.getElementById('num_chantier').value = f.num_chantier||'';
-  document.getElementById('semaine').value = f.semaine||'';
-  document.getElementById('date_chantier').value = f.date||'';
-  document.getElementById('client_nom').value = f.client_nom||'';
-  document.getElementById('adresse').value = f.adresse||'';
-  document.getElementById('type_travail').value = f.type_travail||'';
-  document.getElementById('contact_nom').value = f.contact_nom||'';
-  document.getElementById('contact_tel').value = f.contact_tel||'';
-  document.getElementById('absent_instructions').value = f.absent_instr||'';
-  document.getElementById('heure_debut').value = f.heure_debut||'07:00';
-  document.getElementById('heure_fin').value = f.heure_fin||'12:00';
-  document.getElementById('digicode').value = f.digicode||'';
-  document.getElementById('parking').value = f.parking||'';
-  document.getElementById('acces_notes').value = f.acces_notes||'';
-  document.getElementById('note_poseur').value = f.note_poseur||'';
-  document.getElementById('rem_general').value = f.rem_general||'';
-  document.getElementById('rem_contact').value = f.rem_contact||'';
-  document.getElementById('rem_acces').value = f.rem_acces||'';
-  document.getElementById('rem_materiel').value = f.rem_materiel||'';
-  document.getElementById('rem_attention').value = f.rem_attention||'';
-  // Statut
-  currentStatut = f.statut||'Planifié';
-  document.querySelectorAll('.statut-btn').forEach(b=>{b.classList.remove('active');if(b.textContent.includes(currentStatut))b.classList.add('active')});
-  // Présence
-  if(f.presence) setPresence(f.presence);
-  // Visibility toggles
-  const vis = f.visibility||{};
-  ['general','contact','acces','materiel','attention'].forEach(k=>{
-    const cb=document.getElementById('vis_'+k);
-    cb.checked = vis[k]!==false;
-    updateToggleLabel(k);
-  });
-  // Matériel
-  document.getElementById('materiel_list').innerHTML='';
-  (f.materiel||[]).forEach(m=>addMateriel(m));
-  // Attention
-  document.getElementById('attention_list').innerHTML='';
-  (f.attention||[]).forEach(a=>addAttention(a));
-  // Messages
-  loadMsgs(docId);
-  loadPhotosAdmin(docId);
+  startListeners(docId);
 }
 
-window.newFiche = () => {
-  currentDocId = null; presence = null; currentStatut = 'Planifié';
-  document.querySelectorAll('input[type=text],input[type=tel],textarea').forEach(el=>el.value='');
-  document.getElementById('date_chantier').value = new Date().toISOString().split('T')[0];
-  document.getElementById('semaine').value = 22;
-  document.getElementById('heure_debut').value = '07:00';
-  document.getElementById('heure_fin').value = '12:00';
-  document.getElementById('materiel_list').innerHTML='';
-  document.getElementById('attention_list').innerHTML='';
-  document.getElementById('msg-list-admin').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
-  document.querySelectorAll('.statut-btn').forEach((b,i)=>{b.classList.remove('active');if(i===0)b.classList.add('active')});
-  ['btn_oui','btn_non'].forEach(id=>document.getElementById(id).className='toggle-btn');
-  document.getElementById('field_absent').style.display='none';
-  ['general','contact','acces','materiel','attention'].forEach(k=>{document.getElementById('vis_'+k).checked=true;updateToggleLabel(k)});
-  if(unsubMsgs){unsubMsgs();unsubMsgs=null}
+function fillForm(f){
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||''};
+  set('num_chantier',f.num_chantier); set('semaine',f.semaine); set('date_chantier',f.date);
+  set('client_nom',f.client_nom); set('adresse',f.adresse); set('contact_nom',f.contact_nom);
+  set('contact_tel',f.contact_tel); set('absent_instr',f.absent_instr);
+  set('heure_debut',f.heure_debut||'07:00'); set('heure_fin',f.heure_fin||'12:00');
+  set('digicode',f.digicode); set('parking',f.parking); set('acces_notes',f.acces_notes);
+  set('note_poseur',f.note_poseur); set('rem_general',f.rem_general); set('rem_contact',f.rem_contact);
+  set('rem_acces',f.rem_acces); set('rem_materiel',f.rem_materiel); set('rem_attention',f.rem_attention);
+  document.getElementById('type_travail').value=f.type_travail||'';
+  // Statut
+  currentStatut=f.statut||'Planifié';
+  document.querySelectorAll('.statut-btn').forEach(b=>{b.classList.remove('active');if(b.dataset.statut===currentStatut)b.classList.add('active')});
+  // Présence
+  presence=null; document.getElementById('btn_oui').className='tog-btn'; document.getElementById('btn_non').className='tog-btn'; document.getElementById('field_absent').style.display='none';
+  if(f.presence) setPresence(f.presence);
+  // Visibility
+  const vis=f.visibility||{};
+  ['general','contact','acces','materiel','attention'].forEach(k=>{
+    const cb=document.getElementById('vis_'+k); cb.checked=vis[k]!==false;
+    const lbl=document.getElementById('lbl_'+k);
+    lbl.textContent=cb.checked?'Poseur ✓':'Masqué'; lbl.className='tog-lbl'+(cb.checked?' on':'');
+    if(!cb.checked) lbl.style.color='#BBBBBB'; else lbl.style.color='';
+  });
+  // Matériel
+  document.getElementById('mat-list').innerHTML=''; (f.materiel||[]).forEach(m=>addMat(m));
+  // Attention
+  document.getElementById('att-list').innerHTML=''; (f.attention||[]).forEach(a=>addAtt(a));
+  // Reset photos/msgs
+  document.getElementById('photos-grid-admin').innerHTML=''; document.getElementById('photos-empty-admin').style.display='block';
+  document.getElementById('msg-list').innerHTML='';
+}
+
+// ── New fiche ──
+document.getElementById('btn-new-fiche').addEventListener('click',()=>{
+  currentDocId=null; stopListeners();
+  fillForm({});
+  document.getElementById('num_chantier').value='';
+  document.getElementById('date_chantier').value=new Date().toISOString().split('T')[0];
+  document.getElementById('semaine').value=22;
+  document.getElementById('msg-list').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
   document.getElementById('screen-list').classList.remove('active');
   document.getElementById('screen-fiche').classList.add('active');
-};
+});
 
-window.showList = () => {
-  if(unsubMsgs){unsubMsgs();unsubMsgs=null}
+// ── Back ──
+document.getElementById('btn-back').addEventListener('click',()=>{
+  stopListeners();
   document.getElementById('screen-fiche').classList.remove('active');
   document.getElementById('screen-list').classList.add('active');
   loadList();
-};
+});
 
-// ── Messages ──
-function loadMsgs(docId){
-  if(unsubMsgs) unsubMsgs();
-  const msgList = document.getElementById('msg-list-admin');
-  const q = query(collection(db,'planning_fiches',docId,'messages'),orderBy('ts'));
-  unsubMsgs = onSnapshot(q, snap=>{
-    msgList.innerHTML='';
-    if(snap.empty){msgList.innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';return}
+// ── Delete ──
+async function delFiche(docId,num){
+  if(!confirm('Supprimer la fiche '+(num||docId)+' ?')) return;
+  try{ await deleteDoc(doc(db,'planning_fiches',docId)); toast('🗑 Fiche supprimée'); loadList(); }
+  catch(e){ toast('❌ Erreur: '+e.message) }
+}
+
+// ── Duplicate ──
+function dupFiche(f){
+  currentDocId=null; stopListeners();
+  fillForm(f);
+  document.getElementById('num_chantier').value='';
+  document.getElementById('date_chantier').value='';
+  currentStatut='Planifié';
+  document.querySelectorAll('.statut-btn').forEach((b,i)=>{b.classList.remove('active');if(i===0)b.classList.add('active')});
+  document.getElementById('msg-list').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
+  document.getElementById('screen-list').classList.remove('active');
+  document.getElementById('screen-fiche').classList.add('active');
+  toast('⧉ Dupliquée — modifie le N° et la date');
+}
+
+// ── Listeners photos + messages ──
+function startListeners(docId){
+  stopListeners();
+  // Photos
+  unsubPhotos=onSnapshot(doc(db,'planning_fiches',docId),snap=>{
+    const photos=(snap.data()&&snap.data().photos)||[];
+    const grid=document.getElementById('photos-grid-admin');
+    const empty=document.getElementById('photos-empty-admin');
+    grid.innerHTML='';
+    empty.style.display=photos.length?'none':'block';
+    photos.forEach(p=>{
+      const div=document.createElement('div');
+      div.style.cssText='position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#EEE';
+      div.innerHTML=`<img src="${p.src}" style="width:100%;height:100%;object-fit:cover" loading="lazy"><div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:16px 8px 6px;display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.8);font-family:monospace">${p.time||''}</span><span style="font-size:9px;font-weight:700;color:#C9A96E;text-transform:uppercase">${p.who||'Poseur'}</span></div>`;
+      grid.appendChild(div);
+    });
+  });
+  // Messages
+  const q=query(collection(db,'planning_fiches',docId,'messages'),orderBy('ts'));
+  unsubMsgs=onSnapshot(q,snap=>{
+    const list=document.getElementById('msg-list');
+    list.innerHTML='';
+    if(snap.empty){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';return}
     snap.forEach(d=>{
       const m=d.data();
-      const div=document.createElement('div');
-      div.className='msg '+(m.role==='admin'?'admin':'poseur');
+      const div=document.createElement('div'); div.className='msg '+(m.role==='admin'?'a':'p');
       div.innerHTML=`<div class="msg-who">${m.role==='admin'?'Anthony CF':'Poseur'}</div><div class="msg-bubble">${m.text}</div><div class="msg-time">${m.time||''}</div>`;
-      msgList.appendChild(div);
+      list.appendChild(div);
     });
-    msgList.lastElementChild?.scrollIntoView({behavior:'smooth'});
+    list.lastElementChild?.scrollIntoView({behavior:'smooth'});
   });
 }
 
-window.sendMsgAdmin = async () => {
-  if(!currentDocId){showToast('⚠️ Enregistre la fiche d\'abord');return}
-  const input=document.getElementById('msg-input-admin');
-  const text=input.value.trim();if(!text)return;
+function stopListeners(){
+  if(unsubPhotos){unsubPhotos();unsubPhotos=null}
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null}
+}
+
+// ── Send message ──
+document.getElementById('btn-msgsend').addEventListener('click', sendMsg);
+document.getElementById('msg-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}});
+async function sendMsg(){
+  if(!currentDocId){toast('⚠️ Enregistre la fiche d\'abord');return}
+  const input=document.getElementById('msg-input');
+  const text=input.value.trim(); if(!text) return;
   await addDoc(collection(db,'planning_fiches',currentDocId,'messages'),{
     role:'admin',text,
     time:new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'}),
     ts:Date.now()
   });
   input.value='';
-};
-
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// Init
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
 loadList();
 </script>
 </body>
