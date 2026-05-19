@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Chantier — CF</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--or:#C9A96E;--or-pale:#FBF7F0;--nuit:#141820;--nuit-soft:#2C3345;--ardoise:#4A5568;--gris:#8A95A3;--border:#E2D9C8;--bg:#F2EDE4;--white:#FFFFFF;--radius:14px;--shadow:0 2px 20px rgba(20,24,32,0.08);--success:#27AE60;--danger:#E74C3C}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min-height:100vh;padding-bottom:80px}
+  .screen{display:none}.screen.active{display:block}
+  .select-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;gap:20px}
+  .select-logo{font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--or);text-transform:uppercase;text-align:center}
+  .select-title{font-size:26px;font-weight:700;color:var(--nuit);text-align:center;letter-spacing:-.02em}
+  .select-title span{color:var(--or)}
+  .select-sub{font-size:13px;color:var(--gris);text-align:center}
+  .select-field{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px}
+  .select-input{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;text-align:center;letter-spacing:.08em;color:var(--nuit);background:var(--white);border:2px solid var(--border);border-radius:12px;padding:14px;outline:none;width:100%;-webkit-appearance:none}
+  .select-input:focus{border-color:var(--or)}
+  .select-input::placeholder{color:#C0B8A8;font-size:14px;letter-spacing:0}
+  .btn-open{width:100%;padding:15px;border-radius:12px;border:none;background:var(--nuit);color:var(--or);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+  .btn-open:active{opacity:.85}
+  .fiches-recentes{width:100%;max-width:320px;display:flex;flex-direction:column;gap:8px}
+  .fiches-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);text-align:center}
+  .fiche-btn{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+  .fiche-btn:active{border-color:var(--or)}
+  .fiche-btn-num{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--nuit)}
+  .fiche-btn-client{font-size:12px;color:var(--gris)}
+  .fiche-btn-arrow{color:var(--or);font-size:16px}
+  .header{background:var(--nuit);padding:20px 16px 16px;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--or)}
+  .header-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+  .header-back{background:rgba(255,255,255,.1);border:none;color:var(--or);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .poseur-badge{background:rgba(201,169,110,.2);color:var(--or);font-size:10px;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:20px;text-transform:uppercase}
+  .header-num{font-family:'DM Mono',monospace;font-size:24px;font-weight:600;color:var(--or);letter-spacing:.05em;line-height:1}
+  .header-client{font-size:16px;font-weight:700;color:#fff;margin-top:4px}
+  .header-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .header-chip{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px}
+  .header-chip.or{background:rgba(201,169,110,.2);color:var(--or)}
+  .tabs{display:flex;background:var(--nuit-soft);border-bottom:2px solid rgba(201,169,110,.3)}
+  .tab{flex:1;padding:12px 6px;text-align:center;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;letter-spacing:.03em}
+  .tab.active{color:var(--or);border-bottom-color:var(--or)}
+  .tab-icon{font-size:15px;display:block;margin-bottom:2px}
+  .tab-content{display:none;padding:14px;flex-direction:column;gap:10px}
+  .tab-content.active{display:flex}
+  .info-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+  .info-card-header{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--or-pale);border-bottom:1px solid var(--border)}
+  .info-card-icon{font-size:16px}
+  .info-card-title{font-size:12px;font-weight:700;color:var(--nuit-soft);letter-spacing:.04em;text-transform:uppercase}
+  .info-card-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  .info-row{display:flex;flex-direction:column;gap:3px}
+  .info-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+  .info-value{font-size:14px;font-weight:500;color:var(--nuit-soft);line-height:1.4}
+  .info-value a{color:var(--or);text-decoration:none;font-weight:700}
+  .att-item{display:flex;align-items:flex-start;gap:8px;background:#FFFDF5;border:1px solid #F0E4C0;border-left:3px solid #E6A817;border-radius:8px;padding:8px 10px;font-size:13px;color:var(--ardoise);line-height:1.4}
+  .mat-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ardoise);padding:6px 0;border-bottom:1px solid var(--border)}
+  .mat-item:last-child{border-bottom:none}
+  .mat-dot{width:6px;height:6px;border-radius:50%;background:var(--or);flex-shrink:0}
+  .remarque-block{background:#F8F5EE;border-left:3px solid var(--or);border-radius:0 8px 8px 0;padding:8px 12px;font-size:13px;color:var(--ardoise);font-style:italic;line-height:1.5}
+  .btn-call{display:flex;align-items:center;gap:8px;background:#EAF7EE;border:1.5px solid #A8DDB8;border-radius:10px;padding:11px 14px;cursor:pointer;text-decoration:none;color:inherit}
+  .btn-call-icon{font-size:18px}
+  .btn-call-txt{flex:1}
+  .btn-call-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--success)}
+  .btn-call-num{font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:var(--nuit)}
+  .btn-call-arrow{color:var(--success);font-size:16px}
+  .photo-upload-zone{background:var(--white);border:2px dashed var(--border);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer}
+  .photo-upload-zone:active{border-color:var(--or)}
+  #photo-input{display:none}
+  .photo-upload-icon{font-size:32px}
+  .photo-upload-txt{font-size:14px;font-weight:600;color:var(--ardoise);text-align:center}
+  .photo-upload-sub{font-size:12px;color:var(--gris);text-align:center}
+  .photos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .photo-item{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#EEE;box-shadow:var(--shadow)}
+  .photo-item img{width:100%;height:100%;object-fit:cover}
+  .photo-meta{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:20px 8px 8px;display:flex;align-items:center;justify-content:space-between}
+  .photo-time{font-size:10px;color:rgba(255,255,255,.8);font-family:'DM Mono',monospace}
+  .photo-who{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--or)}
+  .photo-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);border:none;color:white;width:22px;height:22px;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .empty-state{text-align:center;padding:30px 20px;color:var(--gris);font-size:13px}
+  .empty-state-icon{font-size:32px;margin-bottom:8px}
+  .messages{display:flex;flex-direction:column;gap:10px}
+  .msg{display:flex;flex-direction:column;gap:3px;max-width:85%}
+  .msg.poseur{align-self:flex-end;align-items:flex-end}
+  .msg.admin{align-self:flex-start;align-items:flex-start}
+  .msg-bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.4}
+  .msg.poseur .msg-bubble{background:var(--nuit);color:#fff;border-bottom-right-radius:4px}
+  .msg.admin .msg-bubble{background:var(--white);color:var(--nuit-soft);border:1px solid var(--border);border-bottom-left-radius:4px}
+  .msg-meta{font-size:10px;color:var(--gris);font-family:'DM Mono',monospace}
+  .msg-who{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .msg.poseur .msg-who{color:var(--or)}
+  .msg.admin .msg-who{color:var(--ardoise)}
+  .compose-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:10px 14px;display:none;gap:8px;align-items:flex-end;z-index:100}
+  .compose-bar.active{display:flex}
+  .compose-input{flex:1;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:20px;padding:10px 16px;outline:none;resize:none;max-height:100px;line-height:1.4}
+  .compose-input:focus{border-color:var(--or)}
+  .compose-input::placeholder{color:#C0B8A8}
+  .btn-send{width:42px;height:42px;border-radius:50%;border:none;background:var(--nuit);color:var(--or);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1}
+  .upload-progress{width:100%;height:4px;background:#E8E0D0;border-radius:2px;overflow:hidden;display:none}
+  .upload-progress-bar{height:100%;background:var(--or);border-radius:2px;transition:width .3s}
+</style>
+</head>
+<body>
+
+<div id="screen-select" class="screen active">
+  <div class="select-screen">
+    <div class="select-logo">Concept Fermeture</div>
+    <div class="select-title">Mon <span>Chantier</span></div>
+    <div class="select-sub">Entre la date de ta pose</div>
+    <div class="select-field">
+      <input class="select-input" id="input-num" type="text" placeholder="Ex : 26052026" maxlength="8" inputmode="numeric" onkeydown="if(event.key==='Enter')openFiche()">
+      <button class="btn-open" onclick="openFiche()">Ouvrir ma fiche →</button>
+    </div>
+    <div class="fiches-recentes" id="fiches-recentes"></div>
+  </div>
+</div>
+
+<div id="screen-fiche" class="screen">
+  <div class="header">
+    <div class="header-top">
+      <button class="header-back" onclick="goBack()">← Retour</button>
+      <span class="poseur-badge">Poseur</span>
+    </div>
+    <div class="header-num" id="h-num">—</div>
+    <div class="header-client" id="h-client">—</div>
+    <div class="header-meta" id="h-meta"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('fiche',this)"><span class="tab-icon">📋</span>Fiche</div>
+    <div class="tab" onclick="switchTab('photos',this)"><span class="tab-icon">📷</span>Photos</div>
+    <div class="tab" onclick="switchTab('comments',this)"><span class="tab-icon">💬</span>Messages</div>
+  </div>
+  <div id="tab-fiche" class="tab-content active" style="padding-bottom:20px"></div>
+  <div id="tab-photos" class="tab-content">
+    <div class="photo-upload-zone" onclick="document.getElementById('photo-input').click()">
+      <div class="photo-upload-icon">📸</div>
+      <div class="photo-upload-txt">Ajouter une photo</div>
+      <div class="photo-upload-sub">Appareil photo ou galerie</div>
+    </div>
+    <div class="upload-progress" id="upload-progress"><div class="upload-progress-bar" id="upload-bar"></div></div>
+    <input type="file" id="photo-input" accept="image/*" capture="environment" multiple onchange="handlePhotos(this)">
+    <div class="photos-grid" id="photos-grid"></div>
+    <div class="empty-state" id="photos-empty"><div class="empty-state-icon">🖼️</div>Aucune photo pour ce chantier</div>
+  </div>
+  <div id="tab-comments" class="tab-content" style="padding-bottom:70px">
+    <div class="messages" id="messages-list"></div>
+    <div class="empty-state" id="msg-empty"><div class="empty-state-icon">💬</div>Aucun message — écris le premier</div>
+  </div>
+</div>
+
+<div class="compose-bar" id="compose-bar">
+  <textarea class="compose-input" id="compose-input" placeholder="Écrire un message..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+  <button class="btn-send" onclick="sendMsg()">↑</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
+  authDomain: "concept-fermeture.firebaseapp.com",
+  projectId: "concept-fermeture",
+  storageBucket: "concept-fermeture.firebasestorage.app",
+  messagingSenderId: "589266667315",
+  appId: "1:589266667315:web:40ac33df94b69afcbba046"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentFiche = null;
+let currentDocId = null;
+let unsubMsgs = null;
+
+// ── Date parsing ──
+function parseDate(input){
+  const s=input.replace(/\D/g,'');
+  if(s.length===8){const d=s.slice(0,2),m=s.slice(2,4),y=s.slice(4,8);return y+'-'+m+'-'+d}
+  return null;
+}
+
+// ── Load fiches récentes ──
+async function loadFichesRecentes(){
+  const cont = document.getElementById('fiches-recentes');
+  cont.innerHTML='';
+  try {
+    const snap = await getDocs(collection(db,'planning_fiches'));
+    if(snap.empty) return;
+    const fiches=[];
+    snap.forEach(d=>fiches.push({id:d.id,...d.data()}));
+    const recent = fiches.filter(f=>f.date).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+    if(!recent.length) return;
+    cont.innerHTML='<div class="fiches-label">Prochaines poses</div>';
+    recent.forEach(f=>{
+      const [y,m,d]=f.date.split('-');
+      const dateStr=d+m+y;
+      const btn=document.createElement('div');
+      btn.className='fiche-btn';
+      btn.innerHTML=`<div><div class="fiche-btn-num">${d}/${m}/${y}</div><div class="fiche-btn-client">${f.client_nom||'—'} · ${f.type_travail||''}</div></div><div class="fiche-btn-arrow">→</div>`;
+      btn.onclick=()=>{document.getElementById('input-num').value=dateStr;openFiche()};
+      cont.appendChild(btn);
+    });
+  } catch(e){ console.log(e) }
+}
+
+window.openFiche = async () => {
+  const raw = document.getElementById('input-num').value.trim();
+  if(!raw) return;
+  const dateVal = parseDate(raw);
+  if(!dateVal){showToast('⚠️ Format : 26052026');return}
+  try {
+    const snap = await getDocs(collection(db,'planning_fiches'));
+    const matches=[];
+    snap.forEach(d=>{if(d.data().date===dateVal)matches.push({id:d.id,...d.data()})});
+    if(!matches.length){showToast('⚠️ Aucune fiche pour cette date');return}
+    if(matches.length===1){
+      openFicheData(matches[0].id, matches[0]);
+    } else {
+      showChoix(matches);
+    }
+  } catch(e){showToast('❌ Erreur connexion')}
+};
+
+function showChoix(fiches){
+  const cont=document.getElementById('fiches-recentes');
+  cont.innerHTML='<div class="fiches-label">Plusieurs chantiers ce jour</div>';
+  fiches.forEach(f=>{
+    const btn=document.createElement('div');btn.className='fiche-btn';
+    btn.innerHTML=`<div><div class="fiche-btn-num">${f.num_chantier||'—'}</div><div class="fiche-btn-client">${f.client_nom||'—'} · ${f.heure_debut||''}–${f.heure_fin||''}</div></div><div class="fiche-btn-arrow">→</div>`;
+    btn.onclick=()=>openFicheData(f.id,f);
+    cont.appendChild(btn);
+  });
+}
+
+function openFicheData(docId, fiche){
+  currentFiche=fiche; currentDocId=docId;
+  renderFiche(fiche);
+  document.getElementById('screen-select').classList.remove('active');
+  document.getElementById('screen-fiche').classList.add('active');
+  switchTab('fiche',document.querySelector('.tab'));
+}
+
+window.goBack = () => {
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null}
+  document.getElementById('screen-fiche').classList.remove('active');
+  document.getElementById('screen-select').classList.add('active');
+  document.getElementById('compose-bar').classList.remove('active');
+  loadFichesRecentes();
+};
+
+// ── Render ──
+function renderFiche(f){
+  document.getElementById('h-num').textContent=f.num_chantier||'—';
+  document.getElementById('h-client').textContent=f.client_nom||'—';
+  const meta=document.getElementById('h-meta');meta.innerHTML='';
+  if(f.type_travail)meta.innerHTML+=`<span class="header-chip or">${f.type_travail}</span>`;
+  if(f.statut)meta.innerHTML+=`<span class="header-chip">${f.statut}</span>`;
+  if(f.heure_debut&&f.heure_fin)meta.innerHTML+=`<span class="header-chip">⏱ ${f.heure_debut} – ${f.heure_fin}</span>`;
+  const c=document.getElementById('tab-fiche');c.innerHTML='';
+  const vis=f.visibility||{};
+
+  if(vis.general!==false){
+    const rows=[];
+    if(f.adresse)rows.push(ir('Adresse',`<a href="https://maps.google.com/?q=${encodeURIComponent(f.adresse)}" target="_blank">📍 ${f.adresse}</a>`));
+    if(f.date)rows.push(ir('Date',fmtDate(f.date)));
+    if(f.type_travail)rows.push(ir('Type de travail',f.type_travail));
+    if(f.rem_general)rows.push(`<div class="remarque-block">💬 ${f.rem_general}</div>`);
+    if(rows.length)c.appendChild(card('📋','Chantier',rows));
+  }
+  if(vis.contact!==false){
+    const rows=[];
+    if(f.contact_nom)rows.push(ir('Contact',f.contact_nom));
+    if(f.contact_tel)rows.push(`<a class="btn-call" href="tel:${f.contact_tel}"><span class="btn-call-icon">📞</span><div class="btn-call-txt"><div class="btn-call-label">Appel rapide</div><div class="btn-call-num">${f.contact_tel}</div></div><span class="btn-call-arrow">→</span></a>`);
+    if(f.presence)rows.push(ir('Client sur place',f.presence==='oui'?'✅ Présent':'❌ Absent'));
+    if(f.presence==='non'&&f.absent_instr)rows.push(ir('Instructions',f.absent_instr));
+    if(f.rem_contact)rows.push(`<div class="remarque-block">💬 ${f.rem_contact}</div>`);
+    if(rows.length)c.appendChild(card('📞','Contact',rows));
+  }
+  if(vis.acces!==false){
+    const rows=[];
+    if(f.digicode)rows.push(ir('Code / Digicode',`<span style="font-family:monospace;font-size:16px;font-weight:700">${f.digicode}</span>`));
+    if(f.parking)rows.push(ir('Stationnement',f.parking));
+    if(f.acces_notes)rows.push(ir('Notes accès',f.acces_notes));
+    if(f.rem_acces)rows.push(`<div class="remarque-block">💬 ${f.rem_acces}</div>`);
+    if(rows.length)c.appendChild(card('🔑','Accès',rows));
+  }
+  if(vis.materiel!==false&&((f.materiel&&f.materiel.length)||f.rem_materiel)){
+    const rows=[];
+    if(f.materiel&&f.materiel.length)rows.push(f.materiel.map(m=>`<div class="mat-item"><div class="mat-dot"></div>${m}</div>`).join(''));
+    if(f.rem_materiel)rows.push(`<div class="remarque-block">💬 ${f.rem_materiel}</div>`);
+    c.appendChild(card('📦','Matériel',rows));
+  }
+  if(vis.attention!==false){
+    const rows=[];
+    if(f.attention&&f.attention.length)f.attention.forEach(a=>rows.push(`<div class="att-item"><span>⚠️</span>${a}</div>`));
+    if(f.note_poseur)rows.push(ir("Note d'Anthony",f.note_poseur));
+    if(f.rem_attention)rows.push(`<div class="remarque-block">💬 ${f.rem_attention}</div>`);
+    if(rows.length)c.appendChild(card('⚠️','Points d\'attention',rows));
+  }
+  if(!c.children.length)c.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div>Aucune information disponible</div>';
+}
+
+function card(icon,title,rows){
+  const d=document.createElement('div');d.className='info-card';
+  d.innerHTML=`<div class="info-card-header"><span class="info-card-icon">${icon}</span><span class="info-card-title">${title}</span></div><div class="info-card-body">${rows.join('')}</div>`;
+  return d;
+}
+function ir(label,value){return`<div class="info-row"><div class="info-label">${label}</div><div class="info-value">${value}</div></div>`}
+function fmtDate(s){if(!s)return'';const[y,m,d]=s.split('-');const days=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];return`${days[new Date(y,m-1,d).getDay()]} ${d}/${m}/${y}`}
+
+// ── Tabs ──
+window.switchTab = (tab,el) => {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  const compose=document.getElementById('compose-bar');
+  if(tab==='comments'){compose.classList.add('active');loadMsgs()}
+  else compose.classList.remove('active');
+  if(tab==='photos')renderPhotos();
+};
+
+// ── Photos (base64 → Firestore) ──
+window.handlePhotos = async (input) => {
+  const files=Array.from(input.files);
+  const prog=document.getElementById('upload-progress');
+  const bar=document.getElementById('upload-bar');
+  prog.style.display='block';
+  let done=0;
+  for(const file of files){
+    const compressed = await compressImage(file, 800, 0.7);
+    const time=new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
+    await updateDoc(doc(db,'planning_fiches',currentDocId),{
+      photos: arrayUnion({src:compressed, time, who:'Poseur', ts:Date.now()})
+    });
+    done++;bar.style.width=(done/files.length*100)+'%';
+  }
+  prog.style.display='none';bar.style.width='0';
+  input.value='';
+  // Reload fiche
+  const snap=await getDocs(collection(db,'planning_fiches'));
+  snap.forEach(d=>{if(d.id===currentDocId){currentFiche={id:d.id,...d.data()};renderPhotos()}});
+};
+
+function compressImage(file, maxW, quality){
+  return new Promise(res=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const scale=Math.min(1,maxW/img.width);
+        canvas.width=img.width*scale;canvas.height=img.height*scale;
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        res(canvas.toDataURL('image/jpeg',quality));
+      };img.src=e.target.result;
+    };reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotos(){
+  const photos=(currentFiche&&currentFiche.photos)||[];
+  const grid=document.getElementById('photos-grid');
+  const empty=document.getElementById('photos-empty');
+  grid.innerHTML='';empty.style.display=photos.length?'none':'block';
+  photos.forEach((p,i)=>{
+    const item=document.createElement('div');item.className='photo-item';
+    item.innerHTML=`<img src="${p.src}" loading="lazy"><div class="photo-meta"><span class="photo-time">${p.time}</span><span class="photo-who">${p.who}</span></div>`;
+    grid.appendChild(item);
+  });
+}
+
+// ── Messages ──
+function loadMsgs(){
+  if(unsubMsgs)unsubMsgs();
+  const list=document.getElementById('messages-list');
+  const empty=document.getElementById('msg-empty');
+  const q=query(collection(db,'planning_fiches',currentDocId,'messages'),orderBy('ts'));
+  unsubMsgs=onSnapshot(q,snap=>{
+    list.innerHTML='';empty.style.display=snap.empty?'block':'none';
+    snap.forEach(d=>{
+      const m=d.data();
+      const div=document.createElement('div');div.className='msg '+m.role;
+      div.innerHTML=`<div class="msg-who">${m.role==='poseur'?'Poseur':'Anthony CF'}</div><div class="msg-bubble">${m.text}</div><div class="msg-meta">${m.time||''}</div>`;
+      list.appendChild(div);
+    });
+    list.lastElementChild?.scrollIntoView({behavior:'smooth'});
+  });
+}
+
+window.sendMsg = async () => {
+  const input=document.getElementById('compose-input');
+  const text=input.value.trim();if(!text)return;
+  await addDoc(collection(db,'planning_fiches',currentDocId,'messages'),{
+    role:'poseur',text,
+    time:new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'}),
+    ts:Date.now()
+  });
+  input.value='';input.style.height='';
+};
+
+window.autoResize = el=>{el.style.height='';el.style.height=Math.min(el.scrollHeight,100)+'px'};
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+loadFichesRecentes();
+</script>
+</body>
+</html>
