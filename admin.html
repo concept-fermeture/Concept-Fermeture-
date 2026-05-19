@@ -331,7 +331,7 @@ if(sessionStorage.getItem('cf_auth')==='1')document.getElementById('pin-screen')
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDocs, getDoc, onSnapshot, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, getDocs, getDoc, onSnapshot, addDoc, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
@@ -459,8 +459,18 @@ async function loadList(){
     const item=document.createElement('div');
     item.className='fiche-item';
     const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
-    item.innerHTML=`<div><div class="fiche-num">${f.num_chantier||'—'}</div><div class="fiche-client">${f.client_nom||'—'}</div></div><div class="fiche-date">${dateStr}</div>`;
-    item.onclick=()=>loadFiche(d.id,f);
+    item.innerHTML=`
+      <div class="fiche-main" style="flex:1;cursor:pointer">
+        <div class="fiche-num">${f.num_chantier||'—'}</div>
+        <div class="fiche-client">${f.client_nom||'—'} · ${dateStr}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn-dup" style="width:32px;height:32px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Dupliquer">⧉</button>
+        <button class="btn-del-fiche" style="width:32px;height:32px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Supprimer">🗑</button>
+      </div>`;
+    item.querySelector('.fiche-main').onclick=()=>loadFiche(d.id,f);
+    item.querySelector('.btn-dup').onclick=(e)=>{e.stopPropagation();dupFiche(f)};
+    item.querySelector('.btn-del-fiche').onclick=(e)=>{e.stopPropagation();delFiche(d.id,f.num_chantier)};
     list.appendChild(item);
   });
 }
