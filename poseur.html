@@ -104,6 +104,60 @@
 </head>
 <body>
 
+<div id="pin-screen" style="position:fixed;inset:0;background:#141820;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:24px;padding:30px">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.14em;color:#C9A96E;text-transform:uppercase">Concept Fermeture</div>
+  <div style="font-size:24px;font-weight:700;color:#fff;letter-spacing:-.02em">Accès <span style="color:#C9A96E">Poseur</span></div>
+  <div id="pin-dots" style="display:flex;gap:12px;margin:8px 0">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div id="pin-error" style="font-size:12px;color:#E74C3C;height:16px;text-align:center"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn" onclick="pinClear()" style="background:rgba(255,255,255,.08);font-size:18px">⌫</button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn" onclick="pinClear()" style="background:rgba(255,255,255,.08);font-size:13px">Effacer</button>
+  </div>
+  <div style="font-size:11px;color:rgba(255,255,255,.25);font-style:italic;margin-top:8px">Plus qu'un projet, une relation de confiance</div>
+</div>
+<style>
+.pin-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s}
+.pin-dot.filled{background:#C9A96E}
+.pin-btn{padding:18px;border-radius:12px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;cursor:pointer;transition:background .15s}
+.pin-btn:active{background:rgba(201,169,110,.3)}
+</style>
+<script>
+let pinVal='';
+const CORRECT='7582';
+function pinPress(d){
+  if(pinVal.length>=4)return;
+  pinVal+=d;
+  updateDots();
+  if(pinVal.length===4){
+    if(pinVal===CORRECT){
+      document.getElementById('pin-screen').style.display='none';
+      sessionStorage.setItem('cf_auth','1');
+    } else {
+      document.getElementById('pin-error').textContent='Code incorrect';
+      setTimeout(()=>{pinVal='';updateDots();document.getElementById('pin-error').textContent=''},1200);
+    }
+  }
+}
+function pinClear(){pinVal=pinVal.slice(0,-1);updateDots()}
+function updateDots(){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<pinVal.length));
+}
+if(sessionStorage.getItem('cf_auth')==='1')document.getElementById('pin-screen').style.display='none';
+</script>
+
+
 <div id="screen-select" class="screen active">
   <div class="select-screen">
     <div class="select-logo">Concept Fermeture</div>
