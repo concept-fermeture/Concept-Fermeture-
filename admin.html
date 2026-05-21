@@ -90,11 +90,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
 .statut-chip.reporte{background:#FDECEA;color:#E74C3C}
 .toast{.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-#pin-screen{position:fixed;inset:0;background:#141820;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;gap:24px;padding:30px}
-.pin-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s}
-.pin-dot.filled{background:#C9A96E}
-.pin-btn{padding:18px;border-radius:12px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;cursor:pointer}
-.pin-btn:active{background:rgba(201,169,110,.3)}
+#pin-screen{min-height:100vh;background:#0F1218}
+#pin-input:focus{border-color:#C9A96E !important;background:rgba(201,169,110,.08) !important}
 .archive-btn{padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:#F8F6F2;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--gris);cursor:pointer;width:100%;text-align:left;transition:all .15s}
 .archive-btn.on{background:rgba(201,169,110,.1);border-color:var(--or);color:var(--or)}
 </style>
@@ -102,26 +99,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
 <body>
 
 <!-- PIN -->
-<div id="pin-screen">
-  <div style="font-size:11px;font-weight:700;letter-spacing:.14em;color:#C9A96E;text-transform:uppercase">Concept Fermeture</div>
-  <div style="font-size:24px;font-weight:700;color:#fff">Accès <span style="color:#C9A96E">Admin</span></div>
-  <div id="pin-dots" style="display:flex;gap:12px;margin:8px 0">
-    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+<div id="pin-screen" class="screen active">
+  <div style="min-height:100vh;background:linear-gradient(160deg,#1A1F2E 0%,#0F1218 60%,#1C1408 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;gap:0;position:relative">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#C9A96E,transparent)"></div>
+
+    <div style="font-size:10px;font-weight:700;letter-spacing:.18em;color:#C9A96E;text-transform:uppercase;text-align:center;margin-bottom:10px">Concept Fermeture</div>
+    <div style="font-size:28px;font-weight:700;color:#fff;text-align:center;letter-spacing:-.02em;margin-bottom:28px">Espace <span style="color:#C9A96E">Admin</span></div>
+    <div style="width:40px;height:1px;background:linear-gradient(90deg,transparent,#C9A96E,transparent);margin-bottom:32px"></div>
+
+    <!-- Champ de saisie -->
+    <div style="width:100%;max-width:320px;margin-bottom:8px">
+      <input id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="• • • •"
+        style="width:100%;font-family:'DM Mono',monospace;font-size:32px;font-weight:600;text-align:center;letter-spacing:.3em;color:#fff;background:rgba(255,255,255,.06);border:1.5px solid rgba(201,169,110,.3);border-radius:16px;padding:20px;outline:none;-webkit-appearance:none"
+        oninput="handlePinInput(this.value)">
+    </div>
+    <div id="pin-error" style="font-size:12px;color:#E74C3C;height:18px;text-align:center;margin-bottom:8px">​</div>
+
+    <div style="font-size:11px;color:rgba(255,255,255,.2);font-style:italic;text-align:center;margin-top:24px">
+      Plus qu'un projet, une relation de confiance
+    </div>
   </div>
-  <div id="pin-error" style="font-size:12px;color:#E74C3C;height:16px;text-align:center"></div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px">
-    <button class="pin-btn" onclick="pinPress('1')">1</button><button class="pin-btn" onclick="pinPress('2')">2</button><button class="pin-btn" onclick="pinPress('3')">3</button>
-    <button class="pin-btn" onclick="pinPress('4')">4</button><button class="pin-btn" onclick="pinPress('5')">5</button><button class="pin-btn" onclick="pinPress('6')">6</button>
-    <button class="pin-btn" onclick="pinPress('7')">7</button><button class="pin-btn" onclick="pinPress('8')">8</button><button class="pin-btn" onclick="pinPress('9')">9</button>
-    <button class="pin-btn" onclick="pinClear()" style="background:rgba(255,255,255,.08);font-size:18px">⌫</button>
-    <button class="pin-btn" onclick="pinPress('0')">0</button>
-    <button class="pin-btn" onclick="pinVal='';updateDots()" style="background:rgba(255,255,255,.08);font-size:11px">Effacer</button>
-  </div>
-  <div style="font-size:11px;color:rgba(255,255,255,.25);font-style:italic">Plus qu'un projet, une relation de confiance</div>
 </div>
 
 <!-- LISTE -->
-<div id="screen-list" class="screen active">
+<div id="screen-list" class="screen">
   <div class="header">
     <div class="badge">Admin</div>
     <div class="header-brand">Concept Fermeture</div>
@@ -278,13 +279,28 @@ function pinPress(d){
   if(pinVal.length>=4)return;
   pinVal+=d;updateDots();
   if(pinVal.length===4){
-    if(pinVal==='9631'){document.getElementById('pin-screen').style.display='none';sessionStorage.setItem('cf_auth','1');}
+    if(pinVal==='9631'){document.getElementById('pin-screen').classList.remove('active');
+    document.getElementById('screen-list').classList.add('active');
+    if(typeof loadList === 'function') loadList();}
     else{document.getElementById('pin-error').textContent='Code incorrect';setTimeout(()=>{pinVal='';updateDots();document.getElementById('pin-error').textContent=''},1200);}
   }
 }
 function pinClear(){pinVal=pinVal.slice(0,-1);updateDots()}
 function updateDots(){document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<pinVal.length))}
-if(sessionStorage.getItem('cf_auth')==='1') document.getElementById('pin-screen').style.display='none';
+function handlePinInput(val){
+  if(val.length===4){
+    if(val==='9631'){
+      document.getElementById('pin-screen').classList.remove('active');
+      document.getElementById('screen-list').classList.add('active');
+      if(typeof window.loadList==='function') window.loadList();
+    } else {
+      document.getElementById('pin-error').textContent='Code incorrect';
+      document.getElementById('pin-input').value='';
+      setTimeout(()=>{document.getElementById('pin-error').textContent=''},1500);
+    }
+  }
+}
+
 </script>
 
 <script type="module">
@@ -500,7 +516,7 @@ function renderList(fiches){
   });
 }
 
-async function loadList(){
+window.loadList = async function loadList(){
   const list=document.getElementById('fiches-list');
   list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px">Chargement...</div>';
   try{
@@ -640,7 +656,7 @@ async function sendMsg(){
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
-loadList();
+window.loadList();
 </script>
 </body>
 </html>
