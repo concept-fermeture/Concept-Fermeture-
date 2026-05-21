@@ -603,31 +603,3 @@ async function sendMsg(){
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
-// ── Archive toggle ──
-window.toggleArchive = async function(){
-  if(!currentDocId){toast('⚠️ Enregistre la fiche d\'abord');return}
-  const archBtn=document.getElementById('btn-archive');
-  const isArchived=archBtn.dataset.archived==='true';
-  try{
-    await updateDoc(doc(db,'planning_fiches',currentDocId),{archived:!isArchived});
-    archBtn.dataset.archived=String(!isArchived);
-    if(!isArchived){
-      archBtn.textContent='↩ Désarchiver — rendre visible au poseur';
-      archBtn.style.background='rgba(201,169,110,.1)';
-      archBtn.style.borderColor='#C9A96E';
-      archBtn.style.color='#C9A96E';
-      toast('📁 Fiche archivée — masquée au poseur');
-    } else {
-      archBtn.textContent='📁 Archiver — masquer au poseur';
-      archBtn.style.background='#F8F6F2';
-      archBtn.style.borderColor='#E2D9C8';
-      archBtn.style.color='#8A95A3';
-      toast('↩ Fiche désarchivée — visible au poseur');
-    }
-  }catch(e){toast('❌ Erreur: '+e.message)}
-};
-
-loadList();
-</script>
-</body>
-</html>
