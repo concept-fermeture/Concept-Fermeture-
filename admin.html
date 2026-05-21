@@ -6,7 +6,7 @@
 <title>Admin — CF Planning</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--or:#C9A96E;--or-pale:#FBF7F0;--or-light:#F5EDD8;--nuit:#141820;--nuit-soft:#2C3345;--ardoise:#4A5568;--gris:#8A95A3;--border:#E2D9C8;--bg:#F2EDE4;--white:#FFFFFF;--radius:14px;--shadow:0 2px 20px rgba(20,24,32,0.08);--success:#27AE60;--danger:#E74C3C}
+:root{--or:#C9A96E;--or-pale:#FBF7F0;--nuit:#141820;--nuit-soft:#2C3345;--ardoise:#4A5568;--gris:#8A95A3;--border:#E2D9C8;--bg:#F2EDE4;--white:#FFFFFF;--radius:14px;--shadow:0 2px 20px rgba(20,24,32,0.08);--success:#27AE60;--danger:#E74C3C}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min-height:100vh;padding-bottom:100px}
 .screen{display:none}.screen.active{display:block}
@@ -20,7 +20,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
 .back-btn{position:absolute;top:24px;right:18px;background:rgba(255,255,255,.1);border:none;color:var(--or);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif}
 .body{padding:16px 14px;display:flex;flex-direction:column;gap:12px}
 .btn-new{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 14px 0;padding:13px;border-radius:12px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--ardoise);cursor:pointer;width:calc(100% - 28px)}
-.btn-new:active{border-color:var(--or);color:var(--or)}
 .section-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);padding:12px 14px 4px}
 .section-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
 .section-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--or-pale);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
@@ -55,9 +54,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
 .mat-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:var(--or-pale);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;outline:none}
 .mat-item input:focus{border-color:var(--or);background:var(--white)}
 .mat-item input::placeholder{color:#C0B8A8}
-.btn-del{width:32px;height:32px;border-radius:8px;border:none;background:#FDECEA;color:var(--danger);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.btn-del-item{width:32px;height:32px;border-radius:8px;border:none;background:#FDECEA;color:var(--danger);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .btn-add{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1.5px dashed var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gris);cursor:pointer;width:100%;justify-content:center}
-.btn-add:hover{border-color:var(--or);color:var(--or)}
 .att-item{display:flex;align-items:flex-start;gap:8px}
 .att-prefix{width:28px;height:28px;border-radius:7px;background:#FFF3E0;border:1px solid #F5C47A;color:#D4860A;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:6px}
 .att-item input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--nuit);background:#FFFDF7;border:1.5px solid #F0E4C0;border-radius:9px;padding:9px 12px;outline:none}
@@ -85,12 +83,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
 .btn-save:active{opacity:.85}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-/* PIN */
 #pin-screen{position:fixed;inset:0;background:#141820;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;gap:24px;padding:30px}
 .pin-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s}
 .pin-dot.filled{background:#C9A96E}
-.pin-btn{padding:18px;border-radius:12px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;cursor:pointer;transition:background .15s}
+.pin-btn{padding:18px;border-radius:12px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;cursor:pointer}
 .pin-btn:active{background:rgba(201,169,110,.3)}
+.archive-btn{padding:11px 14px;border-radius:9px;border:1.5px solid var(--border);background:#F8F6F2;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--gris);cursor:pointer;width:100%;text-align:left;transition:all .15s}
+.archive-btn.on{background:rgba(201,169,110,.1);border-color:var(--or);color:var(--or)}
 </style>
 </head>
 <body>
@@ -139,7 +138,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
   </div>
   <div class="body">
 
-    <!-- PROJET -->
     <div class="section-card">
       <div class="section-hdr" id="hdr-general">
         <div class="section-icon">📋</div><div class="section-title">Projet général</div>
@@ -164,18 +162,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
             <button class="statut-btn" data-statut="Terminé">✅ Terminé</button>
             <button class="statut-btn" data-statut="Reporté">⏳ Reporté</button>
           </div>
-        <div class="field" style="margin-top:4px">
-          <div class="field-label">Visibilité poseur</div>
-          <button id="btn-archive" data-archived="false" style="padding:11px 14px;border-radius:9px;border:1.5px solid #E2D9C8;background:#F8F6F2;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#8A95A3;cursor:pointer;width:100%;text-align:left;transition:all .15s">
-            📁 Archiver — masquer au poseur
-          </button>
         </div>
+        <div class="field"><div class="field-label">Visibilité poseur</div>
+          <button id="btn-archive" class="archive-btn">📁 Archiver — masquer au poseur</button>
         </div>
         <div class="field"><div class="field-label">Remarque</div><textarea id="rem_general" placeholder="Remarque complémentaire..."></textarea></div>
       </div>
     </div>
 
-    <!-- CONTACT -->
     <div class="section-card">
       <div class="section-hdr" id="hdr-contact">
         <div class="section-icon">📞</div><div class="section-title">Contact sur place</div>
@@ -196,7 +190,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
       </div>
     </div>
 
-    <!-- ACCÈS -->
     <div class="section-card">
       <div class="section-hdr" id="hdr-acces">
         <div class="section-icon">🔑</div><div class="section-title">Accès</div>
@@ -211,7 +204,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
       </div>
     </div>
 
-    <!-- MATÉRIEL -->
     <div class="section-card">
       <div class="section-hdr" id="hdr-materiel">
         <div class="section-icon">📦</div><div class="section-title">Matériel nécessaire</div>
@@ -225,7 +217,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
       </div>
     </div>
 
-    <!-- ATTENTION -->
     <div class="section-card">
       <div class="section-hdr" id="hdr-attention">
         <div class="section-icon">⚠️</div><div class="section-title">Points d'attention</div>
@@ -239,7 +230,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
         <div class="field"><div class="field-label">Remarque</div><textarea id="rem_attention" placeholder="Remarque complémentaire..."></textarea></div>
       </div>
     </div>
-
   </div>
 
   <!-- PHOTOS -->
@@ -255,7 +245,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
   <div style="margin:0 14px 12px">
     <div class="section-lbl" style="padding:8px 0">Messages avec le poseur</div>
     <div class="section-card">
-      <div class="msg-list" id="msg-list"></div>
+      <div class="msg-list" id="msg-list"><div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div></div>
       <div class="msg-compose">
         <textarea class="msg-input" id="msg-input" placeholder="Écrire au poseur..." rows="1"></textarea>
         <button class="btn-msgsend" id="btn-msgsend">↑</button>
@@ -269,14 +259,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
 <div class="toast" id="toast"></div>
 
 <script>
-// ── PIN ──
 let pinVal='';
 function pinPress(d){
   if(pinVal.length>=4)return;
-  pinVal+=d; updateDots();
+  pinVal+=d;updateDots();
   if(pinVal.length===4){
-    if(pinVal==='9631'){ document.getElementById('pin-screen').style.display='none'; sessionStorage.setItem('cf_auth','1'); }
-    else{ document.getElementById('pin-error').textContent='Code incorrect'; setTimeout(()=>{pinVal='';updateDots();document.getElementById('pin-error').textContent=''},1200); }
+    if(pinVal==='9631'){document.getElementById('pin-screen').style.display='none';sessionStorage.setItem('cf_auth','1');}
+    else{document.getElementById('pin-error').textContent='Code incorrect';setTimeout(()=>{pinVal='';updateDots();document.getElementById('pin-error').textContent=''},1200);}
   }
 }
 function pinClear(){pinVal=pinVal.slice(0,-1);updateDots()}
@@ -286,7 +275,7 @@ if(sessionStorage.getItem('cf_auth')==='1') document.getElementById('pin-screen'
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, addDoc, query, orderBy, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDocs, onSnapshot, addDoc as addDocAlias, query, orderBy, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
@@ -298,23 +287,21 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-let currentStatut='Planifié', presence=null, currentDocId=null, unsubMsgs=null, unsubPhotos=null;
+let currentStatut='Planifié', presence=null, currentDocId=null, unsubMsgs=null, unsubPhotos=null, isArchived=false;
 
-// ── Sections toggle ──
+// ── Sections ──
 ['general','contact','acces','materiel','attention'].forEach(k=>{
-  document.getElementById('hdr-'+k).addEventListener('click', e=>{
-    if(e.target.closest('.tog-wrap')) return;
-    const body=document.getElementById('body-'+k);
-    const chev=document.getElementById('hdr-'+k).querySelector('.chevron');
-    body.classList.toggle('collapsed');
-    chev.classList.toggle('open');
+  document.getElementById('hdr-'+k).addEventListener('click',e=>{
+    if(e.target.closest('.tog-wrap'))return;
+    document.getElementById('body-'+k).classList.toggle('collapsed');
+    document.getElementById('hdr-'+k).querySelector('.chevron').classList.toggle('open');
   });
-  document.getElementById('vis_'+k).addEventListener('change', ()=>{
+  document.getElementById('vis_'+k).addEventListener('change',()=>{
     const cb=document.getElementById('vis_'+k);
     const lbl=document.getElementById('lbl_'+k);
     lbl.textContent=cb.checked?'Poseur ✓':'Masqué';
     lbl.className='tog-lbl'+(cb.checked?' on':'');
-    if(!cb.checked) lbl.style.color='#BBBBBB'; else lbl.style.color='';
+    lbl.style.color=cb.checked?'':'#BBBBBB';
   });
 });
 
@@ -340,31 +327,53 @@ function setPresence(val){
 // ── Matériel ──
 document.getElementById('btn-add-mat').addEventListener('click',()=>addMat());
 function addMat(val=''){
-  const list=document.getElementById('mat-list');
   const id='mat_'+Date.now();
-  const div=document.createElement('div'); div.className='mat-item'; div.id=id;
-  div.innerHTML=`<input type="text" placeholder="Ex: Chevilles béton 10mm..." value="${val}"><button class="btn-del">×</button>`;
-  div.querySelector('.btn-del').onclick=()=>div.remove();
-  list.appendChild(div); div.querySelector('input').focus();
+  const div=document.createElement('div');div.className='mat-item';div.id=id;
+  div.innerHTML=`<input type="text" placeholder="Ex: Chevilles béton 10mm..." value="${val}"><button class="btn-del-item">×</button>`;
+  div.querySelector('.btn-del-item').onclick=()=>div.remove();
+  document.getElementById('mat-list').appendChild(div);
+  div.querySelector('input').focus();
 }
 function getMat(){return Array.from(document.querySelectorAll('#mat-list input')).map(i=>i.value.trim()).filter(Boolean)}
 
 // ── Attention ──
 document.getElementById('btn-add-att').addEventListener('click',()=>addAtt());
 function addAtt(val=''){
-  const list=document.getElementById('att-list');
   const id='att_'+Date.now();
-  const div=document.createElement('div'); div.className='att-item'; div.id=id;
-  div.innerHTML=`<div class="att-prefix">⚠️</div><input type="text" placeholder="Ex: Mur en béton armé..." value="${val}"><button class="btn-del" style="margin-top:6px">×</button>`;
-  div.querySelector('.btn-del').onclick=()=>div.remove();
-  list.appendChild(div); div.querySelector('input').focus();
+  const div=document.createElement('div');div.className='att-item';div.id=id;
+  div.innerHTML=`<div class="att-prefix">⚠️</div><input type="text" placeholder="Ex: Mur en béton armé..." value="${val}"><button class="btn-del-item" style="margin-top:6px">×</button>`;
+  div.querySelector('.btn-del-item').onclick=()=>div.remove();
+  document.getElementById('att-list').appendChild(div);
+  div.querySelector('input').focus();
 }
 function getAtt(){return Array.from(document.querySelectorAll('#att-list input')).map(i=>i.value.trim()).filter(Boolean)}
 
+// ── Archive ──
+document.getElementById('btn-archive').addEventListener('click', async()=>{
+  if(!currentDocId){toast('⚠️ Enregistre la fiche d\'abord');return}
+  try{
+    isArchived=!isArchived;
+    await updateDoc(doc(db,'planning_fiches',currentDocId),{archived:isArchived});
+    updateArchiveBtn();
+    toast(isArchived?'📁 Archivée — masquée au poseur':'↩ Désarchivée — visible au poseur');
+  }catch(e){isArchived=!isArchived;toast('❌ '+e.message)}
+});
+
+function updateArchiveBtn(){
+  const btn=document.getElementById('btn-archive');
+  if(isArchived){
+    btn.textContent='↩ Désarchiver — rendre visible au poseur';
+    btn.classList.add('on');
+  } else {
+    btn.textContent='📁 Archiver — masquer au poseur';
+    btn.classList.remove('on');
+  }
+}
+
 // ── Save ──
-document.getElementById('btn-save').addEventListener('click', async()=>{
+document.getElementById('btn-save').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-save');
-  btn.textContent='⏳ Enregistrement...'; btn.style.opacity='.6';
+  btn.textContent='⏳ Enregistrement...';btn.style.opacity='.6';
   const num=document.getElementById('num_chantier').value.trim()||'SANS-NUM';
   const fiche={
     num_chantier:num,
@@ -374,6 +383,7 @@ document.getElementById('btn-save').addEventListener('click', async()=>{
     adresse:document.getElementById('adresse').value,
     type_travail:document.getElementById('type_travail').value,
     statut:currentStatut,
+    archived:isArchived,
     contact_nom:document.getElementById('contact_nom').value,
     contact_tel:document.getElementById('contact_tel').value,
     presence,
@@ -383,7 +393,7 @@ document.getElementById('btn-save').addEventListener('click', async()=>{
     digicode:document.getElementById('digicode').value,
     parking:document.getElementById('parking').value,
     acces_notes:document.getElementById('acces_notes').value,
-    materiel:getMat(), attention:getAtt(),
+    materiel:getMat(),attention:getAtt(),
     note_poseur:document.getElementById('note_poseur').value,
     rem_general:document.getElementById('rem_general').value,
     rem_contact:document.getElementById('rem_contact').value,
@@ -400,56 +410,51 @@ document.getElementById('btn-save').addEventListener('click', async()=>{
     updated_at:new Date().toISOString()
   };
   try{
-    let docId;
     if(currentDocId){
-      // Mise à jour fiche existante
-      docId=currentDocId;
-      await setDoc(doc(db,'planning_fiches',docId),fiche,{merge:true});
+      await setDoc(doc(db,'planning_fiches',currentDocId),fiche,{merge:true});
     } else {
-      // Nouvelle fiche — ID unique automatique
       const ref=await addDoc(collection(db,'planning_fiches'),fiche);
-      docId=ref.id;
-      currentDocId=docId;
+      currentDocId=ref.id;
+      startListeners(currentDocId);
     }
-    startListeners(docId);
     toast('✅ Fiche '+num+' enregistrée');
   }catch(e){toast('❌ '+e.message)}
-  btn.textContent='💾 Enregistrer la fiche'; btn.style.opacity='1';
+  btn.textContent='💾 Enregistrer la fiche';btn.style.opacity='1';
 });
 
 // ── Liste ──
 async function loadList(){
   const list=document.getElementById('fiches-list');
   list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px">Chargement...</div>';
-  const snap=await getDocs(collection(db,'planning_fiches'));
-  list.innerHTML='';
-  if(snap.empty){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic">Aucune fiche</div>';return}
-  snap.forEach(d=>{
-    const f=d.data();
-    const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
-    const item=document.createElement('div');
-    item.style.cssText='background:#fff;border:1px solid #E2D9C8;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px';
-    // Info
-    const info=document.createElement('div');
-    info.style.cssText='flex:1;cursor:pointer;min-width:0';
-    info.innerHTML=`<div style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
-    info.onclick=()=>openFiche(d.id,f);
-    // Dup
-    const bDup=document.createElement('button');
-    bDup.innerHTML='⧉'; bDup.title='Dupliquer';
-    bDup.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:16px;cursor:pointer;flex-shrink:0';
-    bDup.onclick=()=>dupFiche(f);
-    // Del
-    const bDel=document.createElement('button');
-    bDel.innerHTML='🗑'; bDel.title='Supprimer';
-    bDel.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;flex-shrink:0';
-    bDel.onclick=()=>delFiche(d.id,f.num_chantier);
-    item.appendChild(info); item.appendChild(bDup); item.appendChild(bDel);
-    list.appendChild(item);
-  });
+  try{
+    const snap=await getDocs(collection(db,'planning_fiches'));
+    list.innerHTML='';
+    if(snap.empty){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic">Aucune fiche</div>';return}
+    snap.forEach(d=>{
+      const f=d.data();
+      const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
+      const item=document.createElement('div');
+      item.style.cssText='background:#fff;border:1px solid '+(f.archived?'#DDD5C0':'#E2D9C8')+';border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px;opacity:'+(f.archived?'0.55':'1');
+      const info=document.createElement('div');
+      info.style.cssText='flex:1;cursor:pointer;min-width:0';
+      info.innerHTML=`<div style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</span>${f.archived?'<span style="font-size:9px;font-weight:700;background:rgba(201,169,110,.15);color:#C9A96E;padding:2px 6px;border-radius:4px">Archivé</span>':''}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
+      info.onclick=()=>openFiche(d.id,f);
+      const bDup=document.createElement('button');
+      bDup.innerHTML='⧉';bDup.title='Dupliquer';
+      bDup.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:16px;cursor:pointer;flex-shrink:0';
+      bDup.onclick=()=>dupFiche(f);
+      const bDel=document.createElement('button');
+      bDel.innerHTML='🗑';bDel.title='Supprimer';
+      bDel.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;flex-shrink:0';
+      bDel.onclick=()=>delFiche(d.id,f.num_chantier);
+      item.appendChild(info);item.appendChild(bDup);item.appendChild(bDel);
+      list.appendChild(item);
+    });
+  }catch(e){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:#E74C3C;font-size:13px">Erreur de connexion</div>';
+  }
 }
 
-// ── Open fiche ──
 function openFiche(docId,f){
   currentDocId=docId;
   fillForm(f);
@@ -460,66 +465,48 @@ function openFiche(docId,f){
 
 function fillForm(f){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val||''};
-  set('num_chantier',f.num_chantier); set('semaine',f.semaine); set('date_chantier',f.date);
-  set('client_nom',f.client_nom); set('adresse',f.adresse); set('contact_nom',f.contact_nom);
-  set('contact_tel',f.contact_tel); set('absent_instr',f.absent_instr);
-  set('heure_debut',f.heure_debut||'07:00'); set('heure_fin',f.heure_fin||'12:00');
-  set('digicode',f.digicode); set('parking',f.parking); set('acces_notes',f.acces_notes);
-  set('note_poseur',f.note_poseur); set('rem_general',f.rem_general); set('rem_contact',f.rem_contact);
-  set('rem_acces',f.rem_acces); set('rem_materiel',f.rem_materiel); set('rem_attention',f.rem_attention);
+  set('num_chantier',f.num_chantier);set('semaine',f.semaine);set('date_chantier',f.date);
+  set('client_nom',f.client_nom);set('adresse',f.adresse);set('contact_nom',f.contact_nom);
+  set('contact_tel',f.contact_tel);set('absent_instr',f.absent_instr);
+  set('heure_debut',f.heure_debut||'07:00');set('heure_fin',f.heure_fin||'12:00');
+  set('digicode',f.digicode);set('parking',f.parking);set('acces_notes',f.acces_notes);
+  set('note_poseur',f.note_poseur);set('rem_general',f.rem_general);set('rem_contact',f.rem_contact);
+  set('rem_acces',f.rem_acces);set('rem_materiel',f.rem_materiel);set('rem_attention',f.rem_attention);
   document.getElementById('type_travail').value=f.type_travail||'';
-  // Archive btn
-  const archBtn=document.getElementById('btn-archive');
-  if(archBtn){
-    archBtn.dataset.archived=String(!!f.archived);
-    if(f.archived){
-      archBtn.textContent='↩ Désarchiver — rendre visible au poseur';
-      archBtn.style.background='rgba(201,169,110,.1)';
-      archBtn.style.borderColor='#C9A96E';
-      archBtn.style.color='#C9A96E';
-    } else {
-      archBtn.textContent='📁 Archiver — masquer au poseur';
-      archBtn.style.background='#F8F6F2';
-      archBtn.style.borderColor='#E2D9C8';
-      archBtn.style.color='#8A95A3';
-    }
-  }
-  // Statut
   currentStatut=f.statut||'Planifié';
   document.querySelectorAll('.statut-btn').forEach(b=>{b.classList.remove('active');if(b.dataset.statut===currentStatut)b.classList.add('active')});
-  // Présence
-  presence=null; document.getElementById('btn_oui').className='tog-btn'; document.getElementById('btn_non').className='tog-btn'; document.getElementById('field_absent').style.display='none';
-  if(f.presence) setPresence(f.presence);
-  // Visibility
+  presence=null;
+  document.getElementById('btn_oui').className='tog-btn';
+  document.getElementById('btn_non').className='tog-btn';
+  document.getElementById('field_absent').style.display='none';
+  if(f.presence)setPresence(f.presence);
   const vis=f.visibility||{};
   ['general','contact','acces','materiel','attention'].forEach(k=>{
-    const cb=document.getElementById('vis_'+k); cb.checked=vis[k]!==false;
+    const cb=document.getElementById('vis_'+k);cb.checked=vis[k]!==false;
     const lbl=document.getElementById('lbl_'+k);
-    lbl.textContent=cb.checked?'Poseur ✓':'Masqué'; lbl.className='tog-lbl'+(cb.checked?' on':'');
-    if(!cb.checked) lbl.style.color='#BBBBBB'; else lbl.style.color='';
+    lbl.textContent=cb.checked?'Poseur ✓':'Masqué';
+    lbl.className='tog-lbl'+(cb.checked?' on':'');
+    lbl.style.color=cb.checked?'':'#BBBBBB';
   });
-  // Matériel
-  document.getElementById('mat-list').innerHTML=''; (f.materiel||[]).forEach(m=>addMat(m));
-  // Attention
-  document.getElementById('att-list').innerHTML=''; (f.attention||[]).forEach(a=>addAtt(a));
-  // Reset photos/msgs
-  document.getElementById('photos-grid-admin').innerHTML=''; document.getElementById('photos-empty-admin').style.display='block';
-  document.getElementById('msg-list').innerHTML='';
+  document.getElementById('mat-list').innerHTML='';(f.materiel||[]).forEach(m=>addMat(m));
+  document.getElementById('att-list').innerHTML='';(f.attention||[]).forEach(a=>addAtt(a));
+  isArchived=!!f.archived;
+  updateArchiveBtn();
+  document.getElementById('photos-grid-admin').innerHTML='';
+  document.getElementById('photos-empty-admin').style.display='block';
+  document.getElementById('msg-list').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
 }
 
-// ── New fiche ──
 document.getElementById('btn-new-fiche').addEventListener('click',()=>{
-  currentDocId=null; stopListeners();
+  currentDocId=null;isArchived=false;stopListeners();
   fillForm({});
   document.getElementById('num_chantier').value='';
   document.getElementById('date_chantier').value=new Date().toISOString().split('T')[0];
-  document.getElementById('semaine').value=22;
-  document.getElementById('msg-list').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
+  document.getElementById('semaine').value='';
   document.getElementById('screen-list').classList.remove('active');
   document.getElementById('screen-fiche').classList.add('active');
 });
 
-// ── Back ──
 document.getElementById('btn-back').addEventListener('click',()=>{
   stopListeners();
   document.getElementById('screen-fiche').classList.remove('active');
@@ -527,37 +514,31 @@ document.getElementById('btn-back').addEventListener('click',()=>{
   loadList();
 });
 
-// ── Delete ──
 async function delFiche(docId,num){
-  if(!confirm('Supprimer la fiche '+(num||docId)+' ?')) return;
-  try{ await deleteDoc(doc(db,'planning_fiches',docId)); toast('🗑 Fiche supprimée'); loadList(); }
-  catch(e){ toast('❌ Erreur: '+e.message) }
+  if(!confirm('Supprimer la fiche '+(num||docId)+' ?'))return;
+  try{await deleteDoc(doc(db,'planning_fiches',docId));toast('🗑 Fiche supprimée');loadList();}
+  catch(e){toast('❌ '+e.message)}
 }
 
-// ── Duplicate ──
 function dupFiche(f){
-  currentDocId=null; stopListeners();
+  currentDocId=null;isArchived=false;stopListeners();
   fillForm(f);
   document.getElementById('num_chantier').value='';
   document.getElementById('date_chantier').value='';
   currentStatut='Planifié';
   document.querySelectorAll('.statut-btn').forEach((b,i)=>{b.classList.remove('active');if(i===0)b.classList.add('active')});
-  document.getElementById('msg-list').innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';
   document.getElementById('screen-list').classList.remove('active');
   document.getElementById('screen-fiche').classList.add('active');
   toast('⧉ Dupliquée — modifie le N° et la date');
 }
 
-// ── Listeners photos + messages ──
 function startListeners(docId){
   stopListeners();
-  // Photos
   unsubPhotos=onSnapshot(doc(db,'planning_fiches',docId),snap=>{
     const photos=(snap.data()&&snap.data().photos)||[];
     const grid=document.getElementById('photos-grid-admin');
     const empty=document.getElementById('photos-empty-admin');
-    grid.innerHTML='';
-    empty.style.display=photos.length?'none':'block';
+    grid.innerHTML='';empty.style.display=photos.length?'none':'block';
     photos.forEach(p=>{
       const div=document.createElement('div');
       div.style.cssText='position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#EEE';
@@ -565,7 +546,6 @@ function startListeners(docId){
       grid.appendChild(div);
     });
   });
-  // Messages
   const q=query(collection(db,'planning_fiches',docId,'messages'),orderBy('ts'));
   unsubMsgs=onSnapshot(q,snap=>{
     const list=document.getElementById('msg-list');
@@ -573,7 +553,7 @@ function startListeners(docId){
     if(snap.empty){list.innerHTML='<div style="text-align:center;padding:16px;color:var(--gris);font-size:12px;font-style:italic">Aucun message</div>';return}
     snap.forEach(d=>{
       const m=d.data();
-      const div=document.createElement('div'); div.className='msg '+(m.role==='admin'?'a':'p');
+      const div=document.createElement('div');div.className='msg '+(m.role==='admin'?'a':'p');
       div.innerHTML=`<div class="msg-who">${m.role==='admin'?'Anthony CF':'Poseur'}</div><div class="msg-bubble">${m.text}</div><div class="msg-time">${m.time||''}</div>`;
       list.appendChild(div);
     });
@@ -586,13 +566,12 @@ function stopListeners(){
   if(unsubMsgs){unsubMsgs();unsubMsgs=null}
 }
 
-// ── Send message ──
-document.getElementById('btn-msgsend').addEventListener('click', sendMsg);
+document.getElementById('btn-msgsend').addEventListener('click',sendMsg);
 document.getElementById('msg-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}});
 async function sendMsg(){
   if(!currentDocId){toast('⚠️ Enregistre la fiche d\'abord');return}
   const input=document.getElementById('msg-input');
-  const text=input.value.trim(); if(!text) return;
+  const text=input.value.trim();if(!text)return;
   await addDoc(collection(db,'planning_fiches',currentDocId,'messages'),{
     role:'admin',text,
     time:new Date().toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'}),
@@ -603,3 +582,7 @@ async function sendMsg(){
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
+loadList();
+</script>
+</body>
+</html>
