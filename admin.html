@@ -394,9 +394,17 @@ document.getElementById('btn-save').addEventListener('click', async()=>{
     updated_at:new Date().toISOString()
   };
   try{
-    const docId=currentDocId||num;
-    await setDoc(doc(db,'planning_fiches',docId),fiche,{merge:true});
-    currentDocId=docId;
+    let docId;
+    if(currentDocId){
+      // Mise à jour fiche existante
+      docId=currentDocId;
+      await setDoc(doc(db,'planning_fiches',docId),fiche,{merge:true});
+    } else {
+      // Nouvelle fiche — ID unique automatique
+      const ref=await addDoc(collection(db,'planning_fiches'),fiche);
+      docId=ref.id;
+      currentDocId=docId;
+    }
     startListeners(docId);
     toast('✅ Fiche '+num+' enregistrée');
   }catch(e){toast('❌ '+e.message)}
@@ -414,23 +422,28 @@ async function loadList(){
     const f=d.data();
     const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
     const item=document.createElement('div');
-    item.style.cssText='background:#fff;border:1px solid #E2D9C8;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px';
+    item.style.cssText='background:'+(f.archived?'#F8F6F2':'#fff')+';border:1px solid '+(f.archived?'#DDD5C0':'#E2D9C8')+';border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px;opacity:'+(f.archived?'0.6':'1');
     // Info
     const info=document.createElement('div');
     info.style.cssText='flex:1;cursor:pointer;min-width:0';
-    info.innerHTML=`<div style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
+    info.innerHTML=`<div style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</span>${f.archived?'<span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(201,169,110,.15);color:#C9A96E;padding:2px 6px;border-radius:4px">Archivé</span>':''}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
     info.onclick=()=>openFiche(d.id,f);
     // Dup
     const bDup=document.createElement('button');
     bDup.innerHTML='⧉'; bDup.title='Dupliquer';
     bDup.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:16px;cursor:pointer;flex-shrink:0';
     bDup.onclick=()=>dupFiche(f);
+    // Archive
+    const bArch=document.createElement('button');
+    bArch.innerHTML=f.archived?'↩':'📁'; bArch.title=f.archived?'Désarchiver':'Archiver';
+    bArch.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:'+(f.archived?'rgba(201,169,110,.15)':'#F0F0F0')+';color:'+(f.archived?'#C9A96E':'#8A95A3')+';font-size:15px;cursor:pointer;flex-shrink:0';
+    bArch.onclick=()=>archiveFiche(d.id,f.archived);
     // Del
     const bDel=document.createElement('button');
     bDel.innerHTML='🗑'; bDel.title='Supprimer';
     bDel.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;flex-shrink:0';
     bDel.onclick=()=>delFiche(d.id,f.num_chantier);
-    item.appendChild(info); item.appendChild(bDup); item.appendChild(bDel);
+    item.appendChild(info); item.appendChild(bDup); item.appendChild(bArch); item.appendChild(bDel);
     list.appendChild(item);
   });
 }
