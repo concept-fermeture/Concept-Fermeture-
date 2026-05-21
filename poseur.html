@@ -277,7 +277,9 @@ async function loadPoses(){
     const fiches=[];
     snap.forEach(d=>{ if(d.data().date) fiches.push({id:d.id,...d.data()}); });
     const today=new Date().toISOString().split('T')[0];
-    const upcoming=fiches.filter(f=>f.date>=today&&!f.archived).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,15);
+    console.log('Fiches total:', fiches.length, 'dont archivées:', fiches.filter(f=>f.archived).length);
+    const upcoming=fiches.filter(f=>f.date>=today&&f.archived!==true).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,15);
+    console.log('Fiches visibles poseur:', upcoming.length);
     if(!upcoming.length) return;
     cont.innerHTML='<div class="poses-lbl">Prochaines poses</div>';
     upcoming.forEach(f=>{
@@ -299,7 +301,7 @@ document.getElementById('btn-open').addEventListener('click', async()=>{
   try{
     const snap=await getDocs(collection(db,'planning_fiches'));
     const matches=[];
-    snap.forEach(d=>{ const f=d.data(); if(f.date===dateVal&&!f.archived) matches.push({id:d.id,...f}); });
+    snap.forEach(d=>{ const f=d.data(); if(f.date===dateVal&&f.archived!==true) matches.push({id:d.id,...f}); });
     if(!matches.length){ toast('⚠️ Aucune fiche pour cette date'); return; }
     if(matches.length===1){ openFicheData(matches[0].id,matches[0]); }
     else{ showChoix(matches); }
