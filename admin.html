@@ -164,6 +164,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--nuit);min
             <button class="statut-btn" data-statut="Terminé">✅ Terminé</button>
             <button class="statut-btn" data-statut="Reporté">⏳ Reporté</button>
           </div>
+        <div class="field" style="margin-top:4px">
+          <div class="field-label">Visibilité poseur</div>
+          <button id="btn-archive" onclick="toggleArchive()" style="padding:11px 14px;border-radius:9px;border:1.5px solid #E2D9C8;background:#F8F6F2;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#8A95A3;cursor:pointer;width:100%;text-align:left;transition:all .15s">
+            📁 Archiver — masquer au poseur
+          </button>
+        </div>
         </div>
         <div class="field"><div class="field-label">Remarque</div><textarea id="rem_general" placeholder="Remarque complémentaire..."></textarea></div>
       </div>
@@ -422,28 +428,23 @@ async function loadList(){
     const f=d.data();
     const dateStr=f.date?f.date.split('-').reverse().join('/'):'—';
     const item=document.createElement('div');
-    item.style.cssText='background:'+(f.archived?'#F8F6F2':'#fff')+';border:1px solid '+(f.archived?'#DDD5C0':'#E2D9C8')+';border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px;opacity:'+(f.archived?'0.6':'1');
+    item.style.cssText='background:#fff;border:1px solid #E2D9C8;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px';
     // Info
     const info=document.createElement('div');
     info.style.cssText='flex:1;cursor:pointer;min-width:0';
-    info.innerHTML=`<div style="display:flex;align-items:center;gap:6px"><span style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</span>${f.archived?'<span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(201,169,110,.15);color:#C9A96E;padding:2px 6px;border-radius:4px">Archivé</span>':''}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
+    info.innerHTML=`<div style="font-family:monospace;font-size:13px;font-weight:600;color:#C9A96E">${f.num_chantier||'—'}</div><div style="font-size:12px;color:#8A95A3;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.client_nom||'—'} · ${dateStr}</div>`;
     info.onclick=()=>openFiche(d.id,f);
     // Dup
     const bDup=document.createElement('button');
     bDup.innerHTML='⧉'; bDup.title='Dupliquer';
     bDup.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:#27AE60;font-size:16px;cursor:pointer;flex-shrink:0';
     bDup.onclick=()=>dupFiche(f);
-    // Archive
-    const bArch=document.createElement('button');
-    bArch.innerHTML=f.archived?'↩':'📁'; bArch.title=f.archived?'Désarchiver':'Archiver';
-    bArch.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:'+(f.archived?'rgba(201,169,110,.15)':'#F0F0F0')+';color:'+(f.archived?'#C9A96E':'#8A95A3')+';font-size:15px;cursor:pointer;flex-shrink:0';
-    bArch.onclick=()=>archiveFiche(d.id,f.archived);
     // Del
     const bDel=document.createElement('button');
     bDel.innerHTML='🗑'; bDel.title='Supprimer';
     bDel.style.cssText='width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:#E74C3C;font-size:15px;cursor:pointer;flex-shrink:0';
     bDel.onclick=()=>delFiche(d.id,f.num_chantier);
-    item.appendChild(info); item.appendChild(bDup); item.appendChild(bArch); item.appendChild(bDel);
+    item.appendChild(info); item.appendChild(bDup); item.appendChild(bDel);
     list.appendChild(item);
   });
 }
@@ -467,6 +468,21 @@ function fillForm(f){
   set('note_poseur',f.note_poseur); set('rem_general',f.rem_general); set('rem_contact',f.rem_contact);
   set('rem_acces',f.rem_acces); set('rem_materiel',f.rem_materiel); set('rem_attention',f.rem_attention);
   document.getElementById('type_travail').value=f.type_travail||'';
+  // Archive btn
+  const archBtn=document.getElementById('btn-archive');
+  if(archBtn){
+    if(f.archived){
+      archBtn.textContent='↩ Désarchiver — rendre visible au poseur';
+      archBtn.style.background='rgba(201,169,110,.1)';
+      archBtn.style.borderColor='#C9A96E';
+      archBtn.style.color='#C9A96E';
+    } else {
+      archBtn.textContent='📁 Archiver — masquer au poseur';
+      archBtn.style.background='#F8F6F2';
+      archBtn.style.borderColor='#E2D9C8';
+      archBtn.style.color='#8A95A3';
+    }
+  }
   // Statut
   currentStatut=f.statut||'Planifié';
   document.querySelectorAll('.statut-btn').forEach(b=>{b.classList.remove('active');if(b.dataset.statut===currentStatut)b.classList.add('active')});
