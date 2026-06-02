@@ -866,7 +866,7 @@ function stab(ctx,id,el){
 // BUILD ITEM
 function buildItem(c,onclick){
   var fd=fmtD(c.date);var st=si(c.statut);
-  var unread=c.msgs.filter(function(m){return m.r==="client";}).length;
+  var unread=(c.msgs||[]).filter(function(m){return m.r==="client";}).length;
   var div=document.createElement("div");div.className="item";
   var bar=document.createElement("div");bar.className="item-bar";bar.style.background=SBAR[c.statut]||"#ccc";div.appendChild(bar);
   var dateDiv=document.createElement("div");dateDiv.style.textAlign="center";dateDiv.style.minWidth="30px";
@@ -1105,8 +1105,8 @@ function openAD(id){
   updFa();
   var ml=document.getElementById("fmat");ml.innerHTML="";c.mat.forEach(function(m){addMv(ml,m);});
   var al=document.getElementById("fatt");al.innerHTML="";c.att.forEach(function(a){addAv(al,a);});
-  renderMsgs("mc",c.msgs,false);
-  renderMsgs("mc-ro",c.msgs,false);
+  renderMsgs("mc",[],false);
+  renderMsgs("mc-ro",[],false);
   renderMsgs("mp",[],false);
   ["aga","agap"].forEach(function(g){document.getElementById(g).innerHTML="";});
   ["aea","aeap"].forEach(function(e){document.getElementById(e).style.display="block";});
@@ -1132,7 +1132,7 @@ function fillVueClient(c){
   document.getElementById("vc-date").textContent=fd.long;
   document.getElementById("vc-heure").textContent=c.hD;
   document.getElementById("vc-adr").textContent=c.adr;
-  renderMsgs("vc-msgs",c.msgs,true);
+  renderMsgs("vc-msgs",[],true);
 }
 
 // POSEUR DETAIL
@@ -1158,7 +1158,7 @@ function openPD(id){
   fillMatAtt("pd-mat","pd-att",c);
   ["agp","agpa"].forEach(function(g){document.getElementById(g).innerHTML="";});
   ["aep","aepa"].forEach(function(e){document.getElementById(e).style.display="block";});
-  renderMsgs("pd-mc",c.msgs,false);
+  renderMsgs("pd-mc",[],false);
   renderMsgs("pd-mp",[],false);
   document.getElementById("bspa").onclick=function(){sndMFb("pa");};
   startMsgListener(id);
@@ -1183,7 +1183,7 @@ function openSTD(id){
   document.getElementById("std-teln").textContent=c.tel;
   document.getElementById("std-type").textContent=c.type;
   fillMatAtt("std-mat","std-att",c);
-  renderMsgs("std-mc",c.msgs,false);
+  renderMsgs("std-mc",[],false);
   renderMsgs("std-mp",[],false);
   document.getElementById("bsst").onclick=function(){sndMFb("sta");};
   startMsgListener(id);
@@ -1222,7 +1222,7 @@ function openCL(id){
   document.getElementById("cl-adr").textContent=c.adr;
   document.getElementById("cl-vz").href=c.vz;
   document.getElementById("cl-vzl").textContent=c.ref+" - "+c.total;
-  renderMsgs("cl-mc",c.msgs,true);
+  renderMsgs("cl-mc",[],true);
   document.getElementById("bscl").onclick=function(){sndMFb("cc");};
 }
 
