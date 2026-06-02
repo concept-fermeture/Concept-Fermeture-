@@ -283,29 +283,36 @@ window.fbSave = async function(id, data) {
 };
 window.fbDelete = async function(id) { await deleteDoc(doc(db,"clients",id)); };
 // Mapping statut planning_fiches -> v5
+var STATUT_MAP = {
+  "En attente":"at","Planifie":"pl","Planifié":"pl","Planifie":"pl",
+  "En cours":"ec","Termine":"fi","Terminé":"fi","Reporté":"at","Reporte":"at",
+  "Acompte recu":"ac","Commande en cours":"ce","Commande validee":"cv","Pose terminee":"fi"
+};
 function mapStatut(s) {
-  var m = {"Planifie":"pl","Planifié":"pl","En cours":"ec","Termine":"fi","Terminé":"fi","Reporte":"at","Reporté":"at","En attente":"at","Accepte":"ac","Accepté":"ac"};
-  return m[s] || "pl";
+  if(!s) return "at";
+  // Already a v5 id (2 chars)
+  if(s.length <= 2) return s;
+  return STATUT_MAP[s] || "pl";
 }
 function mapDoc(id, d) {
   return {
     id: id,
     nom: d.client_nom || d.nom || "",
     adr: d.adresse || d.adr || "",
-    tel: d.contact_tel || d.tel || "",
+    tel: d.contact_tel || d.contact_telephone || d.tel || "",
     email: d.email || "",
-    ref: d.num_chantier || d.ref || "",
-    type: d.type_travail || d.type || "",
-    statut: d.statut && d.statut.length === 2 ? d.statut : mapStatut(d.statut || ""),
-    date: d.date || d.date_chantier || "",
-    hD: d.heure_debut || d.hD || "07:00",
-    hF: d.heure_fin || d.hF || "17:00",
-    dliv: d.dliv || "",
-    total: d.total || "",
-    vz: d.vertuoza_url || d.vz || "",
-    mat: d.materiel || d.mat || [],
-    att: d.attention || d.att || [],
-    note: d.note_poseur || d.note || "",
+    ref: d.num_chantier || d.ref || d.reference || "",
+    type: d.type_travail || d.type || d.type_de_travaux || "",
+    statut: mapStatut(d.statut || ""),
+    date: d.date || d.date_chantier || d.date_pose || "",
+    hD: d.heure_debut || d.hD || d.horaire_debut || "07:00",
+    hF: d.heure_fin || d.hF || d.horaire_fin || "17:00",
+    dliv: d.dliv || d.date_livraison || "",
+    total: d.total || d.montant || "",
+    vz: d.vertuoza_url || d.vz || d.lien_vertuoza || "",
+    mat: Array.isArray(d.materiel) ? d.materiel : (Array.isArray(d.mat) ? d.mat : []),
+    att: Array.isArray(d.attention) ? d.attention : (Array.isArray(d.att) ? d.att : []),
+    note: d.note_poseur || d.note || d.notes || "",
     st: d.st || false,
     archived: d.archived || false
   };
@@ -1141,26 +1148,29 @@ function openAD(id){
   document.getElementById("ad-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
   document.getElementById("ad-su").textContent=fd.long+" - "+c.hD+"-"+c.hF;
   buildSS(c.statut);
-  document.getElementById("fn").value=c.nom;
-  document.getElementById("fa").value=c.adr;
-  document.getElementById("ft").value=c.tel;
-  document.getElementById("fe").value=c.email;
-  document.getElementById("fd").value=c.date;
-  document.getElementById("fhd").value=c.hD;
-  document.getElementById("fhf").value=c.hF;
+  document.getElementById("fn").value=c.nom||c.client_nom||"";
+  document.getElementById("fa").value=c.adr||c.adresse||"";
+  document.getElementById("ft").value=c.tel||c.contact_tel||"";
+  document.getElementById("fe").value=c.email||"";
+  document.getElementById("fd").value=c.date||c.date_chantier||"";
+  document.getElementById("fhd").value=c.hD||c.heure_debut||"07:00";
+  document.getElementById("fhf").value=c.hF||c.heure_fin||"17:00";
   document.getElementById("fdliv").value=c.dliv||"";
-  document.getElementById("fnote").value=c.note;
+  document.getElementById("fnote").value=c.note||c.note_poseur||"";
   document.getElementById("fst").checked=c.st||false;
-  document.getElementById("fvz").href=c.vz;
-  document.getElementById("fvzl").textContent=c.ref+" - "+c.total;
+  document.getElementById("fvz").href=c.vz||c.vertuoza_url||"#";
+  document.getElementById("fvzl").textContent=(c.ref||c.num_chantier||"")+" - "+(c.total||"");
+  document.getElementById("fsem").value=c.semaine||"";
   document.getElementById("stpin-disp").value=stPin;
   var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+id;
   document.getElementById("flien").textContent=lien;
   document.getElementById("fcopy").onclick=function(){navigator.clipboard.writeText(lien).then(function(){toast2("Lien copie !");});};
   document.getElementById("fsms").onclick=function(){window.open("sms:"+c.tel+"?body="+lien);};
   updFa();
-  var ml=document.getElementById("fmat");ml.innerHTML="";c.mat.forEach(function(m){addMv(ml,m);});
-  var al=document.getElementById("fatt");al.innerHTML="";c.att.forEach(function(a){addAv(al,a);});
+  var mat=Array.isArray(c.mat)?c.mat:(Array.isArray(c.materiel)?c.materiel:[]);
+  var att=Array.isArray(c.att)?c.att:(Array.isArray(c.attention)?c.attention:[]);
+  var ml=document.getElementById("fmat");ml.innerHTML="";mat.forEach(function(m){addMv(ml,m);});
+  var al=document.getElementById("fatt");al.innerHTML="";att.forEach(function(a){addAv(al,a);});
   renderMsgs("mc",[],false);
   renderMsgs("mc-ro",[],false);
   renderMsgs("mp",[],false);
@@ -1203,14 +1213,20 @@ function openPD(id){
   document.getElementById("pd-ey").textContent=fd.long+" - "+c.hD+"-"+c.hF;
   document.getElementById("pd-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
   document.getElementById("pd-su").textContent=c.ref+" - "+c.type;
-  document.getElementById("pd-nom").textContent=c.nom;
-  document.getElementById("pd-adr").textContent=c.adr;
-  document.getElementById("pd-waze").href="waze://?q="+encodeURIComponent(c.adr)+"&navigate=yes";
-  document.getElementById("pd-tel").href="tel:"+c.tel;
-  document.getElementById("pd-teln").textContent=c.tel;
-  document.getElementById("pd-type").textContent=c.type;
-  document.getElementById("pd-vz").href=c.vz;
-  document.getElementById("pd-vzl").textContent=c.ref+" - "+c.total;
+  var pdNom=c.nom||c.client_nom||"";
+  var pdAdr=c.adr||c.adresse||"";
+  var pdTel=c.tel||c.contact_tel||"";
+  var pdType=c.type||c.type_travail||"";
+  var pdRef=c.ref||c.num_chantier||"";
+  var pdVz=c.vz||c.vertuoza_url||"#";
+  document.getElementById("pd-nom").textContent=pdNom;
+  document.getElementById("pd-adr").textContent=pdAdr;
+  document.getElementById("pd-waze").href="waze://?q="+encodeURIComponent(pdAdr)+"&navigate=yes";
+  document.getElementById("pd-tel").href="tel:"+pdTel;
+  document.getElementById("pd-teln").textContent=pdTel;
+  document.getElementById("pd-type").textContent=pdType;
+  document.getElementById("pd-vz").href=pdVz;
+  document.getElementById("pd-vzl").textContent=pdRef+" - "+(c.total||"");
   fillMatAtt("pd-mat","pd-att",c);
   ["agp","agpa"].forEach(function(g){document.getElementById(g).innerHTML="";});
   ["aep","aepa"].forEach(function(e){document.getElementById(e).style.display="block";});
@@ -1232,12 +1248,16 @@ function openSTD(id){
   document.getElementById("std-ey").textContent=fd.long+" - "+c.hD+"-"+c.hF;
   document.getElementById("std-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
   document.getElementById("std-su").textContent=c.ref+" - "+c.type;
-  document.getElementById("std-nom").textContent=c.nom;
-  document.getElementById("std-adr").textContent=c.adr;
-  document.getElementById("std-waze").href="waze://?q="+encodeURIComponent(c.adr)+"&navigate=yes";
-  document.getElementById("std-tel").href="tel:"+c.tel;
-  document.getElementById("std-teln").textContent=c.tel;
-  document.getElementById("std-type").textContent=c.type;
+  var stNom=c.nom||c.client_nom||"";
+  var stAdr=c.adr||c.adresse||"";
+  var stTel=c.tel||c.contact_tel||"";
+  var stType=c.type||c.type_travail||"";
+  document.getElementById("std-nom").textContent=stNom;
+  document.getElementById("std-adr").textContent=stAdr;
+  document.getElementById("std-waze").href="waze://?q="+encodeURIComponent(stAdr)+"&navigate=yes";
+  document.getElementById("std-tel").href="tel:"+stTel;
+  document.getElementById("std-teln").textContent=stTel;
+  document.getElementById("std-type").textContent=stType;
   fillMatAtt("std-mat","std-att",c);
   renderMsgs("std-mc",[],false);
   renderMsgs("std-mp",[],false);
@@ -1246,13 +1266,16 @@ function openSTD(id){
 }
 
 function fillMatAtt(matId,attId,c){
+  var mat=Array.isArray(c.mat)?c.mat:(Array.isArray(c.materiel)?c.materiel:[]);
+  var att=Array.isArray(c.att)?c.att:(Array.isArray(c.attention)?c.attention:[]);
+  var note=c.note||c.note_poseur||"";
   var ml=document.getElementById(matId);ml.innerHTML="";
-  if(c.mat.length){c.mat.forEach(function(m){var d=document.createElement("div");d.className="mi";d.innerHTML="<div class='md'></div>"+m;ml.appendChild(d);});}
+  if(mat.length){mat.forEach(function(m){var d=document.createElement("div");d.className="mi";d.innerHTML="<div class='md'></div>"+m;ml.appendChild(d);});}
   else ml.innerHTML="<div class='mempty'>Aucun materiel</div>";
   var ab=document.getElementById(attId);ab.innerHTML="";
-  c.att.forEach(function(a){var d=document.createElement("div");d.className="ai";d.textContent="! "+a;ab.appendChild(d);});
-  if(c.note){var n=document.createElement("div");n.className="nb";n.textContent="Note Anthony : "+c.note;ab.appendChild(n);}
-  if(!c.att.length&&!c.note)ab.innerHTML="<div class='mempty'>Aucun point d attention</div>";
+  att.forEach(function(a){var d=document.createElement("div");d.className="ai";d.textContent="! "+a;ab.appendChild(d);});
+  if(note){var n=document.createElement("div");n.className="nb";n.textContent="Note Anthony : "+note;ab.appendChild(n);}
+  if(!att.length&&!note)ab.innerHTML="<div class='mempty'>Aucun point d attention</div>";
 }
 
 // CLIENT VIEW
