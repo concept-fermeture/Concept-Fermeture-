@@ -1463,6 +1463,7 @@ function openSTD(id){
   renderMsgs("std-mp",[],false);
   document.getElementById("bsst").onclick=function(){sndMFb("sta");};
   startMsgListener(id);
+  startMsgListener(id);
 }
 
 function fillMatAtt(matId,attId,c){
@@ -1603,14 +1604,28 @@ function startPhotoListener(clientId){
   unsubPhotos=window.fbPhotoListen(clientId, function(photos){
     // Vider toutes les grilles
     ["aga","agpa","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
-    ["aea","aepa","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display=photos.length?"none":"block";});
-    // Toutes les photos visibles partout
+    var hasPhotos=photos.length>0;
+    ["aea","aepa","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display=hasPhotos?"none":"block";});
+
     photos.forEach(function(p){
       var lbl=p.who||"Equipe";
-      mkPhotoTile("aga","aea",p.src,lbl,p.id);      // admin mes photos
-      mkPhotoTile("agpa","aepa",p.src,lbl,null);    // admin vue poseur
-      mkPhotoTile("agp","aep",p.src,lbl,null);      // poseur photos
-      mkPhotoTile("stpg","stae",p.src,lbl,null);    // ST photos
+      var pid=p.id;
+
+      // aga : Admin "Mes photos" = Anthony seulement, peut supprimer
+      if(p.who==="Anthony"){
+        mkPhotoTile("aga","aea",p.src,lbl,pid);
+      }
+
+      // agpa : Admin "Vue equipe" = tout le monde, lecture seule
+      mkPhotoTile("agpa","aepa",p.src,lbl,null);
+
+      // agp : Poseur voit tout, peut supprimer ses propres photos
+      var pidP = p.who==="Poseur" ? pid : null;
+      mkPhotoTile("agp","aep",p.src,lbl,pidP);
+
+      // stpg : ST voit tout, peut supprimer ses propres photos
+      var pidST = p.who==="ST" ? pid : null;
+      mkPhotoTile("stpg","stae",p.src,lbl,pidST);
     });
   });
 }
@@ -1636,6 +1651,11 @@ function setupPhotoUp(inputId, who){
 setupPhotoUp("pua","Anthony");
 setupPhotoUp("pup","Poseur");
 setupPhotoUp("stpup","ST");
+
+// Pour poseur et ST: démarrer le photo listener si pas encore actif
+function ensurePhotoListener(){
+  if(!unsubPhotos&&cid&&window._fbReady) startPhotoListener(cid);
+}
 
 // PDF
 function genPDF(){
