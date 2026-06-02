@@ -390,16 +390,19 @@ window.fbUpdate = async function(id, data) {
 
 // A - PHOTOS: listen to photos subcollection (or field in doc)
 window.fbLoadPhotos = async function(cid) {
-  const d = await getDocs(collection(db,"planning_fiches"));
-  var photos_admin = [], photos_poseur = [];
-  d.forEach(function(doc2){
-    if(doc2.id===cid){
-      var data=doc2.data();
-      photos_admin = data.photos_admin || data.photos || [];
-      photos_poseur = data.photos_poseur || [];
-    }
-  });
-  return {admin: photos_admin, poseur: photos_poseur};
+  try {
+    const snap = await getDocs(collection(db,"planning_fiches"));
+    var photos_admin=[], photos_poseur=[];
+    snap.forEach(function(d2){
+      if(d2.id===cid){
+        var data=d2.data();
+        // Essayer tous les noms de champs possibles
+        photos_admin=data.photos_admin||data.photos||data.admin_photos||data.images_admin||[];
+        photos_poseur=data.photos_poseur||data.poseur_photos||data.images_poseur||[];
+      }
+    });
+    return {admin:photos_admin, poseur:photos_poseur};
+  } catch(e){ return {admin:[], poseur:[]}; }
 };
 window.fbSavePhotos = async function(cid, field, photos) {
   var update = {};
@@ -584,8 +587,14 @@ var unsubMsgs=null;
     </div>
     <div class="card"><div class="ch"><span class="ci">📄</span><span class="ct">Devis Vertuoza</span></div>
       <div class="cb">
-        <a id="fvz" href="#" target="_blank" class="bvz">
-          <div><div class="vz-t">Devis signe</div><div id="fvzl" style="font-size:13px;color:#fff">--</div></div>
+        <div class="f"><div class="fl">Lien Vertuoza (coller ici)</div>
+          <input type="url" id="fvz-url" placeholder="https://app.vertuoza.app/..." style="font-size:11px" oninput="updVZ()">
+        </div>
+        <div class="f"><div class="fl">Reference devis (ex: 2026-187)</div>
+          <input type="text" id="fvz-ref" placeholder="2026-XXX" oninput="updVZ()">
+        </div>
+        <a id="fvz" href="#" target="_blank" class="bvz" style="margin-top:4px">
+          <div><div class="vz-t">Ouvrir le devis signe</div><div id="fvzl" style="font-size:13px;color:#fff">--</div></div>
           <span class="vz-b">Vertuoza</span>
         </a>
       </div>
@@ -611,7 +620,7 @@ var unsubMsgs=null;
   </div>
 
   <!-- TAB PROJET -->
-  <div id="t-projet" class="tc">
+  <div id="t-projet" class="tc" style="padding-bottom:100px">
     <div class="card"><div class="ch"><span class="ci">📅</span><span class="ct">Planification</span></div>
       <div class="cb">
         <div class="r2">
@@ -662,7 +671,7 @@ var unsubMsgs=null;
         <div class="f"><div class="fl">Code actuel</div><input type="text" id="stpin-disp" readonly style="font-family:monospace;letter-spacing:.2em;color:var(--or);font-weight:700"></div>
         <div class="f"><div class="fl">Nouveau code (4 chiffres)</div><input type="text" id="stpin-new" maxlength="4" inputmode="numeric" placeholder="1234"></div>
       </div>
-      <button onclick="changeSTPIN()" style="padding:9px;border-radius:9px;border:none;background:var(--or);color:var(--nuit);font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%">Mettre a jour le code</button>
+      <button onclick="changeSTPIN()" style="padding:13px;border-radius:11px;border:none;background:var(--or);color:var(--nuit);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;letter-spacing:.04em">Mettre a jour le code ST</button>
     </div>
   </div>
 
@@ -976,12 +985,17 @@ document.getElementById("pi-st").oninput=function(){
 };
 // Changement code ST
 function changeSTPIN(){
-  var n=document.getElementById("stpin-new").value.trim();
-  if(n.length!==4||!/^[0-9]{4}$/.test(n)){toast2("Code invalide - 4 chiffres");return;}
+  var inp=document.getElementById("stpin-new");
+  if(!inp)return;
+  var n=inp.value.trim();
+  if(n.length!==4||!/^[0-9]{4}$/.test(n)){toast2("Code invalide - 4 chiffres requis");return;}
   window.stPin=n;
-  document.getElementById("stpin-disp").value=n;
-  document.getElementById("stpin-new").value="";
-  toast2("Code sous-traitant mis a jour : "+n);
+  stPin=n; // aussi la variable locale
+  var disp=document.getElementById("stpin-disp");
+  if(disp)disp.value=n;
+  inp.value="";
+  inp.blur();
+  toast2("Code ST mis a jour : "+n);
 }
 
 // TABS
@@ -1164,7 +1178,10 @@ function saveClient(){
   data.email=document.getElementById("fe").value||"";
   data.ref=document.getElementById("fvzl").textContent.split(" - ")[0]||"";
   data.total=document.getElementById("fvzl").textContent.split(" - ")[1]||"";
-  data.vz=document.getElementById("fvz").getAttribute("href")||"";
+  data.vz=document.getElementById("fvz-url").value.trim()||document.getElementById("fvz").getAttribute("href")||"";
+  data.vertuoza_url=data.vz;
+  data.ref=document.getElementById("fvz-ref").value.trim()||data.ref;
+  data.num_chantier=data.ref;
   if(!window._fbReady){toast2("Firebase non disponible");return;}
   window.fbSave(cid,data).then(function(newId){
     cid=newId;
@@ -1286,10 +1303,20 @@ function renderMsgs(listId,msgs,isClient){
   var list=document.getElementById(listId);if(!list)return;list.innerHTML="";
   if(!msgs||!msgs.length){list.innerHTML="<div class='mempty'>Aucun message</div>";return;}
   msgs.forEach(function(m){
-    var isMe=(isClient&&m.r==="client")||(!isClient&&m.r==="admin");
-    var who=isClient?(m.r==="client"?"Vous":"Anthony CF"):(m.r==="admin"?"Anthony CF":"Client");
+    // Support multiple field formats from different versions
+    var role = m.r || m.role || m.auteur || m.from || "client";
+    var text = m.t || m.message || m.texte || m.content || m.msg || "";
+    var time = m.ti || m.time || m.date || m.timestamp || "";
+    if(!text) return; // skip empty messages
+    var isMe=(isClient&&role==="client")||(!isClient&&(role==="admin"||role==="Anthony"));
+    var who;
+    if(isClient) who=role==="client"?"Vous":"Anthony CF";
+    else if(role==="admin"||role==="Anthony") who="Anthony CF";
+    else if(role==="poseur") who="Poseur";
+    else if(role==="st") who="Sous-traitant";
+    else who="Client";
     var div=document.createElement("div");div.className="msg "+(isMe?"R":"L");
-    div.innerHTML="<div class='mw2'>"+who+"</div><div class='mb'>"+m.t+"</div><div class='mt'>"+m.ti+"</div>";
+    div.innerHTML="<div class='mw2'>"+who+"</div><div class='mb'>"+text+"</div><div class='mt'>"+time+"</div>";
     list.appendChild(div);
   });list.scrollTop=list.scrollHeight;
 }
@@ -1340,8 +1367,12 @@ function openAD(id){
   document.getElementById("fdliv").value=c.dliv||"";
   document.getElementById("fnote").value=c.note||c.note_poseur||"";
   document.getElementById("fst").checked=c.st||false;
-  document.getElementById("fvz").href=c.vz||c.vertuoza_url||"#";
-  document.getElementById("fvzl").textContent=(c.ref||c.num_chantier||"")+" - "+(c.total||"");
+  var vzUrl=c.vz||c.vertuoza_url||"";
+  var vzRef=c.ref||c.num_chantier||"";
+  document.getElementById("fvz").href=vzUrl||"#";
+  document.getElementById("fvz-url").value=vzUrl;
+  document.getElementById("fvz-ref").value=vzRef;
+  document.getElementById("fvzl").textContent=vzRef||(vzUrl?"Lien configure":"--");
   document.getElementById("fsem").value=c.semaine||"";
   document.getElementById("stpin-disp").value=stPin;
   var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+id;
@@ -1485,6 +1516,16 @@ function openCL(id){
   document.getElementById("cl-vzl").textContent=c.ref+" - "+c.total;
   renderMsgs("cl-mc",[],true);
   document.getElementById("bscl").onclick=function(){sndMFb("cc");};
+}
+
+// UPDATE VERTUOZA
+function updVZ(){
+  var url=document.getElementById("fvz-url").value.trim();
+  var ref=document.getElementById("fvz-ref").value.trim();
+  var link=document.getElementById("fvz");
+  var lbl=document.getElementById("fvzl");
+  if(url){link.href=url;}
+  lbl.textContent=ref||(url?"Lien configure":"--");
 }
 
 // FAU (Fiche Auto)
