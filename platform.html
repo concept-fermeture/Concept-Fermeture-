@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>CF Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --or:#C9A96E;--or-p:#FBF7F0;--or-d:rgba(201,169,110,.12);
+  --nuit:#141820;--nuit2:#1F2535;--nuit3:#2C3347;
+  --bg:#F2EDE4;--blanc:#FFFFFF;--bd:#E2D9C8;--bd2:#D5CABB;
+  --slate:#4A5568;--gris:#8A95A3;
+  --ok:#27AE60;--ng:#E74C3C;--bl:#2E86C1;
+  --r:14px;--sh:0 2px 20px rgba(20,24,32,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--nuit);min-height:100vh}
+.sc{display:none}.sc.on{display:block}
+
+/* LANDING */
+.land{min-height:100vh;background:var(--nuit);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;position:relative}
+.land::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--or),transparent)}
+.land-logo{text-align:center;margin-bottom:28px}
+.land-logo img{width:100px;height:100px;object-fit:contain;filter:drop-shadow(0 4px 20px rgba(201,169,110,.3))}
+.land-sub{font-size:9px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.25);text-transform:uppercase;margin-top:6px}
+.land-div{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--or),transparent);margin:20px auto}
+.land-sel{font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-bottom:28px;letter-spacing:.06em}
+.land-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.lbtn{display:flex;align-items:center;gap:14px;padding:17px 20px;border-radius:var(--r);border:none;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;transition:opacity .15s;text-align:left;width:100%}
+.lbtn:active{opacity:.8}
+.lbtn.admin{background:var(--or);color:var(--nuit)}
+.lbtn.poseur{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.1)}
+.lbtn.st{background:rgba(255,255,255,.04);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.08)}
+.lbtn-icon{font-size:20px;flex-shrink:0}
+.lbtn-sub{font-size:10px;font-weight:400;opacity:.6;display:block;margin-top:2px}
+.land-sl{font-size:11px;color:rgba(255,255,255,.18);font-style:italic;margin-top:32px;text-align:center}
+
+/* PIN */
+.pin-wrap{min-height:100vh;background:var(--nuit);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;position:relative}
+.pin-wrap::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--or),transparent)}
+.pin-back{position:absolute;top:20px;left:16px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;cursor:pointer;font-family:"DM Sans",sans-serif}
+.pin-form{display:flex;flex-direction:column;align-items:center;width:100%;max-width:300px}
+.pin-brand{font-size:9px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.3);text-transform:uppercase;margin-bottom:6px}
+.pin-title{font-size:24px;font-weight:700;color:#fff;margin-bottom:22px}
+.pin-title span{color:var(--or)}
+.pin-sep{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--or),transparent);margin-bottom:26px}
+.pin-inp{width:100%;font-family:"DM Mono",monospace;font-size:32px;font-weight:600;text-align:center;letter-spacing:.3em;color:#fff;background:rgba(255,255,255,.06);border:1.5px solid rgba(201,169,110,.3);border-radius:14px;padding:17px;outline:none;-webkit-appearance:none;margin-bottom:8px}
+.pin-inp:focus{border-color:var(--or)}
+.pin-err{font-size:12px;color:var(--ng);height:16px;text-align:center;margin-bottom:4px}
+.pin-sl{font-size:11px;color:rgba(255,255,255,.18);font-style:italic;margin-top:22px;text-align:center}
+.pin-welcome{display:none;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.pin-welcome-ico{font-size:50px}
+.pin-welcome-msg{font-size:22px;font-weight:700;color:#fff}
+.pin-welcome-sub{font-size:13px;color:rgba(255,255,255,.35)}
+
+/* HDR */
+.hdr{background:var(--nuit);padding:22px 18px 18px;position:relative;overflow:hidden}
+.hdr::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--or)}
+.hdr-brand{font-size:9px;font-weight:700;letter-spacing:.18em;color:var(--or);text-transform:uppercase;margin-bottom:4px}
+.hdr-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.15}
+.hdr-title span{color:var(--or)}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
+.hdr-badge{position:absolute;top:20px;right:16px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+.hdr-badge.admin{background:var(--or);color:var(--nuit)}
+.hdr-badge.poseur{background:rgba(255,255,255,.08);color:var(--or);border:1px solid rgba(201,169,110,.3)}
+.hdr-badge.st{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.08)}
+.hdr-badge.client{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.08)}
+.back-btn{position:absolute;top:20px;right:14px;background:rgba(255,255,255,.08);border:none;color:var(--or);font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;cursor:pointer;font-family:"DM Sans",sans-serif}
+.home-btn{position:absolute;top:20px;left:22px;background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.45);font-size:11px;font-weight:600;padding:5px 9px;border-radius:8px;cursor:pointer;font-family:"DM Sans",sans-serif}
+
+/* TABS */
+.tabs{display:flex;background:var(--blanc);border-bottom:1px solid var(--bd)}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--gris);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab.on{color:var(--nuit);border-bottom-color:var(--or)}
+.tab-i{font-size:13px;display:block;margin-bottom:2px}
+.tc{display:none;padding:14px;flex-direction:column;gap:12px}
+.tc.on{display:flex}
+
+/* LIST */
+.ltb{padding:11px 14px 7px;display:flex;align-items:center;justify-content:space-between}
+.ltb-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.ltb-n{font-size:10px;font-weight:700;color:var(--nuit);background:var(--or-d);padding:2px 8px;border-radius:10px;border:1px solid var(--bd)}
+.lb{padding:0 12px;display:flex;flex-direction:column;gap:8px;padding-bottom:24px}
+
+/* ITEM */
+.item{background:var(--blanc);border-radius:var(--r);border:1px solid var(--bd);padding:13px 14px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:opacity .15s;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.item:active{opacity:.8}
+.item-bar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.item-day{font-size:22px;font-weight:700;color:var(--nuit);line-height:1;min-width:30px;text-align:center}
+.item-mo{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);margin-top:2px;text-align:center}
+.item-sep{width:1px;height:36px;background:var(--bd);flex-shrink:0}
+.item-info{flex:1;min-width:0}
+.item-nom{font-size:14px;font-weight:600;color:var(--nuit);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.item-det{font-size:11px;color:var(--gris);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-t{font-size:10px;color:var(--slate);font-family:"DM Mono",monospace;margin-top:2px}
+.mdot{width:7px;height:7px;border-radius:50%;background:var(--ng);flex-shrink:0}
+
+/* CHIP */
+.chip{font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;white-space:nowrap;display:inline-block}
+.chip.at{background:#F1F5F9;color:#64748B}
+.chip.ac{background:#FFF8EC;color:#92600A}
+.chip.ce{background:#FFF3E0;color:#C06B10}
+.chip.cv{background:#EAF7EE;color:var(--ok)}
+.chip.pl{background:#EBF4FF;color:var(--bl)}
+.chip.ec{background:#E8F5FF;color:#1A6F9A}
+.chip.fi{background:var(--or-d);color:#9A7D4A}
+
+/* CARD */
+.card{background:var(--blanc);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--sh);overflow:hidden}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--or-p);border-bottom:1px solid var(--bd)}
+.ci{font-size:14px}
+.ct{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);flex:1}
+.cb{padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--blanc)}
+
+/* FIELD */
+.f{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.f input,.f textarea,.f select{font-family:"DM Sans",sans-serif;font-size:14px;color:var(--nuit);background:var(--or-p);border:1.5px solid var(--bd);border-radius:9px;padding:10px 12px;outline:none;width:100%;-webkit-appearance:none;transition:border-color .15s}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--or);background:var(--blanc)}
+.f textarea{resize:none;min-height:70px;line-height:1.5}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* INFO */
+.ir{display:flex;flex-direction:column;gap:3px}
+.il{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.iv{font-size:14px;font-weight:500;color:var(--slate);line-height:1.4}
+
+/* STATUT STEPS */
+.ss{display:flex;flex-direction:column;gap:4px}
+.sstep{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bd);background:var(--or-p);cursor:pointer;transition:all .15s}
+.sstep.on{border-color:var(--or);background:var(--or-d)}
+.sstep-n{width:22px;height:22px;border-radius:50%;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--gris);flex-shrink:0;background:var(--blanc)}
+.sstep.on .sstep-n{background:var(--or);border-color:var(--or);color:var(--nuit)}
+.sstep-l{font-size:13px;font-weight:600;color:var(--slate);flex:1}
+.sstep.on .sstep-l{color:var(--nuit);font-weight:700}
+
+/* FICHE AUTO */
+.fa{background:#EAF7EE;border:1.5px solid #A8DDB8;border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:9px}
+.fa-h{font-size:12px;font-weight:700;color:var(--ok)}
+
+/* MAT/ATT */
+.mi{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--slate);padding:7px 0;border-bottom:1px solid var(--bd)}
+.mi:last-child{border-bottom:none}
+.md{width:5px;height:5px;border-radius:50%;background:var(--or);flex-shrink:0}
+.ai{display:flex;gap:8px;background:#FFFDF7;border:1px solid #F0E4C0;border-left:3px solid var(--or);border-radius:0 9px 9px 0;padding:9px 12px;font-size:13px;color:var(--slate);line-height:1.4}
+.nb{background:var(--or-p);border-left:3px solid var(--or);border-radius:0 9px 9px 0;padding:9px 12px;font-size:13px;color:var(--slate);line-height:1.5}
+.mw{display:flex;align-items:center;gap:8px}
+.mi2{flex:1;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--nuit);background:var(--or-p);border:1.5px solid var(--bd);border-radius:9px;padding:8px 12px;outline:none;transition:border-color .15s}
+.mi2:focus{border-color:var(--or)}
+.mi2::placeholder{color:#C0B8A8}
+.ds{width:28px;height:28px;border-radius:7px;border:none;background:#FDECEA;color:var(--ng);font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.badd{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1.5px dashed var(--bd2);background:transparent;font-family:"DM Sans",sans-serif;font-size:12px;color:var(--gris);cursor:pointer;width:100%;justify-content:center;font-weight:600}
+
+/* LIEN */
+.lb2{background:var(--nuit);border-radius:11px;padding:13px 14px;display:flex;flex-direction:column;gap:7px}
+.ll{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.lu{font-family:"DM Mono",monospace;font-size:11px;color:var(--or);word-break:break-all;line-height:1.6}
+.bcopy{padding:10px;border-radius:9px;border:1.5px solid var(--bd2);background:var(--blanc);color:var(--slate);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:700;cursor:pointer;width:100%}
+.bsms{padding:10px;border-radius:9px;border:1.5px solid #A8DDB8;background:#EAF7EE;color:var(--ok);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:700;cursor:pointer;width:100%}
+
+/* VZ */
+.bvz{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-radius:11px;background:var(--nuit);color:#fff;text-decoration:none;font-weight:600;transition:opacity .15s}
+.bvz:active{opacity:.8}
+.vz-t{font-size:9px;color:rgba(255,255,255,.35);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase}
+.vz-b{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--or-d);color:var(--or);padding:3px 8px;border-radius:4px;flex-shrink:0;border:1px solid rgba(201,169,110,.2)}
+
+/* MSG */
+.msgs{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;padding:12px 14px;background:var(--blanc)}
+.msg{display:flex;flex-direction:column;gap:2px;max-width:82%}
+.msg.L{align-self:flex-start}.msg.R{align-self:flex-end;align-items:flex-end}
+.mb{padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.45}
+.msg.L .mb{background:var(--or-p);color:var(--slate);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.msg.R .mb{background:var(--nuit);color:#fff;border-bottom-right-radius:4px}
+.mw2{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.mt{font-size:8px;color:var(--gris);font-family:"DM Mono",monospace}
+.mempty{text-align:center;padding:14px;color:var(--gris);font-size:12px;font-style:italic;background:var(--blanc)}
+.mc{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--bd);align-items:flex-end;background:var(--blanc)}
+.minp{flex:1;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--nuit);background:var(--or-p);border:1.5px solid var(--bd);border-radius:20px;padding:9px 14px;outline:none;resize:none;max-height:80px;line-height:1.4;transition:border-color .15s}
+.minp:focus{border-color:var(--or)}
+.minp::placeholder{color:#C0B8A8}
+.bsnd{width:38px;height:38px;border-radius:50%;border:none;background:var(--nuit);color:var(--or);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rn{display:flex;align-items:center;gap:7px;padding:9px 12px;background:var(--or-p);border-left:3px solid var(--bd2);border-radius:0 9px 9px 0;font-size:11px;color:var(--slate);font-style:italic}
+
+/* WAZE/CALL */
+.bwaze{display:flex;align-items:center;gap:9px;background:#00C5E5;color:#fff;text-decoration:none;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:700}
+.bcall{display:flex;align-items:center;gap:9px;background:#EAF7EE;border:1.5px solid #A8DDB8;border-radius:10px;padding:11px 14px;text-decoration:none}
+
+/* PHOTOS */
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.pi{position:relative;border-radius:11px;overflow:hidden;aspect-ratio:1;background:var(--or-p);box-shadow:var(--sh)}
+.pi img{width:100%;height:100%;object-fit:cover}
+.pm{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(20,24,32,.7));padding:18px 8px 7px;display:flex;justify-content:space-between}
+.pdel{position:absolute;top:6px;right:6px;background:rgba(20,24,32,.5);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pup{background:var(--blanc);border:2px dashed var(--bd2);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+
+/* PROG */
+.po{overflow-x:auto;scrollbar-width:none;padding:4px 0}
+.po::-webkit-scrollbar{display:none}
+.pi2{display:flex;align-items:flex-start;min-width:max-content}
+.pstep{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:66px}
+.pdot{width:24px;height:24px;border-radius:50%;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--gris);background:var(--blanc)}
+.pdot.dn{background:var(--or);border-color:var(--or);color:var(--nuit)}
+.pdot.cur{border-color:var(--or);border-width:2.5px;color:var(--or)}
+.plbl{font-size:8px;font-weight:600;color:var(--gris);text-align:center;line-height:1.3;max-width:62px}
+.plbl.dn{color:var(--slate)}
+.plbl.cur{color:var(--nuit);font-weight:700}
+.pline{width:14px;height:2px;background:var(--bd2);flex-shrink:0;margin-top:11px}
+.pline.dn{background:var(--or)}
+
+/* SAVE */
+.save{position:fixed;bottom:0;left:0;right:0;padding:11px 14px 18px;background:rgba(242,237,228,.96);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--bd);z-index:100;display:flex;gap:8px}
+.bsave{flex:2;padding:13px;border-radius:11px;border:none;background:var(--nuit);color:var(--or);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.04em}
+.bpdf{flex:1;padding:13px;border-radius:11px;border:1.5px solid var(--bd2);background:var(--blanc);color:var(--slate);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+
+/* PIN CHANGE */
+.pin-change{background:var(--or-d);border:1.5px solid var(--or);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:10px}
+.pin-change-title{font-size:11px;font-weight:700;color:var(--nuit);text-transform:uppercase;letter-spacing:.08em}
+
+/* TOAST */
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--nuit);color:var(--or);font-size:12px;font-weight:700;padding:9px 18px;border-radius:20px;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;letter-spacing:.04em;border:1px solid rgba(201,169,110,.2)}
+.toast.on{opacity:1}
+
+/* PDF MODAL */
+#pdfm{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;background:rgba(20,24,32,.75);flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto}
+#pdfm.on{display:flex}
+#pdfw{background:#fff;border-radius:14px;width:100%;max-width:680px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+#pdfbar{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--nuit);border-bottom:1px solid rgba(201,169,110,.15)}
+#pdfcontent{padding:22px;font-family:"DM Sans",Arial,sans-serif;font-size:13px;color:#2D2825;line-height:1.5}
+.pdf-hdr{display:flex;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #C9A96E}
+.pdf-br{font-size:9px;font-weight:700;letter-spacing:.15em;color:#8A95A3;text-transform:uppercase;margin-bottom:4px}
+.pdf-nm{font-size:20px;font-weight:700;color:#141820}
+.pdf-rf{font-family:monospace;font-weight:700;color:#C9A96E;font-size:13px;margin-top:2px}
+.pdf-dt{font-size:10px;color:#8A95A3}
+.pdf-cp{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;background:#FBF7F0;color:#C9A96E;border:1px solid #E2D9C8}
+.pdf-sec{font-size:11px;font-weight:700;color:#8A95A3;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 6px;border-bottom:1px solid #E2D9C8;padding-bottom:4px}
+.pdf-tbl{width:100%;border-collapse:collapse;margin:4px 0}
+.pdf-tbl td{padding:5px 8px;border-bottom:1px solid #F2EDE4;font-size:12px;vertical-align:top}
+.pdf-k{font-weight:600;color:#4A5568;width:36%}
+.pdf-pg{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.pdf-ps{padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700}
+.pdf-at{background:#FFFDF7;border-left:3px solid #C9A96E;padding:7px 11px;margin:4px 0;font-size:12px;border-radius:0 6px 6px 0}
+.pdf-msg{padding:6px 0;border-bottom:1px solid #F2EDE4}
+.pdf-mw{font-size:9px;font-weight:700;color:#8A95A3;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.pdf-ft{margin-top:24px;text-align:center;font-size:10px;color:#8A95A3;border-top:1px solid #E2D9C8;padding-top:12px;font-style:italic}
+@media print{
+  body>*{display:none!important}
+  #pdfm{display:block!important;position:static!important;background:none!important;padding:0!important}
+  #pdfw{box-shadow:none!important}
+  #pdfbar{display:none!important}
+}
+
+/* CHECKBOX */
+.ck{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;background:var(--or-p);border:1.5px solid var(--bd)}
+.ck input[type=checkbox]{width:18px;height:18px;accent-color:var(--or);cursor:pointer;flex-shrink:0}
+.ck-l{font-size:13px;font-weight:600;color:var(--slate)}
+</style>
+</head>
+<body>
+
+<!-- DATA -->
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDocs, onSnapshot, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
+  authDomain:"concept-fermeture.firebaseapp.com",
+  projectId:"concept-fermeture",
+  storageBucket:"concept-fermeture.firebasestorage.app",
+  messagingSenderId:"589266667315",
+  appId:"1:589266667315:web:40ac33df94b69afcbba046"
+});
+const db = getFirestore(fbApp);
+window._db = db;
+window._fbReady = true;
+
+// Expose Firebase functions globally for use in non-module script
+window.fbSave = async function(id, data) {
+  if(id) { await setDoc(doc(db,"clients",id), data, {merge:true}); return id; }
+  else { const ref = await addDoc(collection(db,"clients"), data); return ref.id; }
+};
+window.fbDelete = async function(id) { await deleteDoc(doc(db,"clients",id)); };
+window.fbLoad = async function() {
+  const snap = await getDocs(collection(db,"clients"));
+  const list = [];
+  snap.forEach(function(d){ list.push(Object.assign({id:d.id}, d.data())); });
+  return list;
+};
+window.fbMsgSend = async function(cid, msg) {
+  await addDoc(collection(db,"clients",cid,"messages"), msg);
+};
+window.fbMsgListen = function(cid, callback) {
+  const q = query(collection(db,"clients",cid,"messages"), orderBy("ts"));
+  return onSnapshot(q, function(snap){
+    var msgs = [];
+    snap.forEach(function(d){ msgs.push(d.data()); });
+    callback(msgs);
+  });
+};
+window.fbUpdate = async function(id, data) {
+  await updateDoc(doc(db,"clients",id), data);
+};
+</script>
+
+<script>
+var STATUTS=[
+  {id:"at",l:"En attente",i:"23F3"},
+  {id:"ac",l:"Acompte recu",i:"1F4B0"},
+  {id:"ce",l:"Commande en cours",i:"1F4E6"},
+  {id:"cv",l:"Commande validee",i:"2705"},
+  {id:"pl",l:"Planifie",i:"1F4C5"},
+  {id:"ec",l:"Pose en cours",i:"1F528"},
+  {id:"fi",l:"Pose terminee",i:"1F3C1"}
+];
+function si(id){return STATUTS.find(function(s){return s.id===id;})||STATUTS[0];}
+function ico(s){return String.fromCodePoint(parseInt(s.i,16));}
+
+var MOIS=["Jan","Fev","Mar","Avr","Mai","Jun","Jul","Aou","Sep","Oct","Nov","Dec"];
+var DAYSL=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+var SBAR={at:"#64748B",ac:"#C09020",ce:"#C06B10",cv:"#27AE60",pl:"#2E86C1",ec:"#1A6F9A",fi:"#9A7D4A"};
+var stPin="5678";
+var CLIENTS=[];
+var cid=null;
+var aOk=false,pOk=false,stOk=false;
+var unsubMsgs=null;
+</script>
+
+<!-- LANDING -->
+<div id="s-land" class="sc on">
+  <div class="land">
+    <div class="land-logo">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.22em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:14px">Concept Fermeture</div>
+      <div style="font-size:15px;font-style:italic;color:rgba(255,255,255,.3);letter-spacing:.06em;font-weight:300">Plus qu un projet, une relation de confiance</div>
+    </div>
+    <div class="land-div"></div>
+    <div class="land-sel">Selectionnez votre espace</div>
+    <div class="land-btns">
+      <button class="lbtn admin" onclick="goPin('admin')">
+        <span class="lbtn-icon">👤</span>
+        <div><div>Espace Admin</div><span class="lbtn-sub">Anthony Thiry</span></div>
+      </button>
+      <button class="lbtn poseur" onclick="goPin('poseur')">
+        <span class="lbtn-icon">🔨</span>
+        <div><div>Espace Poseur</div><span class="lbtn-sub">Equipe chantier</span></div>
+      </button>
+      <button class="lbtn st" onclick="goPin('st')">
+        <span class="lbtn-icon">🔧</span>
+        <div><div>Sous-traitant</div><span class="lbtn-sub">Acces temporaire</span></div>
+      </button>
+    </div>
+    <div class="land-sl">Plus qu un projet, une relation de confiance</div>
+  </div>
+</div>
+
+<!-- PIN ADMIN -->
+<div id="s-pin-admin" class="sc">
+  <div class="pin-wrap">
+    <button class="pin-back" onclick="goLand()">Retour</button>
+    <div class="pin-form" id="pf-admin">
+      <div class="pin-brand">Concept Fermeture</div>
+      <div class="pin-title">Espace <span>Admin</span></div>
+      <div class="pin-sep"></div>
+      <input class="pin-inp" id="pi-admin" type="password" inputmode="numeric" maxlength="4" placeholder="code">
+      <div class="pin-err" id="pe-admin"></div>
+      <div class="pin-sl">Plus qu un projet, une relation de confiance</div>
+    </div>
+    <div class="pin-welcome" id="pw-admin">
+      <div class="pin-welcome-ico">👋</div>
+      <div class="pin-welcome-msg">Bonjour Anthony</div>
+      <div class="pin-welcome-sub">Chargement de votre espace...</div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN POSEUR -->
+<div id="s-pin-poseur" class="sc">
+  <div class="pin-wrap">
+    <button class="pin-back" onclick="goLand()">Retour</button>
+    <div class="pin-form" id="pf-poseur">
+      <div class="pin-brand">Concept Fermeture</div>
+      <div class="pin-title">Espace <span>Poseur</span></div>
+      <div class="pin-sep"></div>
+      <input class="pin-inp" id="pi-poseur" type="password" inputmode="numeric" maxlength="4" placeholder="code">
+      <div class="pin-err" id="pe-poseur"></div>
+      <div class="pin-sl">Plus qu un projet, une relation de confiance</div>
+    </div>
+    <div class="pin-welcome" id="pw-poseur">
+      <div class="pin-welcome-ico">👷</div>
+      <div class="pin-welcome-msg">Bonne journee l equipe</div>
+      <div class="pin-welcome-sub">Chargement de vos chantiers...</div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN SOUS-TRAITANT -->
+<div id="s-pin-st" class="sc">
+  <div class="pin-wrap">
+    <button class="pin-back" onclick="goLand()">Retour</button>
+    <div class="pin-form" id="pf-st">
+      <div class="pin-brand">Concept Fermeture</div>
+      <div class="pin-title">Espace <span>Sous-traitant</span></div>
+      <div class="pin-sep"></div>
+      <input class="pin-inp" id="pi-st" type="password" inputmode="numeric" maxlength="4" placeholder="code">
+      <div class="pin-err" id="pe-st"></div>
+      <div class="pin-sl">Plus qu un projet, une relation de confiance</div>
+    </div>
+    <div class="pin-welcome" id="pw-st">
+      <div class="pin-welcome-ico">🔧</div>
+      <div class="pin-welcome-msg">Bienvenue sur un chantier Concept Fermeture</div>
+      <div class="pin-welcome-sub">Chargement de vos fiches...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LIST -->
+<div id="s-al" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand">Concept Fermeture</div>
+    <div class="hdr-title">Mes <span>Clients</span></div>
+    <div class="hdr-sub">Gestion des dossiers</div>
+    <div class="hdr-badge admin">Admin</div>
+    <button class="home-btn" onclick="goLand()">⌂</button>
+  </div>
+  <div class="ltb"><span class="ltb-lbl">Tous les dossiers</span><span class="ltb-n" id="aln">--</span></div>
+  <div class="lb" id="alb"></div>
+</div>
+
+<!-- ADMIN DETAIL -->
+<div id="s-ad" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand" id="ad-ey">--</div>
+    <div class="hdr-title" id="ad-ti">Dossier <span>Client</span></div>
+    <div class="hdr-sub" id="ad-su">--</div>
+    <button class="back-btn" onclick="goBack('admin')">Clients</button>
+    <button class="home-btn" onclick="goLand()">⌂</button>
+  </div>
+  <div class="tabs" id="ad-tabs">
+    <div class="tab on" onclick="stab('ad','t-client',this)"><span class="tab-i">👤</span>Client</div>
+    <div class="tab" onclick="stab('ad','t-etats',this)"><span class="tab-i">📊</span>Etats</div>
+    <div class="tab" onclick="stab('ad','t-projet',this)"><span class="tab-i">🏗️</span>Projet</div>
+    <div class="tab" onclick="stab('ad','t-poseur',this)"><span class="tab-i">🔨</span>Poseur</div>
+    <div class="tab" onclick="stab('ad','t-vclient',this)"><span class="tab-i">👁</span>Client</div>
+  </div>
+
+  <!-- TAB CLIENT -->
+  <div id="t-client" class="tc on">
+
+    <div class="card"><div class="ch"><span class="ci">👤</span><span class="ct">Informations client</span></div>
+      <div class="cb">
+        <div class="f"><div class="fl">Nom</div><input type="text" id="fn"></div>
+        <div class="f"><div class="fl">Adresse</div><input type="text" id="fa"></div>
+        <div class="r2">
+          <div class="f"><div class="fl">Tel</div><input type="tel" id="ft"></div>
+          <div class="f"><div class="fl">Email</div><input type="email" id="fe"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">📄</span><span class="ct">Devis Vertuoza</span></div>
+      <div class="cb">
+        <a id="fvz" href="#" target="_blank" class="bvz">
+          <div><div class="vz-t">Devis signe</div><div id="fvzl" style="font-size:13px;color:#fff">--</div></div>
+          <span class="vz-b">Vertuoza</span>
+        </a>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">🔗</span><span class="ct">Espace client</span></div>
+      <div class="cb">
+        <div class="lb2"><div class="ll">Lien unique</div><div class="lu" id="flien">--</div></div>
+        <button class="bcopy" id="fcopy">Copier le lien</button>
+        <button class="bsms" id="fsms">Envoyer par SMS</button>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Messages client</span></div>
+      <div class="msgs" id="mc"></div>
+      <div class="mc"><textarea class="minp" id="ic" rows="1" placeholder="Repondre au client..."></textarea><button class="bsnd" id="bsc">↑</button></div>
+    </div>
+  </div>
+
+  <!-- TAB ETATS -->
+  <div id="t-etats" class="tc">
+    <div class="card"><div class="ch"><span class="ci">📊</span><span class="ct">Statut dossier</span></div>
+      <div class="cb"><div class="ss" id="ss"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB PROJET -->
+  <div id="t-projet" class="tc">
+    <div class="card"><div class="ch"><span class="ci">📅</span><span class="ct">Planification</span></div>
+      <div class="cb">
+        <div class="r2">
+          <div class="f"><div class="fl">Date de pose</div><input type="date" id="fd" onchange="updFa()"></div>
+          <div class="f"><div class="fl">Semaine</div><input type="number" id="fsem" placeholder="23"></div>
+        </div>
+        <div class="r2">
+          <input type="time" id="fhd" onchange="updFa()">
+          <input type="time" id="fhf" onchange="updFa()">
+        </div>
+        <div class="f"><div class="fl">Livraison en nos locaux</div><input type="date" id="fdliv"></div>
+      </div>
+    </div>
+    <div class="fa"><div class="fa-h">Fiche poseur generee automatiquement</div><div style="font-size:12px;color:#3D7A3D;line-height:1.5" id="fatxt">--</div></div>
+    <div class="card"><div class="ch"><span class="ci">📦</span><span class="ct">Materiel</span></div>
+      <div class="cb">
+        <div id="fmat" style="display:flex;flex-direction:column;gap:6px"></div>
+        <button class="badd" onclick="addM()">+ Ajouter un element</button>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">⚠️</span><span class="ct">Points d attention</span></div>
+      <div class="cb">
+        <div id="fatt" style="display:flex;flex-direction:column;gap:8px"></div>
+        <button class="badd" onclick="addA()">+ Ajouter un point</button>
+        <div class="f"><div class="fl">Note pour le poseur</div><textarea id="fnote" placeholder="Ce que tu as vu au mesurage..."></textarea></div>
+      </div>
+    </div>
+    <div class="ck">
+      <input type="checkbox" id="fst">
+      <div class="ck-l">Visible par le sous-traitant</div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">🖼️</span><span class="ct">Mes photos</span></div>
+      <div class="cb">
+        <div class="pup" onclick="document.getElementById('pua').click()">
+          <div style="font-size:28px">📎</div>
+          <div style="font-size:13px;font-weight:600;color:#4A5568">Ajouter des photos</div>
+          <div style="font-size:11px;color:#8A95A3">Plans, mesurage, references...</div>
+        </div>
+        <input type="file" id="pua" accept="image/*" multiple style="display:none">
+        <div class="pg" id="aga"></div>
+        <div id="aea" class="mempty">Aucune photo</div>
+      </div>
+    </div>
+    <!-- Code ST -->
+    <div class="pin-change">
+      <div class="pin-change-title">Code sous-traitant</div>
+      <div class="r2">
+        <div class="f"><div class="fl">Code actuel</div><input type="text" id="stpin-disp" readonly style="font-family:monospace;letter-spacing:.2em;color:var(--or);font-weight:700"></div>
+        <div class="f"><div class="fl">Nouveau code (4 chiffres)</div><input type="text" id="stpin-new" maxlength="4" inputmode="numeric" placeholder="1234"></div>
+      </div>
+      <button onclick="changeSTPIN()" style="padding:9px;border-radius:9px;border:none;background:var(--or);color:var(--nuit);font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%">Mettre a jour le code</button>
+    </div>
+  </div>
+
+  <!-- TAB POSEUR -->
+  <div id="t-poseur" class="tc" style="padding-bottom:100px">
+    <div class="rn">Vue poseur - messages client en lecture seule</div>
+    <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Conversation client (vue poseur)</span></div>
+      <div class="msgs" id="mc-ro"></div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive poseur</span></div>
+      <div class="msgs" id="mp"></div>
+      <div class="mc"><textarea class="minp" id="ip" rows="1" placeholder="Ecrire au poseur..."></textarea><button class="bsnd" id="bsp">↑</button></div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">📷</span><span class="ct">Photos du poseur</span></div>
+      <div class="cb"><div class="pg" id="agap"></div><div id="aeap" class="mempty">Aucune photo du poseur</div></div>
+    </div>
+  </div>
+
+  <!-- TAB VUE CLIENT -->
+  <div id="t-vclient" class="tc">
+    <div style="background:var(--nuit);border-radius:var(--r);padding:12px 14px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">
+      Apercu de ce que voit votre client
+    </div>
+    <!-- Statut -->
+    <div class="card"><div class="ch"><span class="ci">📊</span><span class="ct">Votre projet</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Etat</div><div id="vc-badge"></div></div>
+        <div class="ir"><div class="il">Reference</div><div class="iv" style="font-family:monospace;font-weight:700;color:var(--or)" id="vc-ref">--</div></div>
+        <div class="ir"><div class="il">Travaux</div><div class="iv" id="vc-type">--</div></div>
+        <div class="ir"><div class="il">Montant TTC</div><div class="iv" style="font-size:18px;font-weight:700" id="vc-total">--</div></div>
+      </div>
+    </div>
+    <!-- Progression -->
+    <div class="card"><div class="ch"><span class="ci">📈</span><span class="ct">Avancement</span></div>
+      <div class="cb"><div class="po"><div class="pi2" id="vc-prog"></div></div></div>
+    </div>
+    <!-- Devis -->
+    <div class="card"><div class="ch"><span class="ci">📄</span><span class="ct">Devis signe</span></div>
+      <div class="cb">
+        <a id="vc-vz" href="#" target="_blank" class="bvz">
+          <div><div class="vz-t">Consulter mon devis signe</div><div id="vc-vzl" style="font-size:13px;color:#fff">--</div></div>
+          <span class="vz-b">Vertuoza</span>
+        </a>
+        <div style="background:var(--or-p);border-left:3px solid var(--bd2);border-radius:0 9px 9px 0;padding:10px 12px;font-size:12px;color:var(--slate);line-height:1.6">
+          <strong>Conditions de paiement</strong><br>10% signature - 40% mesurage - 20% planification - 30% reception
+        </div>
+      </div>
+    </div>
+    <!-- Pose -->
+    <div class="card"><div class="ch"><span class="ci">📅</span><span class="ct">Votre pose</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Date prevue</div><div class="iv" style="font-size:17px;font-weight:700" id="vc-date">--</div></div>
+        <div class="ir"><div class="il">Heure</div><div class="iv" id="vc-heure">--</div></div>
+        <div class="ir"><div class="il">Adresse</div><div class="iv" id="vc-adr">--</div></div>
+        <a class="bcall" href="tel:+32493526285">
+          <span style="font-size:18px">📞</span>
+          <div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.08em">En cas de question</div><div style="font-family:monospace;font-size:14px;font-weight:600;color:var(--nuit)">+32 493 52 62 85</div></div>
+          <span style="color:var(--ok);font-size:16px">→</span>
+        </a>
+      </div>
+    </div>
+    <!-- Messages client -->
+    <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Messages (vue client)</span></div>
+      <div class="msgs" id="vc-msgs" style="padding-bottom:10px"></div>
+    </div>
+    <div style="text-align:center;padding:16px;font-size:12px;color:var(--gris);font-style:italic">Plus qu un projet, une relation de confiance</div>
+  </div>
+
+  <div class="save">
+    <button class="bpdf" onclick="genPDF()">PDF</button>
+    <button class="bsave" onclick="saveClient()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- POSEUR LIST -->
+<div id="s-pl" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand">Concept Fermeture</div>
+    <div class="hdr-title">Mes <span>Chantiers</span></div>
+    <div class="hdr-sub">Prochaines poses planifiees</div>
+    <div class="hdr-badge poseur">Poseur</div>
+    <button class="home-btn" onclick="goLand()">⌂</button>
+  </div>
+  <div class="ltb"><span class="ltb-lbl">A venir</span><span class="ltb-n" id="pln">--</span></div>
+  <div class="lb" id="plb"></div>
+</div>
+
+<!-- POSEUR DETAIL -->
+<div id="s-pd" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand" id="pd-ey">--</div>
+    <div class="hdr-title" id="pd-ti">Chantier</div>
+    <div class="hdr-sub" id="pd-su">--</div>
+    <button class="back-btn" onclick="goBack('poseur')">Chantiers</button>
+    <button class="home-btn" onclick="goLand()">⌂</button>
+  </div>
+  <div class="tabs" id="pd-tabs">
+    <div class="tab on" onclick="stab('pd','p-fiche',this)"><span class="tab-i">📋</span>Fiche</div>
+    <div class="tab" onclick="stab('pd','p-photos',this)"><span class="tab-i">📷</span>Photos</div>
+    <div class="tab" onclick="stab('pd','p-client',this)"><span class="tab-i">👁</span>Client</div>
+    <div class="tab" onclick="stab('pd','p-anthony',this)"><span class="tab-i">💬</span>Anthony</div>
+  </div>
+  <div id="p-fiche" class="tc on">
+    <div class="card"><div class="ch"><span class="ci">📋</span><span class="ct">Infos chantier</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Client</div><div class="iv" id="pd-nom">--</div></div>
+        <div class="ir"><div class="il">Adresse</div><div class="iv" id="pd-adr">--</div></div>
+        <a id="pd-waze" href="#" class="bwaze">Ouvrir dans Waze</a>
+        <a id="pd-tel" href="#" class="bcall"><span style="font-size:18px">📞</span><div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.08em">Contact</div><div id="pd-teln" style="font-family:monospace;font-size:14px;font-weight:600;color:var(--nuit)">--</div></div><span style="color:var(--ok);font-size:16px">→</span></a>
+        <div class="ir"><div class="il">Travaux</div><div class="iv" id="pd-type">--</div></div>
+        <a id="pd-vz" href="#" target="_blank" class="bvz">
+          <div><div class="vz-t">Devis signe Vertuoza</div><div id="pd-vzl" style="font-size:13px;color:#fff">--</div></div>
+          <span class="vz-b">Vertuoza</span>
+        </a>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">📦</span><span class="ct">Materiel</span></div><div class="cb" id="pd-mat"></div></div>
+    <div class="card"><div class="ch"><span class="ci">⚠️</span><span class="ct">Points d attention</span></div><div class="cb" id="pd-att"></div></div>
+    <div class="card"><div class="ch"><span class="ci">🖼️</span><span class="ct">Photos d Anthony</span></div>
+      <div class="cb"><div class="pg" id="agpa"></div><div id="aepa" class="mempty">Aucune photo</div></div>
+    </div>
+  </div>
+  <div id="p-photos" class="tc">
+    <div class="pup" onclick="document.getElementById('pup').click()">
+      <div style="font-size:32px">📸</div>
+      <div style="font-size:14px;font-weight:600;color:var(--slate)">Ajouter une photo</div>
+    </div>
+    <input type="file" id="pup" accept="image/*" multiple style="display:none">
+    <div class="pg" id="agp"></div>
+    <div id="aep" class="mempty">Aucune photo envoyee</div>
+  </div>
+  <div id="p-client" class="tc">
+    <div class="rn">Lecture seule - tu ne peux pas ecrire au client</div>
+    <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Conversation Anthony - Client</span></div><div class="msgs" id="pd-mc"></div></div>
+  </div>
+  <div id="p-anthony" class="tc" style="padding-bottom:80px">
+    <div style="text-align:center;font-size:11px;color:var(--gris);font-style:italic;padding:6px 0">Canal prive - non visible par le client</div>
+    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Message a Anthony</span></div>
+      <div class="msgs" id="pd-mp"></div>
+      <div class="mc"><textarea class="minp" id="pd-ip" rows="1" placeholder="Ecrire a Anthony..."></textarea><button class="bsnd" id="bspa">↑</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ST LIST -->
+<div id="s-stl" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand">Concept Fermeture</div>
+    <div class="hdr-title">Mes <span>Chantiers</span></div>
+    <div class="hdr-sub">Fiches sous-traitant</div>
+    <div class="hdr-badge st">Sous-traitant</div>
+    <button class="home-btn" onclick="goLand()">⌂</button>
+  </div>
+  <div class="ltb"><span class="ltb-lbl">Assigne</span><span class="ltb-n" id="stln">--</span></div>
+  <div class="lb" id="stlb"></div>
+</div>
+
+<!-- ST DETAIL -->
+<div id="s-std" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand" id="std-ey">--</div>
+    <div class="hdr-title" id="std-ti">Chantier</div>
+    <div class="hdr-sub" id="std-su">--</div>
+    <button class="back-btn" onclick="goBack('st')">Chantiers</button>
+    <button class="home-btn" onclick="goLand()">⌂</button>
+  </div>
+  <div class="tabs">
+    <div class="tab on" onclick="stab('std','st-fiche',this)"><span class="tab-i">📋</span>Fiche</div>
+    <div class="tab" onclick="stab('std','st-photos',this)"><span class="tab-i">📷</span>Photos</div>
+    <div class="tab" onclick="stab('std','st-client',this)"><span class="tab-i">👁</span>Client</div>
+    <div class="tab" onclick="stab('std','st-anthony',this)"><span class="tab-i">💬</span>Anthony</div>
+  </div>
+  <div id="st-fiche" class="tc on">
+    <div class="card"><div class="ch"><span class="ci">📋</span><span class="ct">Infos chantier</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Client</div><div class="iv" id="std-nom">--</div></div>
+        <div class="ir"><div class="il">Adresse</div><div class="iv" id="std-adr">--</div></div>
+        <a id="std-waze" href="#" class="bwaze">Ouvrir dans Waze</a>
+        <a id="std-tel" href="#" class="bcall"><span style="font-size:18px">📞</span><div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.08em">Contact</div><div id="std-teln" style="font-family:monospace;font-size:14px;font-weight:600;color:var(--nuit)">--</div></div><span style="color:var(--ok);font-size:16px">→</span></a>
+        <div class="ir"><div class="il">Travaux</div><div class="iv" id="std-type">--</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">📦</span><span class="ct">Materiel</span></div><div class="cb" id="std-mat"></div></div>
+    <div class="card"><div class="ch"><span class="ci">⚠️</span><span class="ct">Points d attention</span></div><div class="cb" id="std-att"></div></div>
+  </div>
+  <div id="st-photos" class="tc">
+    <div class="pup" onclick="document.getElementById('stpup').click()">
+      <div style="font-size:32px">📸</div>
+      <div style="font-size:14px;font-weight:600;color:var(--slate)">Ajouter une photo</div>
+    </div>
+    <input type="file" id="stpup" accept="image/*" multiple style="display:none">
+    <div class="pg" id="stpg"></div>
+    <div id="stae" class="mempty">Aucune photo</div>
+  </div>
+  <div id="st-client" class="tc">
+    <div class="rn">Lecture seule - non modifiable</div>
+    <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Conversation Anthony - Client</span></div><div class="msgs" id="std-mc"></div></div>
+  </div>
+  <div id="st-anthony" class="tc" style="padding-bottom:80px">
+    <div style="text-align:center;font-size:11px;color:var(--gris);font-style:italic;padding:6px 0">Canal prive - non visible par le client</div>
+    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Message a Anthony</span></div>
+      <div class="msgs" id="std-mp"></div>
+      <div class="mc"><textarea class="minp" id="std-ip" rows="1" placeholder="Ecrire a Anthony..."></textarea><button class="bsnd" id="bsst">↑</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT VIEW (standalone) -->
+<div id="s-cl" class="sc">
+  <div class="hdr">
+    <div class="hdr-brand">Concept Fermeture</div>
+    <div class="hdr-title" id="cl-ti">Mon <span>Projet</span></div>
+    <div class="hdr-sub" id="cl-su">--</div>
+    <div class="hdr-badge client">Mon Dossier</div>
+  </div>
+  <div class="tabs">
+    <div class="tab on" onclick="stab('cl','cl-proj',this)"><span class="tab-i">📊</span>Projet</div>
+    <div class="tab" onclick="stab('cl','cl-devis',this)"><span class="tab-i">📄</span>Devis</div>
+    <div class="tab" onclick="stab('cl','cl-pose',this)"><span class="tab-i">📅</span>Pose</div>
+    <div class="tab" onclick="stab('cl','cl-msgs',this)"><span class="tab-i">💬</span>Messages</div>
+  </div>
+  <div id="cl-proj" class="tc on">
+    <div class="card"><div class="ch"><span class="ci">📊</span><span class="ct">Votre projet</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Etat</div><div id="cl-badge"></div></div>
+        <div class="ir"><div class="il">Reference</div><div class="iv" style="font-family:monospace;font-weight:700;color:var(--or)" id="cl-ref">--</div></div>
+        <div class="ir"><div class="il">Travaux</div><div class="iv" id="cl-type">--</div></div>
+        <div class="ir"><div class="il">Montant TTC</div><div class="iv" style="font-size:18px;font-weight:700" id="cl-total">--</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">📈</span><span class="ct">Avancement</span></div>
+      <div class="cb"><div class="po"><div class="pi2" id="cl-prog"></div></div></div>
+    </div>
+    <div class="card"><div class="ch"><span class="ci">📞</span><span class="ct">Votre interlocuteur</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Responsable</div><div class="iv">Anthony Thiry - Concept Fermeture</div></div>
+        <a class="bcall" href="tel:+32493526285"><span style="font-size:18px">📞</span><div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.08em">Appel direct</div><div style="font-family:monospace;font-size:14px;font-weight:600;color:var(--nuit)">+32 493 52 62 85</div></div><span style="color:var(--ok);font-size:16px">→</span></a>
+      </div>
+    </div>
+    <div style="text-align:center;padding:20px;font-size:12px;color:var(--gris);font-style:italic">Plus qu un projet, une relation de confiance</div>
+  </div>
+  <div id="cl-devis" class="tc">
+    <div class="card"><div class="ch"><span class="ci">📄</span><span class="ct">Votre devis</span></div>
+      <div class="cb">
+        <div style="font-size:13px;color:var(--slate);line-height:1.6">Votre devis a ete etabli et signe via notre plateforme Vertuoza.</div>
+        <a id="cl-vz" href="#" target="_blank" class="bvz">
+          <div><div class="vz-t">Consulter mon devis signe</div><div id="cl-vzl" style="font-size:13px;color:#fff">--</div></div>
+          <span class="vz-b">Vertuoza</span>
+        </a>
+        <div style="background:var(--or-p);border-left:3px solid var(--bd2);border-radius:0 9px 9px 0;padding:10px 12px;font-size:12px;color:var(--slate);line-height:1.6"><strong>Conditions de paiement</strong><br>10% signature - 40% mesurage - 20% planification - 30% reception</div>
+      </div>
+    </div>
+  </div>
+  <div id="cl-pose" class="tc">
+    <div class="card"><div class="ch"><span class="ci">📅</span><span class="ct">Votre pose</span></div>
+      <div class="cb">
+        <div class="ir"><div class="il">Date prevue</div><div class="iv" style="font-size:18px;font-weight:700" id="cl-date">--</div></div>
+        <div class="ir"><div class="il">Heure</div><div class="iv" id="cl-heure">--</div></div>
+        <div class="ir"><div class="il">Adresse</div><div class="iv" id="cl-adr">--</div></div>
+        <a class="bcall" href="tel:+32493526285"><span style="font-size:18px">📞</span><div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.08em">En cas de question</div><div style="font-family:monospace;font-size:14px;font-weight:600;color:var(--nuit)">+32 493 52 62 85</div></div><span style="color:var(--ok);font-size:16px">→</span></a>
+      </div>
+    </div>
+  </div>
+  <div id="cl-msgs" class="tc" style="padding-bottom:80px">
+    <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Messages avec Anthony</span></div>
+      <div class="msgs" id="cl-mc"></div>
+      <div class="mc"><textarea class="minp" id="cl-ic" rows="1" placeholder="Ecrire a Anthony..."></textarea><button class="bsnd" id="bscl">↑</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF MODAL -->
+<div id="pdfm">
+  <div id="pdfw">
+    <div id="pdfbar">
+      <div style="font-size:13px;font-weight:700;color:var(--or)">Recapitulatif dossier</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="window.print()" style="padding:8px 14px;border-radius:9px;border:none;background:var(--or);color:var(--nuit);font-family:DM Sans,sans-serif;font-size:12px;font-weight:700;cursor:pointer">Imprimer / PDF</button>
+        <button onclick="closePDF()" style="padding:8px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Fermer</button>
+      </div>
+    </div>
+    <div id="pdfcontent"></div>
+  </div>
+</div>
+
+<div class="toast" id="t2"></div>
+
+<script>
+function ha(){document.querySelectorAll(".sc").forEach(function(s){s.classList.remove("on");});}
+function goLand(){ha();document.getElementById("s-land").classList.add("on");}
+function goPin(role){ha();document.getElementById("s-pin-"+role).classList.add("on");}
+function goBack(role){cid=null;ha();if(role==="admin"){document.getElementById("s-al").classList.add("on");buildAL();}else if(role==="poseur"){document.getElementById("s-pl").classList.add("on");buildPL();}else{document.getElementById("s-stl").classList.add("on");buildSTL();}}
+function toast2(m){var t=document.getElementById("t2");t.textContent=m;t.classList.add("on");setTimeout(function(){t.classList.remove("on");},2500);}
+function fmtD(d){if(!d)return{day:"--",mo:"--",long:"--"};var p=d.split("-");var y=p[0],mo=p[1],dd=p[2];return{day:dd,mo:MOIS[parseInt(mo)-1],long:DAYSL[new Date(y,mo-1,dd).getDay()]+" "+dd+"/"+mo+"/"+y};}
+function now2(){return new Date().toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"});}
+
+// PIN
+function setupPin(role,code,afterFn){
+  var inp=document.getElementById("pi-"+role);
+  inp.oninput=function(){
+    if(this.value.length<4)return;
+    var err=document.getElementById("pe-"+role);
+    if(this.value===code){
+      document.getElementById("pf-"+role).style.display="none";
+      var w=document.getElementById("pw-"+role);
+      w.style.display="flex";
+      setTimeout(function(){ha();afterFn();document.getElementById("pi-"+role).value="";document.getElementById("pf-"+role).style.display="flex";w.style.display="none";},1800);
+    }else{err.textContent="Code incorrect";this.value="";setTimeout(function(){err.textContent="";},1500);}
+  };
+}
+setupPin("admin","9631",function(){aOk=true;document.getElementById("s-al").classList.add("on");buildAL();});
+setupPin("poseur","7582",function(){pOk=true;document.getElementById("s-pl").classList.add("on");buildPL();});
+setupPin("st",stPin,function(){stOk=true;document.getElementById("s-stl").classList.add("on");buildSTL();});
+// Update ST pin
+function changeSTPIN(){var n=document.getElementById("stpin-new").value.trim();if(n.length!==4||isNaN(n)){toast2("Code invalide - 4 chiffres");return;}stPin=n;setupPin("st",stPin,function(){stOk=true;document.getElementById("s-stl").classList.add("on");buildSTL();});document.getElementById("stpin-disp").value=n;document.getElementById("stpin-new").value="";toast2("Code sous-traitant mis a jour");}
+
+// TABS
+function stab(ctx,id,el){
+  var scrMap={ad:"s-ad",pd:"s-pd",std:"s-std",cl:"s-cl"};
+  var scr=document.getElementById(scrMap[ctx]||"s-ad");
+  scr.querySelectorAll(".tab").forEach(function(t){t.classList.remove("on");});
+  scr.querySelectorAll(".tc").forEach(function(t){t.classList.remove("on");});
+  el.classList.add("on");document.getElementById(id).classList.add("on");
+}
+
+// BUILD ITEM
+function buildItem(c,onclick){
+  var fd=fmtD(c.date);var st=si(c.statut);
+  var unread=c.msgs.filter(function(m){return m.r==="client";}).length;
+  var div=document.createElement("div");div.className="item";
+  var bar=document.createElement("div");bar.className="item-bar";bar.style.background=SBAR[c.statut]||"#ccc";div.appendChild(bar);
+  var dateDiv=document.createElement("div");dateDiv.style.textAlign="center";dateDiv.style.minWidth="30px";
+  dateDiv.innerHTML="<div class='item-day'>"+fd.day+"</div><div class='item-mo'>"+fd.mo+"</div>";div.appendChild(dateDiv);
+  var sep=document.createElement("div");sep.className="item-sep";div.appendChild(sep);
+  var info=document.createElement("div");info.className="item-info";
+  var nom=document.createElement("div");nom.className="item-nom";nom.textContent=c.nom;
+  if(unread){var dot=document.createElement("div");dot.className="mdot";nom.appendChild(dot);}
+  info.appendChild(nom);
+  var det=document.createElement("div");det.className="item-det";det.textContent=c.ref+" - "+c.type;info.appendChild(det);
+  var t=document.createElement("div");t.className="item-t";t.textContent=c.hD+"-"+c.hF;info.appendChild(t);
+  div.appendChild(info);
+  var chip=document.createElement("div");chip.innerHTML="<span class='chip "+c.statut+"'>"+ico(st)+" "+st.l+"</span>";div.appendChild(chip);
+  var arr=document.createElement("div");arr.style.cssText="font-size:16px;color:var(--bd2);margin-left:4px";arr.textContent=">";div.appendChild(arr);
+  div.onclick=onclick;return div;
+}
+
+// ADMIN LIST
+function buildAL(){
+  var b=document.getElementById("alb");b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px'>Chargement...</div>";
+  if(!window._fbReady){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Connexion Firebase...</div>";setTimeout(buildAL,500);return;}
+  window.fbLoad().then(function(list){
+    CLIENTS=list;
+    b.innerHTML="";
+    if(!list.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun dossier</div>";return;}
+    var sorted=[].concat(list).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
+    document.getElementById("aln").textContent=sorted.length;
+    sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openAD(c.id);}));});
+  }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur: "+e.message+"</div>";});
+}
+
+// POSEUR LIST
+function buildPL(){
+  var b=document.getElementById("plb");b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px'>Chargement...</div>";
+  if(!window._fbReady){setTimeout(buildPL,500);return;}
+  window.fbLoad().then(function(list){
+    CLIENTS=list;b.innerHTML="";
+    var active=["at","ac","ce","cv","pl","ec"];
+    var sorted=list.filter(function(c){return active.indexOf(c.statut)>=0;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
+    document.getElementById("pln").textContent=sorted.length;
+    if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun chantier</div>";return;}
+    sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openPD(c.id);}));});
+  }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
+}
+
+// ST LIST
+function buildSTL(){
+  var b=document.getElementById("stlb");b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px'>Chargement...</div>";
+  if(!window._fbReady){setTimeout(buildSTL,500);return;}
+  window.fbLoad().then(function(list){
+    CLIENTS=list;b.innerHTML="";
+    var active=["at","ac","ce","cv","pl","ec"];
+    var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
+    document.getElementById("stln").textContent=sorted.length;
+    if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucune fiche assignee</div>";return;}
+    sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openSTD(c.id);}));});
+  }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
+}
+
+// SAVE CLIENT
+function saveClient(){
+  var btn=document.querySelector(".bsave");
+  if(btn){btn.textContent="...";btn.style.opacity="0.6";}
+  var matVals=[];
+  document.querySelectorAll("#fmat .mi2").forEach(function(i){if(i.value.trim())matVals.push(i.value.trim());});
+  var attVals=[];
+  document.querySelectorAll("#fatt .mi2").forEach(function(i){if(i.value.trim())attVals.push(i.value.trim());});
+  // Get current statut
+  var stEl=document.querySelector("#ss .sstep.on");
+  var statut=stEl?stEl.dataset.sid:"at";
+  var data={
+    nom:document.getElementById("fn").value||"",
+    adr:document.getElementById("fa").value||"",
+    tel:document.getElementById("ft").value||"",
+    email:document.getElementById("fe").value||"",
+    ref:document.getElementById("fn").value?document.getElementById("fn").value:"",
+    type:document.querySelector("#fatt")&&document.getElementById("fn").value?"":"",
+    statut:statut,
+    date:document.getElementById("fd").value||"",
+    hD:document.getElementById("fhd").value||"07:00",
+    hF:document.getElementById("fhf").value||"17:00",
+    dliv:document.getElementById("fdliv").value||"",
+    total:document.getElementById("fn").value?"":"",
+    vz:document.getElementById("fvz").href||"",
+    mat:matVals,
+    att:attVals,
+    note:document.getElementById("fnote").value||"",
+    st:document.getElementById("fst").checked||false,
+    updated:new Date().toISOString()
+  };
+  // Gather fields more precisely
+  data.nom=document.getElementById("fn").value||"";
+  data.adr=document.getElementById("fa").value||"";
+  data.tel=document.getElementById("ft").value||"";
+  data.email=document.getElementById("fe").value||"";
+  data.ref=document.getElementById("fvzl").textContent.split(" - ")[0]||"";
+  data.total=document.getElementById("fvzl").textContent.split(" - ")[1]||"";
+  data.vz=document.getElementById("fvz").getAttribute("href")||"";
+  if(!window._fbReady){toast2("Firebase non disponible");return;}
+  window.fbSave(cid,data).then(function(newId){
+    cid=newId;
+    // Update lien with real ID
+    var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+newId;
+    document.getElementById("flien").textContent=lien;
+    document.getElementById("fcopy").onclick=function(){navigator.clipboard.writeText(lien).then(function(){toast2("Lien copie !");});};
+    toast2("Dossier enregistre");
+    if(btn){btn.textContent="Enregistrer";btn.style.opacity="1";}
+    // Start message listener
+    startMsgListener(newId);
+  }).catch(function(e){toast2("Erreur: "+e.message);if(btn){btn.textContent="Enregistrer";btn.style.opacity="1";}});
+}
+
+// MESSAGES FIREBASE
+function startMsgListener(clientId){
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
+  if(!window._fbReady||!clientId)return;
+  unsubMsgs=window.fbMsgListen(clientId,function(msgs){
+    renderMsgs("mc",msgs,false);
+    renderMsgs("mc-ro",msgs,false);
+    renderMsgs("vc-msgs",msgs,true);
+    // Sync to open poseur/ST view
+    if(document.getElementById("pd-mc"))renderMsgs("pd-mc",msgs,false);
+    if(document.getElementById("std-mc"))renderMsgs("std-mc",msgs,false);
+  });
+}
+
+// Override sndM for Firebase
+var _origSndM=sndM;
+function sndMFb(ctx){
+  var cfgs={ac:{i:"ic",w:"admin"},ap:{i:"ip",w:"admin"},pa:{i:"pd-ip",w:"poseur"},sta:{i:"std-ip",w:"st"},cc:{i:"cl-ic",w:"client"}};
+  var cfg=cfgs[ctx];if(!cfg)return;
+  var inp=document.getElementById(cfg.i);if(!inp)return;
+  var text=inp.value.trim();if(!text)return;
+  var targetId=cid;
+  if(!targetId||!window._fbReady){_origSndM(ctx);return;}
+  var msg={r:cfg.w,t:text,ti:now2(),ts:Date.now()};
+  window.fbMsgSend(targetId,msg).then(function(){inp.value="";}).catch(function(){_origSndM(ctx);});
+}
+
+// STATUT STEPS
+function buildSS(curId){
+  var cont=document.getElementById("ss");cont.innerHTML="";
+  STATUTS.forEach(function(s,i){
+    var div=document.createElement("div");div.className="sstep"+(s.id===curId?" on":"");
+    div.dataset.sid=s.id;
+    var n=document.createElement("div");n.className="sstep-n";n.textContent=s.id===curId?ico(s):(i+1);div.appendChild(n);
+    var l=document.createElement("div");l.className="sstep-l";l.textContent=s.l;div.appendChild(l);
+    div.onclick=(function(ss,idx){return function(){
+      document.querySelectorAll(".sstep").forEach(function(el,j){el.classList.remove("on");el.querySelector(".sstep-n").textContent=j===idx?ico(ss):(j+1);el.dataset.sid=STATUTS[j].id;});
+      div.classList.add("on");div.dataset.sid=ss.id;
+    };})(s,i);
+    cont.appendChild(div);
+  });
+}
+
+// PROG BAR (client)
+function buildProg(progId,curId){
+  var cont=document.getElementById(progId);if(!cont)return;cont.innerHTML="";
+  var cur=STATUTS.findIndex(function(s){return s.id===curId;});
+  STATUTS.forEach(function(s,i){
+    var step=document.createElement("div");step.className="pstep";
+    var dc=i<cur?"dn":i===cur?"cur":"";
+    var lc=i<cur?"dn":i===cur?"cur":"";
+    step.innerHTML="<div class='pdot "+dc+"'>"+(i<cur?"v":(i+1))+"</div><div class='plbl "+lc+"'>"+s.l+"</div>";
+    cont.appendChild(step);
+    if(i<STATUTS.length-1){var line=document.createElement("div");line.className="pline"+(i<cur?" dn":"");cont.appendChild(line);}
+  });
+}
+
+// MSGS
+function renderMsgs(listId,msgs,isClient){
+  var list=document.getElementById(listId);if(!list)return;list.innerHTML="";
+  if(!msgs||!msgs.length){list.innerHTML="<div class='mempty'>Aucun message</div>";return;}
+  msgs.forEach(function(m){
+    var isMe=(isClient&&m.r==="client")||(!isClient&&m.r==="admin");
+    var who=isClient?(m.r==="client"?"Vous":"Anthony CF"):(m.r==="admin"?"Anthony CF":"Client");
+    var div=document.createElement("div");div.className="msg "+(isMe?"R":"L");
+    div.innerHTML="<div class='mw2'>"+who+"</div><div class='mb'>"+m.t+"</div><div class='mt'>"+m.ti+"</div>";
+    list.appendChild(div);
+  });list.scrollTop=list.scrollHeight;
+}
+
+function sndM(ctx){
+  var cfgs={
+    ac:{i:"ic",l:"mc",w:"Anthony CF",al:"cl-mc",ar:"L"},
+    ap:{i:"ip",l:"mp",w:"Anthony CF",al:"pd-mp",ar:"L"},
+    pa:{i:"pd-ip",l:"pd-mp",w:"Poseur",al:"mp",ar:"L"},
+    sta:{i:"std-ip",l:"std-mp",w:"Sous-traitant",al:"mp",ar:"L"},
+    cc:{i:"cl-ic",l:"cl-mc",w:"Vous",al:"mc",ar:"L"}
+  };
+  var cfg=cfgs[ctx];if(!cfg)return;
+  var inp=document.getElementById(cfg.i);if(!inp)return;
+  var text=inp.value.trim();if(!text)return;
+  var list=document.getElementById(cfg.l);if(!list)return;
+  rmEmpty(list);
+  var div=document.createElement("div");div.className="msg "+(ctx==="ac"||ctx==="ap"||ctx==="cc"?"R":"L");
+  div.innerHTML="<div class='mw2'>"+cfg.w+"</div><div class='mb'>"+text+"</div><div class='mt'>"+now2()+"</div>";
+  list.appendChild(div);inp.value="";list.scrollTop=list.scrollHeight;
+  var alt=document.getElementById(cfg.al);
+  if(alt){rmEmpty(alt);var c2=div.cloneNode(true);c2.className="msg "+cfg.ar;alt.appendChild(c2);alt.scrollTop=alt.scrollHeight;}
+  toast2("Envoye");
+}
+function rmEmpty(el){var e=el.querySelector(".mempty");if(e)e.remove();}
+
+// ADMIN DETAIL
+function openAD(id){
+  var c=CLIENTS.find(function(x){return x.id===id;});
+  document.getElementById("s-ad").classList.add("on");
+  // Reset tabs
+  var tabs=document.querySelectorAll("#s-ad .tab");
+  var tcs=document.querySelectorAll("#s-ad .tc");
+  tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  tcs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  var fd=fmtD(c.date);
+  document.getElementById("ad-ey").textContent=c.ref+" - "+c.type;
+  document.getElementById("ad-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
+  document.getElementById("ad-su").textContent=fd.long+" - "+c.hD+"-"+c.hF;
+  buildSS(c.statut);
+  document.getElementById("fn").value=c.nom;
+  document.getElementById("fa").value=c.adr;
+  document.getElementById("ft").value=c.tel;
+  document.getElementById("fe").value=c.email;
+  document.getElementById("fd").value=c.date;
+  document.getElementById("fhd").value=c.hD;
+  document.getElementById("fhf").value=c.hF;
+  document.getElementById("fdliv").value=c.dliv||"";
+  document.getElementById("fnote").value=c.note;
+  document.getElementById("fst").checked=c.st||false;
+  document.getElementById("fvz").href=c.vz;
+  document.getElementById("fvzl").textContent=c.ref+" - "+c.total;
+  document.getElementById("stpin-disp").value=stPin;
+  var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+id;
+  document.getElementById("flien").textContent=lien;
+  document.getElementById("fcopy").onclick=function(){navigator.clipboard.writeText(lien).then(function(){toast2("Lien copie !");});};
+  document.getElementById("fsms").onclick=function(){window.open("sms:"+c.tel+"?body="+lien);};
+  updFa();
+  var ml=document.getElementById("fmat");ml.innerHTML="";c.mat.forEach(function(m){addMv(ml,m);});
+  var al=document.getElementById("fatt");al.innerHTML="";c.att.forEach(function(a){addAv(al,a);});
+  renderMsgs("mc",c.msgs,false);
+  renderMsgs("mc-ro",c.msgs,false);
+  renderMsgs("mp",[],false);
+  ["aga","agap"].forEach(function(g){document.getElementById(g).innerHTML="";});
+  ["aea","aeap"].forEach(function(e){document.getElementById(e).style.display="block";});
+  // Vue client
+  fillVueClient(c);
+  // Bind buttons
+  document.getElementById("bsc").onclick=function(){sndMFb("ac");};
+  document.getElementById("bsp").onclick=function(){sndMFb("ap");};
+  // Start real-time message listener
+  startMsgListener(id);
+}
+
+function fillVueClient(c){
+  var st=si(c.statut);
+  document.getElementById("vc-badge").innerHTML="<span class='chip "+c.statut+"' style='font-size:11px;padding:5px 10px'>"+ico(st)+" "+st.l+"</span>";
+  document.getElementById("vc-ref").textContent=c.ref;
+  document.getElementById("vc-type").textContent=c.type;
+  document.getElementById("vc-total").textContent=c.total;
+  buildProg("vc-prog",c.statut);
+  document.getElementById("vc-vz").href=c.vz;
+  document.getElementById("vc-vzl").textContent=c.ref+" - "+c.total;
+  var fd=fmtD(c.date);
+  document.getElementById("vc-date").textContent=fd.long;
+  document.getElementById("vc-heure").textContent=c.hD;
+  document.getElementById("vc-adr").textContent=c.adr;
+  renderMsgs("vc-msgs",c.msgs,true);
+}
+
+// POSEUR DETAIL
+function openPD(id){
+  var c=CLIENTS.find(function(x){return x.id===id;});
+  document.getElementById("s-pd").classList.add("on");
+  var tabs=document.querySelectorAll("#s-pd .tab");
+  var tcs=document.querySelectorAll("#s-pd .tc");
+  tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  tcs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  var fd=fmtD(c.date);
+  document.getElementById("pd-ey").textContent=fd.long+" - "+c.hD+"-"+c.hF;
+  document.getElementById("pd-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
+  document.getElementById("pd-su").textContent=c.ref+" - "+c.type;
+  document.getElementById("pd-nom").textContent=c.nom;
+  document.getElementById("pd-adr").textContent=c.adr;
+  document.getElementById("pd-waze").href="waze://?q="+encodeURIComponent(c.adr)+"&navigate=yes";
+  document.getElementById("pd-tel").href="tel:"+c.tel;
+  document.getElementById("pd-teln").textContent=c.tel;
+  document.getElementById("pd-type").textContent=c.type;
+  document.getElementById("pd-vz").href=c.vz;
+  document.getElementById("pd-vzl").textContent=c.ref+" - "+c.total;
+  fillMatAtt("pd-mat","pd-att",c);
+  ["agp","agpa"].forEach(function(g){document.getElementById(g).innerHTML="";});
+  ["aep","aepa"].forEach(function(e){document.getElementById(e).style.display="block";});
+  renderMsgs("pd-mc",c.msgs,false);
+  renderMsgs("pd-mp",[],false);
+  document.getElementById("bspa").onclick=function(){sndMFb("pa");};
+  startMsgListener(id);
+}
+
+// ST DETAIL
+function openSTD(id){
+  var c=CLIENTS.find(function(x){return x.id===id;});
+  document.getElementById("s-std").classList.add("on");
+  var tabs=document.querySelectorAll("#s-std .tab");
+  var tcs=document.querySelectorAll("#s-std .tc");
+  tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  tcs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  var fd=fmtD(c.date);
+  document.getElementById("std-ey").textContent=fd.long+" - "+c.hD+"-"+c.hF;
+  document.getElementById("std-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
+  document.getElementById("std-su").textContent=c.ref+" - "+c.type;
+  document.getElementById("std-nom").textContent=c.nom;
+  document.getElementById("std-adr").textContent=c.adr;
+  document.getElementById("std-waze").href="waze://?q="+encodeURIComponent(c.adr)+"&navigate=yes";
+  document.getElementById("std-tel").href="tel:"+c.tel;
+  document.getElementById("std-teln").textContent=c.tel;
+  document.getElementById("std-type").textContent=c.type;
+  fillMatAtt("std-mat","std-att",c);
+  renderMsgs("std-mc",c.msgs,false);
+  renderMsgs("std-mp",[],false);
+  document.getElementById("bsst").onclick=function(){sndMFb("sta");};
+  startMsgListener(id);
+}
+
+function fillMatAtt(matId,attId,c){
+  var ml=document.getElementById(matId);ml.innerHTML="";
+  if(c.mat.length){c.mat.forEach(function(m){var d=document.createElement("div");d.className="mi";d.innerHTML="<div class='md'></div>"+m;ml.appendChild(d);});}
+  else ml.innerHTML="<div class='mempty'>Aucun materiel</div>";
+  var ab=document.getElementById(attId);ab.innerHTML="";
+  c.att.forEach(function(a){var d=document.createElement("div");d.className="ai";d.textContent="! "+a;ab.appendChild(d);});
+  if(c.note){var n=document.createElement("div");n.className="nb";n.textContent="Note Anthony : "+c.note;ab.appendChild(n);}
+  if(!c.att.length&&!c.note)ab.innerHTML="<div class='mempty'>Aucun point d attention</div>";
+}
+
+// CLIENT VIEW
+function openCL(id){
+  var c=CLIENTS.find(function(x){return x.id===id;});if(!c)return;
+  cid=id;
+  document.getElementById("s-cl").classList.add("on");
+  var tabs=document.querySelectorAll("#s-cl .tab");
+  var tcs=document.querySelectorAll("#s-cl .tc");
+  tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  tcs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  var st=si(c.statut);
+  document.getElementById("cl-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
+  document.getElementById("cl-su").textContent=c.ref+" - "+c.type;
+  document.getElementById("cl-badge").innerHTML="<span class='chip "+c.statut+"' style='font-size:11px;padding:5px 10px'>"+ico(st)+" "+st.l+"</span>";
+  document.getElementById("cl-ref").textContent=c.ref;
+  document.getElementById("cl-type").textContent=c.type;
+  document.getElementById("cl-total").textContent=c.total;
+  buildProg("cl-prog",c.statut);
+  var fd=fmtD(c.date);
+  document.getElementById("cl-date").textContent=fd.long;
+  document.getElementById("cl-heure").textContent=c.hD;
+  document.getElementById("cl-adr").textContent=c.adr;
+  document.getElementById("cl-vz").href=c.vz;
+  document.getElementById("cl-vzl").textContent=c.ref+" - "+c.total;
+  renderMsgs("cl-mc",c.msgs,true);
+  document.getElementById("bscl").onclick=function(){sndMFb("cc");};
+}
+
+// FAU (Fiche Auto)
+function updFa(){
+  var d=document.getElementById("fd").value;
+  var hd=document.getElementById("fhd").value;
+  var hf=document.getElementById("fhf").value;
+  if(!d)return;
+  var p=d.split("-");
+  var txt=DAYSL[new Date(p[0],p[1]-1,p[2]).getDay()]+" "+p[2]+"/"+p[1]+"/"+p[0]+" - "+hd+" a "+hf;
+  document.getElementById("fatxt").textContent="Fiche creee pour le "+txt+". Visible dans l espace poseur.";
+}
+
+// MAT/ATT INPUT
+function addM(){addMv(document.getElementById("fmat"),"");}
+function addA(){addAv(document.getElementById("fatt"),"");}
+function addMv(p,v){
+  var d=document.createElement("div");d.className="mw";
+  var inp=document.createElement("input");inp.type="text";inp.className="mi2";inp.placeholder="Element a charger...";inp.value=v;
+  var btn=document.createElement("button");btn.className="ds";btn.textContent="x";btn.onclick=function(){d.remove();};
+  d.appendChild(inp);d.appendChild(btn);p.appendChild(d);if(!v)inp.focus();
+}
+function addAv(p,v){
+  var d=document.createElement("div");d.className="mw";
+  var inp=document.createElement("input");inp.type="text";inp.className="mi2";inp.placeholder="Point d attention...";inp.value=v;
+  var btn=document.createElement("button");btn.className="ds";btn.textContent="x";btn.onclick=function(){d.remove();};
+  d.appendChild(inp);d.appendChild(btn);p.appendChild(d);if(!v)inp.focus();
+}
+
+// PHOTOS
+function setupPhotoUp(inputId,gridId,emptyId,syncGrid,syncEmpty,who){
+  document.getElementById(inputId).onchange=function(){
+    Array.prototype.forEach.call(this.files,function(f){
+      var r=new FileReader();r.onload=function(e){
+        document.getElementById(emptyId).style.display="none";
+        if(syncEmpty)document.getElementById(syncEmpty).style.display="none";
+        function mkItem(gid,hasDel){
+          var item=document.createElement("div");item.className="pi";
+          var img=document.createElement("img");img.src=e.target.result;img.loading="lazy";
+          var meta=document.createElement("div");meta.className="pm";
+          meta.innerHTML="<span style='font-size:10px;color:rgba(255,255,255,.8)'>"+who+"</span>";
+          item.appendChild(img);item.appendChild(meta);
+          if(hasDel){var del=document.createElement("button");del.className="pdel";del.textContent="x";del.onclick=function(){item.remove();};item.appendChild(del);}
+          document.getElementById(gid).appendChild(item);
+        }
+        mkItem(gridId,true);
+        if(syncGrid)mkItem(syncGrid,false);
+      };r.readAsDataURL(f);
+    });this.value="";
+  };
+}
+setupPhotoUp("pua","aga","aea","agpa","aepa","Anthony");
+setupPhotoUp("pup","agp","aep","agap","agap","Poseur");
+setupPhotoUp("stpup","stpg","stae",null,null,"ST");
+
+// PDF
+function genPDF(){
+  if(!cid){toast2("Ouvre un dossier dabord");return;}
+  var c=CLIENTS.find(function(x){return x.id===cid;});
+  var st=si(c.statut);var fd=fmtD(c.date);
+  var cur=STATUTS.findIndex(function(s){return s.id===c.statut;});
+  var h="";
+  h+="<div class='pdf-hdr'>";
+  h+="<div><div class='pdf-br'>Concept Fermeture</div><div class='pdf-nm'>"+c.nom+"</div><div class='pdf-rf'>"+c.ref+"</div></div>";
+  h+="<div style='text-align:right'><div class='pdf-dt'>Genere le "+new Date().toLocaleDateString("fr-BE")+"</div><div class='pdf-cp'>"+ico(st)+" "+st.l+"</div></div></div>";
+  h+="<div class='pdf-sec'>Informations client</div>";
+  h+="<table class='pdf-tbl'><tr><td class='pdf-k'>Adresse</td><td>"+c.adr+"</td></tr><tr><td class='pdf-k'>Telephone</td><td>"+c.tel+"</td></tr><tr><td class='pdf-k'>Email</td><td>"+c.email+"</td></tr></table>";
+  h+="<div class='pdf-sec'>Projet</div>";
+  h+="<table class='pdf-tbl'><tr><td class='pdf-k'>Type</td><td>"+c.type+"</td></tr><tr><td class='pdf-k'>Montant TTC</td><td>"+c.total+"</td></tr><tr><td class='pdf-k'>Date de pose</td><td>"+fd.long+"</td></tr><tr><td class='pdf-k'>Creneau</td><td>"+c.hD+"-"+c.hF+"</td></tr>"+(c.dliv?"<tr><td class='pdf-k'>Livraison locaux</td><td>"+fmtD(c.dliv).long+"</td></tr>":"")+"</table>";
+  h+="<div class='pdf-sec'>Avancement</div><div class='pdf-pg'>";
+  STATUTS.forEach(function(s,i){var bg=i<=cur?"#C9A96E":"#F2EDE4";var cl=i<=cur?"#141820":"#8A95A3";var bd=i<=cur?"#C9A96E":"#E2D9C8";h+="<span class='pdf-ps' style='background:"+bg+";color:"+cl+";border:1px solid "+bd+"'>"+ico(s)+" "+s.l+"</span>";});
+  h+="</div>";
+  if(c.mat.length){h+="<div class='pdf-sec'>Materiel</div><ul style='margin:0;padding-left:18px'>";c.mat.forEach(function(m){h+="<li style='margin:3px 0;font-size:12px'>"+m+"</li>";});h+="</ul>";}
+  if(c.att.length){h+="<div class='pdf-sec'>Points d attention</div>";c.att.forEach(function(a){h+="<div class='pdf-at'>! "+a+"</div>";});}
+  if(c.note){h+="<div class='pdf-sec'>Note poseur</div><div class='pdf-at'>"+c.note+"</div>";}
+  if(c.msgs.length){
+    h+="<div class='pdf-sec'>Historique complet des messages</div>";
+    c.msgs.forEach(function(m){h+="<div class='pdf-msg'><div class='pdf-mw'>"+(m.r==="admin"?"Anthony CF":"Client")+" - "+m.ti+"</div><div style='font-size:12px;color:#2D2825;margin-top:2px'>"+m.t+"</div></div>";});
+  }
+  h+="<div class='pdf-ft'>Concept Fermeture - 82 rue des Ardennes, 6780 Messancy - +32 493 52 62 85 - concept-fermeture@outlook.com<br>Plus qu un projet, une relation de confiance</div>";
+  document.getElementById("pdfcontent").innerHTML=h;
+  document.getElementById("pdfm").classList.add("on");
+}
+function closePDF(){document.getElementById("pdfm").classList.remove("on");}
+</script>
+</body>
+</html>
