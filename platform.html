@@ -254,6 +254,8 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--nuit);min
 .ck{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;background:var(--or-p);border:1.5px solid var(--bd)}
 .ck input[type=checkbox]{width:18px;height:18px;accent-color:var(--or);cursor:pointer;flex-shrink:0}
 .ck-l{font-size:13px;font-weight:600;color:var(--slate)}
+.btn-new-al{display:flex;align-items:center;justify-content:center;margin:8px 12px 0;padding:13px;border-radius:var(--r);border:1.5px dashed var(--bd2);background:transparent;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;color:var(--slate);cursor:pointer;width:calc(100% - 24px)}
+.show-arch .ltb-n{opacity:.5}
 </style>
 </head>
 <body>
@@ -326,6 +328,26 @@ window.fbLoad = async function() {
   });
   return list;
 };
+window.fbLoadAll = async function() {
+  const snap = await getDocs(collection(db,"planning_fiches"));
+  const list = [];
+  snap.forEach(function(d){ list.push(mapDoc(d.id, d.data())); });
+  return list;
+};
+window.fbArchive = async function(id, isArchived) {
+  await updateDoc(doc(db,"planning_fiches",id), {archived:!isArchived});
+};
+window.fbDuplicate = async function(id) {
+  const snap2 = await getDocs(collection(db,"planning_fiches"));
+  var data = null;
+  snap2.forEach(function(d){ if(d.id===id) data=d.data(); });
+  if(!data) return;
+  delete data.updated_at;
+  data.archived = false;
+  data.date = "";
+  data.statut = "En attente";
+  await addDoc(collection(db,"planning_fiches"), data);
+};
 window.fbSave = async function(id, data) {
   // Map v5 fields back to planning_fiches format
   var pfData = {
@@ -364,6 +386,39 @@ window.fbMsgListen = function(cid, callback) {
 };
 window.fbUpdate = async function(id, data) {
   await updateDoc(doc(db,"planning_fiches",id), data);
+};
+
+// A - PHOTOS: listen to photos subcollection (or field in doc)
+window.fbLoadPhotos = async function(cid) {
+  const d = await getDocs(collection(db,"planning_fiches"));
+  var photos_admin = [], photos_poseur = [];
+  d.forEach(function(doc2){
+    if(doc2.id===cid){
+      var data=doc2.data();
+      photos_admin = data.photos_admin || data.photos || [];
+      photos_poseur = data.photos_poseur || [];
+    }
+  });
+  return {admin: photos_admin, poseur: photos_poseur};
+};
+window.fbSavePhotos = async function(cid, field, photos) {
+  var update = {};
+  update[field] = photos;
+  await updateDoc(doc(db,"planning_fiches",cid), update);
+};
+
+// B - PRIVATE CHANNELS: subcollections for poseur<->admin and ST<->admin
+// Canal prive unique Admin + Poseur + Sous-traitant
+window.fbPrivateListen = function(cid, callback) {
+  var q = query(collection(db,"planning_fiches",cid,"private_equipe"), orderBy("ts"));
+  return onSnapshot(q, function(snap){
+    var msgs=[];
+    snap.forEach(function(d){ msgs.push(d.data()); });
+    callback(msgs);
+  });
+};
+window.fbPrivateSend = async function(cid, msg) {
+  await addDoc(collection(db,"planning_fiches",cid,"private_equipe"), msg);
 };
 </script>
 
@@ -451,7 +506,7 @@ var unsubMsgs=null;
     </div>
     <div class="pin-welcome" id="pw-poseur">
       <div class="pin-welcome-ico">👷</div>
-      <div class="pin-welcome-msg">Bonne journee l equipe</div>
+      <div class="pin-welcome-msg">Bonjour Laurent &amp; Quentin</div>
       <div class="pin-welcome-sub">Chargement de vos chantiers...</div>
     </div>
   </div>
@@ -486,7 +541,14 @@ var unsubMsgs=null;
     <div class="hdr-badge admin">Admin</div>
     <button class="home-btn" onclick="goLand()">⌂</button>
   </div>
-  <div class="ltb"><span class="ltb-lbl">Tous les dossiers</span><span class="ltb-n" id="aln">--</span></div>
+  <div class="ltb">
+    <span class="ltb-lbl">Tous les dossiers</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="ltb-n" id="aln">--</span>
+      <span class="ltb-n" id="aln-arch" style="background:rgba(201,169,110,.15);color:var(--or);cursor:pointer" onclick="toggleArchives()">Archives</span>
+    </div>
+  </div>
+  <button class="btn-new-al" onclick="newClient()">+ Nouveau dossier client</button>
   <div class="lb" id="alb"></div>
 </div>
 
@@ -610,9 +672,9 @@ var unsubMsgs=null;
     <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Conversation client (vue poseur)</span></div>
       <div class="msgs" id="mc-ro"></div>
     </div>
-    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive poseur</span></div>
+    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive equipe</span></div>
       <div class="msgs" id="mp"></div>
-      <div class="mc"><textarea class="minp" id="ip" rows="1" placeholder="Ecrire au poseur..."></textarea><button class="bsnd" id="bsp">↑</button></div>
+      <div class="mc"><textarea class="minp" id="ip" rows="1" placeholder="Ecrire a l equipe..."></textarea><button class="bsnd" id="bsp">↑</button></div>
     </div>
     <div class="card"><div class="ch"><span class="ci">📷</span><span class="ct">Photos du poseur</span></div>
       <div class="cb"><div class="pg" id="agap"></div><div id="aeap" class="mempty">Aucune photo du poseur</div></div>
@@ -737,7 +799,7 @@ var unsubMsgs=null;
   </div>
   <div id="p-anthony" class="tc" style="padding-bottom:80px">
     <div style="text-align:center;font-size:11px;color:var(--gris);font-style:italic;padding:6px 0">Canal prive - non visible par le client</div>
-    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Message a Anthony</span></div>
+    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive equipe</span></div>
       <div class="msgs" id="pd-mp"></div>
       <div class="mc"><textarea class="minp" id="pd-ip" rows="1" placeholder="Ecrire a Anthony..."></textarea><button class="bsnd" id="bspa">↑</button></div>
     </div>
@@ -800,7 +862,7 @@ var unsubMsgs=null;
   </div>
   <div id="st-anthony" class="tc" style="padding-bottom:80px">
     <div style="text-align:center;font-size:11px;color:var(--gris);font-style:italic;padding:6px 0">Canal prive - non visible par le client</div>
-    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Message a Anthony</span></div>
+    <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive equipe</span></div>
       <div class="msgs" id="std-mp"></div>
       <div class="mc"><textarea class="minp" id="std-ip" rows="1" placeholder="Ecrire a Anthony..."></textarea><button class="bsnd" id="bsst">↑</button></div>
     </div>
@@ -952,18 +1014,88 @@ function buildItem(c,onclick){
   div.onclick=onclick;return div;
 }
 
+var showArch=false;
+function toggleArchives(){showArch=!showArch;document.getElementById("aln-arch").textContent=showArch?"Actifs":"Archives";buildAL();}
+
 // ADMIN LIST
 function buildAL(){
   var b=document.getElementById("alb");b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px'>Chargement...</div>";
-  if(!window._fbReady){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Connexion Firebase...</div>";setTimeout(buildAL,500);return;}
-  window.fbLoad().then(function(list){
-    CLIENTS=list;
-    b.innerHTML="";
-    if(!list.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun dossier</div>";return;}
-    var sorted=[].concat(list).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
+  if(!window._fbReady){setTimeout(buildAL,500);return;}
+  window.fbLoadAll().then(function(list){
+    CLIENTS=list;b.innerHTML="";
+    var filtered=list.filter(function(c){return showArch?(c.archived===true):(c.archived!==true);});
+    var sorted=filtered.sort(function(a,b2){return (a.date||a.date_chantier||"").localeCompare(b2.date||b2.date_chantier||"");});
     document.getElementById("aln").textContent=sorted.length;
-    sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openAD(c.id);}));});
+    if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>"+(showArch?"Aucune archive":"Aucun dossier")+"</div>";return;}
+    sorted.forEach(function(c){
+      var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;gap:6px;margin-bottom:8px";
+      var item=buildItem(c,function(){cid=c.id;ha();openAD(c.id);});
+      item.style.flex="1";item.style.marginBottom="0";
+      // Bouton dupliquer
+      var bDup=document.createElement("button");
+      bDup.textContent="⧉";bDup.title="Dupliquer";
+      bDup.style.cssText="width:34px;height:34px;border-radius:8px;border:none;background:#EAF7EE;color:var(--ok);font-size:16px;cursor:pointer;flex-shrink:0";
+      bDup.onclick=function(){dupClient(c.id);};
+      // Bouton archiver
+      var bArch=document.createElement("button");
+      bArch.textContent=c.archived?"↩":"📁";bArch.title=c.archived?"Désarchiver":"Archiver";
+      bArch.style.cssText="width:34px;height:34px;border-radius:8px;border:none;background:"+(c.archived?"rgba(201,169,110,.15)":"#F0F0F0")+";color:"+(c.archived?"var(--or)":"#8A95A3")+";font-size:15px;cursor:pointer;flex-shrink:0";
+      bArch.onclick=function(){archClient(c.id,c.archived);};
+      // Bouton supprimer
+      var bDel=document.createElement("button");
+      bDel.textContent="🗑";bDel.title="Supprimer";
+      bDel.style.cssText="width:34px;height:34px;border-radius:8px;border:none;background:#FDECEA;color:var(--ng);font-size:15px;cursor:pointer;flex-shrink:0";
+      bDel.onclick=function(){delClient(c.id,c.nom||c.client_nom||"");};
+      row.appendChild(item);row.appendChild(bDup);row.appendChild(bArch);row.appendChild(bDel);
+      b.appendChild(row);
+    });
   }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur: "+e.message+"</div>";});
+}
+
+// NOUVEAU CLIENT
+function newClient(){
+  cid=null;ha();
+  document.getElementById("s-ad").classList.add("on");
+  var tabs=document.querySelectorAll("#s-ad .tab");
+  var tcs=document.querySelectorAll("#s-ad .tc");
+  tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  tcs.forEach(function(t,i){t.classList.toggle("on",i===0);});
+  document.getElementById("ad-ey").textContent="Nouveau dossier";
+  document.getElementById("ad-ti").innerHTML="Nouveau <span>Client</span>";
+  document.getElementById("ad-su").textContent="A renseigner";
+  buildSS("at");
+  ["fn","fa","ft","fe","fd","fhd","fhf","fdliv","fnote"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("fhd").value="07:00";
+  document.getElementById("fhf").value="17:00";
+  document.getElementById("fst").checked=false;
+  document.getElementById("fvz").href="#";
+  document.getElementById("fvzl").textContent="--";
+  document.getElementById("flien").textContent="Enregistrez pour generer le lien";
+  document.getElementById("fmat").innerHTML="";
+  document.getElementById("fatt").innerHTML="";
+  ["aga","agap"].forEach(function(g){document.getElementById(g).innerHTML="";});
+  ["aea","aeap"].forEach(function(e){document.getElementById(e).style.display="block";});
+  if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
+  document.getElementById("mc").innerHTML="<div class='mempty'>Aucun message</div>";
+}
+
+// DUPLIQUER CLIENT
+function dupClient(id){
+  if(!window._fbReady)return;
+  window.fbDuplicate(id).then(function(){toast2("Dossier duplique");buildAL();}).catch(function(e){toast2("Erreur: "+e.message);});
+}
+
+// ARCHIVER CLIENT
+function archClient(id,isArchived){
+  if(!window._fbReady)return;
+  window.fbArchive(id,isArchived).then(function(){toast2(isArchived?"Desarchive":"Archive");buildAL();}).catch(function(e){toast2("Erreur: "+e.message);});
+}
+
+// SUPPRIMER CLIENT
+function delClient(id,nom){
+  if(!confirm("Supprimer le dossier de "+(nom||id)+" ?"))return;
+  if(!window._fbReady)return;
+  window.fbDelete(id).then(function(){toast2("Dossier supprime");buildAL();}).catch(function(e){toast2("Erreur: "+e.message);});
 }
 
 // POSEUR LIST
@@ -1047,31 +1179,76 @@ function saveClient(){
   }).catch(function(e){toast2("Erreur: "+e.message);if(btn){btn.textContent="Enregistrer";btn.style.opacity="1";}});
 }
 
+var unsubPrivP=null, unsubPrivST=null;
+
 // MESSAGES FIREBASE
 function startMsgListener(clientId){
   if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
+  if(unsubPrivP){unsubPrivP();unsubPrivP=null;}
+  if(unsubPrivST){unsubPrivST();unsubPrivST=null;}
   if(!window._fbReady||!clientId)return;
+
+  // Canal client (tous)
   unsubMsgs=window.fbMsgListen(clientId,function(msgs){
     renderMsgs("mc",msgs,false);
     renderMsgs("mc-ro",msgs,false);
     renderMsgs("vc-msgs",msgs,true);
-    // Sync to open poseur/ST view
-    if(document.getElementById("pd-mc"))renderMsgs("pd-mc",msgs,false);
-    if(document.getElementById("std-mc"))renderMsgs("std-mc",msgs,false);
+    renderMsgs("pd-mc",msgs,false);
+    renderMsgs("std-mc",msgs,false);
+  });
+
+  // Canal prive unique equipe (Admin + Poseur + ST)
+  unsubPrivP=window.fbPrivateListen(clientId,function(msgs){
+    renderMsgs("mp",msgs,false);    // admin onglet poseur
+    renderMsgs("pd-mp",msgs,false); // poseur
+    renderMsgs("std-mp",msgs,false);// sous-traitant
+  });
+
+  // A - Charger les photos existantes depuis Firestore
+  window.fbLoadPhotos(clientId).then(function(photos){
+    loadStoredPhotos("aga","aea", photos.admin, "Anthony");
+    loadStoredPhotos("agpa","aepa", photos.admin, "Anthony");
+    loadStoredPhotos("agp","aep", photos.poseur, "Poseur");
+    loadStoredPhotos("agpa","aepa", photos.poseur, "Poseur");
+    loadStoredPhotos("agpa","aepa", photos.poseur, "Poseur");
+  }).catch(function(){});
+}
+
+function loadStoredPhotos(gridId, emptyId, photos, who){
+  if(!photos||!photos.length)return;
+  var grid=document.getElementById(gridId);
+  var empty=document.getElementById(emptyId);
+  if(!grid)return;
+  grid.innerHTML="";
+  if(empty)empty.style.display="none";
+  photos.forEach(function(src){
+    if(!src)return;
+    var item=document.createElement("div");item.className="pi";
+    var img=document.createElement("img");img.src=src;img.loading="lazy";
+    var meta=document.createElement("div");meta.className="pm";
+    meta.innerHTML="<span style='font-size:10px;color:rgba(255,255,255,.8)'>"+who+"</span>";
+    item.appendChild(img);item.appendChild(meta);
+    grid.appendChild(item);
   });
 }
 
-// Override sndM for Firebase
-var _origSndM=sndM;
+// Envoi messages Firebase
 function sndMFb(ctx){
-  var cfgs={ac:{i:"ic",w:"admin"},ap:{i:"ip",w:"admin"},pa:{i:"pd-ip",w:"poseur"},sta:{i:"std-ip",w:"st"},cc:{i:"cl-ic",w:"client"}};
-  var cfg=cfgs[ctx];if(!cfg)return;
-  var inp=document.getElementById(cfg.i);if(!inp)return;
+  var inp_map={ac:"ic",ap:"ip",pa:"pd-ip",sta:"std-ip",cc:"cl-ic"};
+  var who_map={ac:"admin",ap:"admin",pa:"poseur",sta:"st",cc:"client"};
+  var inp=document.getElementById(inp_map[ctx]);if(!inp)return;
   var text=inp.value.trim();if(!text)return;
   var targetId=cid;
-  if(!targetId||!window._fbReady){_origSndM(ctx);return;}
-  var msg={r:cfg.w,t:text,ti:now2(),ts:Date.now()};
-  window.fbMsgSend(targetId,msg).then(function(){inp.value="";}).catch(function(){_origSndM(ctx);});
+  if(!targetId||!window._fbReady){return;}
+  var msg={r:who_map[ctx],t:text,ti:now2(),ts:Date.now()};
+
+  if(ctx==="ap"||ctx==="pa"||ctx==="sta"){
+    // Canal prive equipe commun
+    window.fbPrivateSend(targetId,msg).then(function(){inp.value="";});
+  } else {
+    // Client <-> admin: canal principal
+    window.fbMsgSend(targetId,msg).then(function(){inp.value="";});
+  }
 }
 
 // STATUT STEPS
@@ -1338,30 +1515,57 @@ function addAv(p,v){
 }
 
 // PHOTOS
-function setupPhotoUp(inputId,gridId,emptyId,syncGrid,syncEmpty,who){
+function getPhotosFromGrid(gridId){
+  var photos=[];
+  var imgs=document.getElementById(gridId);
+  if(!imgs)return photos;
+  imgs.querySelectorAll("img").forEach(function(img){photos.push(img.src);});
+  return photos;
+}
+
+function addPhotoToGrid(gridId,emptyId,src,who,hasDel,fbField){
+  document.getElementById(emptyId).style.display="none";
+  var item=document.createElement("div");item.className="pi";
+  var img=document.createElement("img");img.src=src;img.loading="lazy";
+  var meta=document.createElement("div");meta.className="pm";
+  meta.innerHTML="<span style='font-size:10px;color:rgba(255,255,255,.8)'>"+who+"</span>";
+  item.appendChild(img);item.appendChild(meta);
+  if(hasDel){
+    var del=document.createElement("button");del.className="pdel";del.textContent="x";
+    del.onclick=function(){
+      item.remove();
+      // Sync suppression vers Firebase
+      if(cid&&window._fbReady&&fbField){
+        var remaining=getPhotosFromGrid(fbField==="photos_admin"?"aga":"agp");
+        window.fbSavePhotos(cid,fbField,remaining);
+      }
+    };
+    item.appendChild(del);
+  }
+  document.getElementById(gridId).appendChild(item);
+}
+
+function setupPhotoUp(inputId,gridId,emptyId,syncGrid,syncEmpty,who,fbField){
   document.getElementById(inputId).onchange=function(){
     Array.prototype.forEach.call(this.files,function(f){
       var r=new FileReader();r.onload=function(e){
-        document.getElementById(emptyId).style.display="none";
-        if(syncEmpty)document.getElementById(syncEmpty).style.display="none";
-        function mkItem(gid,hasDel){
-          var item=document.createElement("div");item.className="pi";
-          var img=document.createElement("img");img.src=e.target.result;img.loading="lazy";
-          var meta=document.createElement("div");meta.className="pm";
-          meta.innerHTML="<span style='font-size:10px;color:rgba(255,255,255,.8)'>"+who+"</span>";
-          item.appendChild(img);item.appendChild(meta);
-          if(hasDel){var del=document.createElement("button");del.className="pdel";del.textContent="x";del.onclick=function(){item.remove();};item.appendChild(del);}
-          document.getElementById(gid).appendChild(item);
+        var src=e.target.result;
+        addPhotoToGrid(gridId,emptyId,src,who,true,fbField);
+        if(syncGrid&&syncEmpty)addPhotoToGrid(syncGrid,syncEmpty,src,who,false,null);
+        // Save to Firebase
+        if(cid&&window._fbReady&&fbField){
+          setTimeout(function(){
+            var photos=getPhotosFromGrid(gridId);
+            window.fbSavePhotos(cid,fbField,photos);
+          },300);
         }
-        mkItem(gridId,true);
-        if(syncGrid)mkItem(syncGrid,false);
       };r.readAsDataURL(f);
     });this.value="";
   };
 }
-setupPhotoUp("pua","aga","aea","agpa","aepa","Anthony");
-setupPhotoUp("pup","agp","aep","agap","agap","Poseur");
-setupPhotoUp("stpup","stpg","stae",null,null,"ST");
+setupPhotoUp("pua","aga","aea","agpa","aepa","Anthony","photos_admin");
+setupPhotoUp("pup","agp","aep","agpa","aepa","Poseur","photos_poseur");
+setupPhotoUp("stpup","stpg","stae",null,null,"ST",null);
 
 // PDF
 function genPDF(){
