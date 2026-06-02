@@ -282,17 +282,73 @@ window.fbSave = async function(id, data) {
   else { const ref = await addDoc(collection(db,"clients"), data); return ref.id; }
 };
 window.fbDelete = async function(id) { await deleteDoc(doc(db,"clients",id)); };
+// Mapping statut planning_fiches -> v5
+function mapStatut(s) {
+  var m = {"Planifie":"pl","Planifié":"pl","En cours":"ec","Termine":"fi","Terminé":"fi","Reporte":"at","Reporté":"at","En attente":"at","Accepte":"ac","Accepté":"ac"};
+  return m[s] || "pl";
+}
+function mapDoc(id, d) {
+  return {
+    id: id,
+    nom: d.client_nom || d.nom || "",
+    adr: d.adresse || d.adr || "",
+    tel: d.contact_tel || d.tel || "",
+    email: d.email || "",
+    ref: d.num_chantier || d.ref || "",
+    type: d.type_travail || d.type || "",
+    statut: d.statut && d.statut.length === 2 ? d.statut : mapStatut(d.statut || ""),
+    date: d.date || d.date_chantier || "",
+    hD: d.heure_debut || d.hD || "07:00",
+    hF: d.heure_fin || d.hF || "17:00",
+    dliv: d.dliv || "",
+    total: d.total || "",
+    vz: d.vertuoza_url || d.vz || "",
+    mat: d.materiel || d.mat || [],
+    att: d.attention || d.att || [],
+    note: d.note_poseur || d.note || "",
+    st: d.st || false,
+    archived: d.archived || false
+  };
+}
 window.fbLoad = async function() {
-  const snap = await getDocs(collection(db,"clients"));
+  const snap = await getDocs(collection(db,"planning_fiches"));
   const list = [];
-  snap.forEach(function(d){ list.push(Object.assign({id:d.id}, d.data())); });
+  snap.forEach(function(d){
+    var mapped = mapDoc(d.id, d.data());
+    if(!mapped.archived) list.push(mapped);
+  });
   return list;
 };
+window.fbSave = async function(id, data) {
+  // Map v5 fields back to planning_fiches format
+  var pfData = {
+    client_nom: data.nom,
+    adresse: data.adr,
+    contact_tel: data.tel,
+    email: data.email,
+    num_chantier: data.ref,
+    type_travail: data.type,
+    statut: {"at":"En attente","ac":"Acompte recu","ce":"Commande en cours","cv":"Commande validee","pl":"Planifie","ec":"En cours","fi":"Termine"}[data.statut] || "Planifie",
+    date: data.date,
+    heure_debut: data.hD,
+    heure_fin: data.hF,
+    dliv: data.dliv,
+    total: data.total,
+    vertuoza_url: data.vz,
+    materiel: data.mat,
+    attention: data.att,
+    note_poseur: data.note,
+    st: data.st,
+    updated_at: data.updated
+  };
+  if(id) { await setDoc(doc(db,"planning_fiches",id), pfData, {merge:true}); return id; }
+  else { const ref = await addDoc(collection(db,"planning_fiches"), pfData); return ref.id; }
+};
 window.fbMsgSend = async function(cid, msg) {
-  await addDoc(collection(db,"clients",cid,"messages"), msg);
+  await addDoc(collection(db,"planning_fiches",cid,"messages"), msg);
 };
 window.fbMsgListen = function(cid, callback) {
-  const q = query(collection(db,"clients",cid,"messages"), orderBy("ts"));
+  const q = query(collection(db,"planning_fiches",cid,"messages"), orderBy("ts"));
   return onSnapshot(q, function(snap){
     var msgs = [];
     snap.forEach(function(d){ msgs.push(d.data()); });
@@ -300,7 +356,7 @@ window.fbMsgListen = function(cid, callback) {
   });
 };
 window.fbUpdate = async function(id, data) {
-  await updateDoc(doc(db,"clients",id), data);
+  await updateDoc(doc(db,"planning_fiches",id), data);
 };
 </script>
 
