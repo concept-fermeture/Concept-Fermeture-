@@ -383,7 +383,7 @@ function ico(s){return String.fromCodePoint(parseInt(s.i,16));}
 var MOIS=["Jan","Fev","Mar","Avr","Mai","Jun","Jul","Aou","Sep","Oct","Nov","Dec"];
 var DAYSL=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
 var SBAR={at:"#64748B",ac:"#C09020",ce:"#C06B10",cv:"#27AE60",pl:"#2E86C1",ec:"#1A6F9A",fi:"#9A7D4A"};
-var stPin="5678";
+var stPin="5678"; window.stPin=stPin;
 var CLIENTS=[];
 var cid=null;
 var aOk=false,pOk=false,stOk=false;
@@ -670,7 +670,6 @@ var unsubMsgs=null;
   </div>
 
   <div class="save">
-    <button class="bpdf" onclick="genPDF()">PDF</button>
     <button class="bsave" onclick="saveClient()">Enregistrer</button>
   </div>
 </div>
@@ -872,19 +871,7 @@ var unsubMsgs=null;
   </div>
 </div>
 
-<!-- PDF MODAL -->
-<div id="pdfm">
-  <div id="pdfw">
-    <div id="pdfbar">
-      <div style="font-size:13px;font-weight:700;color:var(--or)">Recapitulatif dossier</div>
-      <div style="display:flex;gap:8px">
-        <button onclick="window.print()" style="padding:8px 14px;border-radius:9px;border:none;background:var(--or);color:var(--nuit);font-family:DM Sans,sans-serif;font-size:12px;font-weight:700;cursor:pointer">Imprimer / PDF</button>
-        <button onclick="closePDF()" style="padding:8px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer">Fermer</button>
-      </div>
-    </div>
-    <div id="pdfcontent"></div>
-  </div>
-</div>
+
 
 <div class="toast" id="t2"></div>
 
@@ -898,24 +885,42 @@ function fmtD(d){if(!d)return{day:"--",mo:"--",long:"--"};var p=d.split("-");var
 function now2(){return new Date().toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"});}
 
 // PIN
-function setupPin(role,code,afterFn){
-  var inp=document.getElementById("pi-"+role);
-  inp.oninput=function(){
-    if(this.value.length<4)return;
-    var err=document.getElementById("pe-"+role);
-    if(this.value===code){
-      document.getElementById("pf-"+role).style.display="none";
-      var w=document.getElementById("pw-"+role);
-      w.style.display="flex";
-      setTimeout(function(){ha();afterFn();document.getElementById("pi-"+role).value="";document.getElementById("pf-"+role).style.display="flex";w.style.display="none";},1800);
-    }else{err.textContent="Code incorrect";this.value="";setTimeout(function(){err.textContent="";},1500);}
-  };
+// PIN ADMIN
+document.getElementById("pi-admin").oninput=function(){
+  if(this.value.length<4)return;
+  if(this.value==="9631"){
+    document.getElementById("pf-admin").style.display="none";
+    var w=document.getElementById("pw-admin");w.style.display="flex";
+    setTimeout(function(){ha();aOk=true;document.getElementById("s-al").classList.add("on");buildAL();document.getElementById("pi-admin").value="";document.getElementById("pf-admin").style.display="flex";w.style.display="none";},1800);
+  }else{document.getElementById("pe-admin").textContent="Code incorrect";this.value="";setTimeout(function(){document.getElementById("pe-admin").textContent="";},1500);}
+};
+// PIN POSEUR
+document.getElementById("pi-poseur").oninput=function(){
+  if(this.value.length<4)return;
+  if(this.value==="7582"){
+    document.getElementById("pf-poseur").style.display="none";
+    var w=document.getElementById("pw-poseur");w.style.display="flex";
+    setTimeout(function(){ha();pOk=true;document.getElementById("s-pl").classList.add("on");buildPL();document.getElementById("pi-poseur").value="";document.getElementById("pf-poseur").style.display="flex";w.style.display="none";},1800);
+  }else{document.getElementById("pe-poseur").textContent="Code incorrect";this.value="";setTimeout(function(){document.getElementById("pe-poseur").textContent="";},1500);}
+};
+// PIN SOUS-TRAITANT — vérifie window.stPin à chaque frappe
+document.getElementById("pi-st").oninput=function(){
+  if(this.value.length<4)return;
+  if(this.value===window.stPin){
+    document.getElementById("pf-st").style.display="none";
+    var w=document.getElementById("pw-st");w.style.display="flex";
+    setTimeout(function(){ha();stOk=true;document.getElementById("s-stl").classList.add("on");buildSTL();document.getElementById("pi-st").value="";document.getElementById("pf-st").style.display="flex";w.style.display="none";},1800);
+  }else{document.getElementById("pe-st").textContent="Code incorrect";this.value="";setTimeout(function(){document.getElementById("pe-st").textContent="";},1500);}
+};
+// Changement code ST
+function changeSTPIN(){
+  var n=document.getElementById("stpin-new").value.trim();
+  if(n.length!==4||!/^[0-9]{4}$/.test(n)){toast2("Code invalide - 4 chiffres");return;}
+  window.stPin=n;
+  document.getElementById("stpin-disp").value=n;
+  document.getElementById("stpin-new").value="";
+  toast2("Code sous-traitant mis a jour : "+n);
 }
-setupPin("admin","9631",function(){aOk=true;document.getElementById("s-al").classList.add("on");buildAL();});
-setupPin("poseur","7582",function(){pOk=true;document.getElementById("s-pl").classList.add("on");buildPL();});
-setupPin("st",stPin,function(){stOk=true;document.getElementById("s-stl").classList.add("on");buildSTL();});
-// Update ST pin
-function changeSTPIN(){var n=document.getElementById("stpin-new").value.trim();if(n.length!==4||isNaN(n)){toast2("Code invalide - 4 chiffres");return;}stPin=n;setupPin("st",stPin,function(){stOk=true;document.getElementById("s-stl").classList.add("on");buildSTL();});document.getElementById("stpin-disp").value=n;document.getElementById("stpin-new").value="";toast2("Code sous-traitant mis a jour");}
 
 // TABS
 function stab(ctx,id,el){
