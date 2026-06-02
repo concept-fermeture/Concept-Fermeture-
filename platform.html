@@ -389,30 +389,26 @@ window.fbUpdate = async function(id, data) {
 };
 
 // A - PHOTOS: listen to photos subcollection (or field in doc)
-window.fbLoadPhotos = async function(cid) {
-  try {
-    const snap = await getDocs(collection(db,"planning_fiches"));
-    var photos_admin=[], photos_poseur=[];
-    snap.forEach(function(d2){
-      if(d2.id===cid){
-        var data=d2.data();
-        // Essayer tous les noms de champs possibles
-        photos_admin=data.photos_admin||data.photos||data.admin_photos||data.images_admin||[];
-        photos_poseur=data.photos_poseur||data.poseur_photos||data.images_poseur||[];
-      }
-    });
-    return {admin:photos_admin, poseur:photos_poseur};
-  } catch(e){ return {admin:[], poseur:[]}; }
+// PHOTOS — sous-collection photos/{who}/{autoId}
+window.fbPhotoAdd = async function(clientId, who, src) {
+  await addDoc(
+    collection(db,"planning_fiches",clientId,"photos"),
+    {who:who, src:src, ts:Date.now()}
+  );
 };
-window.fbSavePhotos = async function(cid, field, photos) {
-  var update = {};
-  update[field] = photos;
-  try {
-    await updateDoc(doc(db,"planning_fiches",cid), update);
-  } catch(e) {
-    // Si le doc n'existe pas encore, on utilise setDoc
-    await setDoc(doc(db,"planning_fiches",cid), update, {merge:true});
-  }
+window.fbPhotoDel = async function(clientId, photoId) {
+  await deleteDoc(doc(db,"planning_fiches",clientId,"photos",photoId));
+};
+window.fbPhotoListen = function(clientId, callback) {
+  var q = query(
+    collection(db,"planning_fiches",clientId,"photos"),
+    orderBy("ts")
+  );
+  return onSnapshot(q, function(snap){
+    var photos=[];
+    snap.forEach(function(d){ photos.push({id:d.id, who:d.data().who, src:d.data().src}); });
+    callback(photos);
+  });
 };
 
 // B - PRIVATE CHANNELS: subcollections for poseur<->admin and ST<->admin
@@ -1211,13 +1207,14 @@ function saveClient(){
   }).catch(function(e){toast2("Erreur: "+e.message);if(btn){btn.textContent="Enregistrer";btn.style.opacity="1";}});
 }
 
-var unsubPrivP=null, unsubPrivST=null;
+var unsubPrivP=null, unsubPrivST=null, unsubPhotos=null;
 
 // MESSAGES FIREBASE
 function startMsgListener(clientId){
   if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
   if(unsubPrivP){unsubPrivP();unsubPrivP=null;}
   if(unsubPrivST){unsubPrivST();unsubPrivST=null;}
+  if(unsubPhotos){unsubPhotos();unsubPhotos=null;}
   if(!window._fbReady||!clientId)return;
 
   // Canal client (tous)
@@ -1236,40 +1233,10 @@ function startMsgListener(clientId){
     renderMsgs("std-mp",msgs,false);// sous-traitant
   });
 
-  // A - Charger les photos existantes depuis Firestore
-  window.fbLoadPhotos(clientId).then(function(photos){
-    loadStoredPhotos("aga","aea", photos.admin, "Anthony");
-    loadStoredPhotos("agpa","aepa", photos.admin, "Anthony");
-    loadStoredPhotos("agp","aep", photos.poseur, "Poseur");
-    loadStoredPhotos("agpa","aepa", photos.poseur, "Poseur");
-    loadStoredPhotos("agpa","aepa", photos.poseur, "Poseur");
-  }).catch(function(){});
+  // A - Listener temps reel photos
+  startPhotoListener(clientId);
 }
 
-function loadStoredPhotos(gridId, emptyId, photos, who){
-  if(!photos||!photos.length)return;
-  // Filtrer les entrées invalides (vides, null, trop courtes pour être du base64)
-  var valid=photos.filter(function(src){
-    return src && typeof src==="string" && src.length>100;
-  });
-  if(!valid.length)return;
-  var grid=document.getElementById(gridId);
-  var empty=document.getElementById(emptyId);
-  if(!grid)return;
-  grid.innerHTML="";
-  if(empty)empty.style.display="none";
-  valid.forEach(function(src){
-    var item=document.createElement("div");item.className="pi";
-    var img=document.createElement("img");
-    img.loading="lazy";
-    img.onerror=function(){item.remove();};
-    img.src=src;
-    var meta=document.createElement("div");meta.className="pm";
-    meta.innerHTML="<span style='font-size:10px;color:rgba(255,255,255,.8)'>"+who+"</span>";
-    item.appendChild(img);item.appendChild(meta);
-    grid.appendChild(item);
-  });
-}
 
 // Envoi messages Firebase
 function sndMFb(ctx){
@@ -1576,85 +1543,100 @@ function addAv(p,v){
 }
 
 // PHOTOS
-// Compression photo via canvas — max 800px, qualite 0.5 => ~20-50KB
+var unsubPhotos=null;
+
+// Compression canvas — max 800px, JPEG 0.55
 function compressPhoto(file, callback){
   var reader=new FileReader();
   reader.onload=function(e){
     var img=new Image();
     img.onload=function(){
-      var MAX=800;
-      var w=img.width, h=img.height;
-      if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}
-      if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;}
-      var canvas=document.createElement("canvas");
-      canvas.width=w;canvas.height=h;
-      canvas.getContext("2d").drawImage(img,0,0,w,h);
-      callback(canvas.toDataURL("image/jpeg",0.5));
+      var MAX=800, w=img.width, h=img.height;
+      if(w>h&&w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      else if(h>=w&&h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      var cv=document.createElement("canvas");
+      cv.width=w;cv.height=h;
+      cv.getContext("2d").drawImage(img,0,0,w,h);
+      callback(cv.toDataURL("image/jpeg",0.55));
     };
+    img.onerror=function(){callback(e.target.result);};
     img.src=e.target.result;
   };
+  reader.onerror=function(){toast2("Erreur lecture fichier");};
   reader.readAsDataURL(file);
 }
 
-function getPhotosFromGrid(gridId){
-  var photos=[];
-  var grid=document.getElementById(gridId);
-  if(!grid)return photos;
-  grid.querySelectorAll("img").forEach(function(img){
-    if(img.src&&img.src.length>100)photos.push(img.src);
-  });
-  return photos;
-}
-
-function savePhotosToFb(gridId, fbField){
-  if(!cid||!window._fbReady||!fbField)return;
-  var photos=getPhotosFromGrid(gridId);
-  window.fbSavePhotos(cid, fbField, photos).then(function(){
-    toast2("Photo enregistree");
-  }).catch(function(e){toast2("Erreur photo: "+e.message);});
-}
-
-function addPhotoToGrid(gridId, emptyId, src, who, hasDel, fbField){
+// Ajouter une tuile photo dans une grille
+function mkPhotoTile(gridId, emptyId, src, who, photoId){
   var grid=document.getElementById(gridId);
   var empty=document.getElementById(emptyId);
   if(!grid)return;
   if(empty)empty.style.display="none";
-  var item=document.createElement("div");item.className="pi";
-  var img=document.createElement("img");img.src=src;img.loading="lazy";
+  var item=document.createElement("div");
+  item.className="pi";
+  item.dataset.pid=photoId||"";
+  var img=document.createElement("img");
+  img.src=src;img.loading="lazy";
+  img.onerror=function(){item.remove();};
   var meta=document.createElement("div");meta.className="pm";
   meta.innerHTML="<span style='font-size:10px;color:rgba(255,255,255,.8)'>"+who+"</span>";
   item.appendChild(img);item.appendChild(meta);
-  if(hasDel){
+  // Bouton supprimer seulement si on a un photoId Firebase
+  if(photoId&&cid&&window._fbReady){
     var del=document.createElement("button");del.className="pdel";del.textContent="x";
-    del.onclick=function(){item.remove();savePhotosToFb(gridId,fbField);};
+    del.onclick=function(){
+      window.fbPhotoDel(cid,photoId).then(function(){item.remove();}).catch(function(e){toast2("Erreur: "+e.message);});
+    };
     item.appendChild(del);
   }
   grid.appendChild(item);
 }
 
-function setupPhotoUp(inputId, gridId, emptyId, syncGridId, syncEmptyId, who, fbField){
+// Listener temps réel pour les photos
+function startPhotoListener(clientId){
+  if(unsubPhotos){unsubPhotos();unsubPhotos=null;}
+  if(!clientId||!window._fbReady)return;
+  // Vider les grilles
+  ["aga","agpa","agp"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
+  ["aea","aepa","aep"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
+
+  unsubPhotos=window.fbPhotoListen(clientId, function(photos){
+    // Vider et reconstruire
+    ["aga","agpa","agp"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
+    ["aea","aepa","aep"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display=photos.length?"none":"block";});
+    photos.forEach(function(p){
+      if(p.who==="admin"||p.who==="Anthony"){
+        mkPhotoTile("aga","aea",p.src,"Anthony",p.id);
+        mkPhotoTile("agpa","aepa",p.src,"Anthony",null);
+      } else if(p.who==="poseur"||p.who==="Poseur"){
+        mkPhotoTile("agp","aep",p.src,"Poseur",p.id);
+        mkPhotoTile("agpa","aepa",p.src,"Poseur",null);
+      }
+    });
+  });
+}
+
+// Upload photo
+function setupPhotoUp(inputId, who){
   var inp=document.getElementById(inputId);
   if(!inp)return;
   inp.onchange=function(){
     var files=Array.prototype.slice.call(this.files);
     this.value="";
+    if(!cid){toast2("Enregistrez le dossier dabord");return;}
+    if(!window._fbReady){toast2("Firebase non pret");return;}
     files.forEach(function(f){
-      compressPhoto(f,function(src){
-        addPhotoToGrid(gridId, emptyId, src, who, true, fbField);
-        if(syncGridId&&syncEmptyId) addPhotoToGrid(syncGridId, syncEmptyId, src, who, false, null);
-        // Sauvegarder dans Firebase
-        if(cid&&window._fbReady&&fbField){
-          savePhotosToFb(gridId, fbField);
-        } else if(!cid){
-          toast2("Enregistrez le dossier dabord pour sauver les photos");
-        }
+      compressPhoto(f, function(src){
+        window.fbPhotoAdd(cid, who, src).then(function(){
+          // Le listener temps reel met a jour automatiquement la grille
+        }).catch(function(e){toast2("Erreur photo: "+e.message);});
       });
     });
   };
 }
-setupPhotoUp("pua","aga","aea","agpa","aepa","Anthony","photos_admin");
-setupPhotoUp("pup","agp","aep","agpa","aepa","Poseur","photos_poseur");
-setupPhotoUp("stpup","stpg","stae",null,null,"ST",null);
+setupPhotoUp("pua","Anthony");
+setupPhotoUp("pup","Poseur");
+setupPhotoUp("stpup","ST");
 
 // PDF
 function genPDF(){
