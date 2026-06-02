@@ -1601,17 +1601,16 @@ function startPhotoListener(clientId){
   ["aea","aepa","aep"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
 
   unsubPhotos=window.fbPhotoListen(clientId, function(photos){
-    // Vider et reconstruire
-    ["aga","agpa","agp"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
-    ["aea","aepa","aep"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display=photos.length?"none":"block";});
+    // Vider toutes les grilles
+    ["aga","agpa","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
+    ["aea","aepa","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display=photos.length?"none":"block";});
+    // Toutes les photos visibles partout
     photos.forEach(function(p){
-      if(p.who==="admin"||p.who==="Anthony"){
-        mkPhotoTile("aga","aea",p.src,"Anthony",p.id);
-        mkPhotoTile("agpa","aepa",p.src,"Anthony",null);
-      } else if(p.who==="poseur"||p.who==="Poseur"){
-        mkPhotoTile("agp","aep",p.src,"Poseur",p.id);
-        mkPhotoTile("agpa","aepa",p.src,"Poseur",null);
-      }
+      var lbl=p.who||"Equipe";
+      mkPhotoTile("aga","aea",p.src,lbl,p.id);      // admin mes photos
+      mkPhotoTile("agpa","aepa",p.src,lbl,null);    // admin vue poseur
+      mkPhotoTile("agp","aep",p.src,lbl,null);      // poseur photos
+      mkPhotoTile("stpg","stae",p.src,lbl,null);    // ST photos
     });
   });
 }
