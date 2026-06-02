@@ -142,7 +142,6 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--nuit);min
         <div class="ir"><div class="il">Etat</div><div id="cl-badge"></div></div>
         <div class="ir"><div class="il">Reference</div><div class="iv" style="font-family:monospace;font-weight:700;color:var(--or)" id="cl-ref">--</div></div>
         <div class="ir"><div class="il">Travaux</div><div class="iv" id="cl-type">--</div></div>
-        <div class="ir"><div class="il">Montant TTC</div><div class="iv" style="font-size:18px;font-weight:700" id="cl-total">--</div></div>
       </div>
     </div>
     <div class="card"><div class="ch"><span class="ci">📈</span><span class="ct">Avancement</span></div>
@@ -284,7 +283,6 @@ if(!clientId){
     document.getElementById("cl-badge").innerHTML="<span class='chip "+statut+"' style='font-size:11px;padding:5px 10px'>"+ico(st)+" "+st.l+"</span>";
     document.getElementById("cl-ref").textContent=ref;
     document.getElementById("cl-type").textContent=type;
-    document.getElementById("cl-total").textContent=data.total||"—";
 
     // Barre de progression
     var prog=document.getElementById("cl-prog");
