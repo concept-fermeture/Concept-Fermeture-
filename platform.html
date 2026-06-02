@@ -407,7 +407,12 @@ window.fbLoadPhotos = async function(cid) {
 window.fbSavePhotos = async function(cid, field, photos) {
   var update = {};
   update[field] = photos;
-  await updateDoc(doc(db,"planning_fiches",cid), update);
+  try {
+    await updateDoc(doc(db,"planning_fiches",cid), update);
+  } catch(e) {
+    // Si le doc n'existe pas encore, on utilise setDoc
+    await setDoc(doc(db,"planning_fiches",cid), update, {merge:true});
+  }
 };
 
 // B - PRIVATE CHANNELS: subcollections for poseur<->admin and ST<->admin
@@ -1571,16 +1576,49 @@ function addAv(p,v){
 }
 
 // PHOTOS
+// Compression photo via canvas — max 800px, qualite 0.5 => ~20-50KB
+function compressPhoto(file, callback){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=800;
+      var w=img.width, h=img.height;
+      if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}
+      if(h>MAX){w=Math.round(w*(MAX/h));h=MAX;}
+      var canvas=document.createElement("canvas");
+      canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      callback(canvas.toDataURL("image/jpeg",0.5));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function getPhotosFromGrid(gridId){
   var photos=[];
-  var imgs=document.getElementById(gridId);
-  if(!imgs)return photos;
-  imgs.querySelectorAll("img").forEach(function(img){photos.push(img.src);});
+  var grid=document.getElementById(gridId);
+  if(!grid)return photos;
+  grid.querySelectorAll("img").forEach(function(img){
+    if(img.src&&img.src.length>100)photos.push(img.src);
+  });
   return photos;
 }
 
-function addPhotoToGrid(gridId,emptyId,src,who,hasDel,fbField){
-  document.getElementById(emptyId).style.display="none";
+function savePhotosToFb(gridId, fbField){
+  if(!cid||!window._fbReady||!fbField)return;
+  var photos=getPhotosFromGrid(gridId);
+  window.fbSavePhotos(cid, fbField, photos).then(function(){
+    toast2("Photo enregistree");
+  }).catch(function(e){toast2("Erreur photo: "+e.message);});
+}
+
+function addPhotoToGrid(gridId, emptyId, src, who, hasDel, fbField){
+  var grid=document.getElementById(gridId);
+  var empty=document.getElementById(emptyId);
+  if(!grid)return;
+  if(empty)empty.style.display="none";
   var item=document.createElement("div");item.className="pi";
   var img=document.createElement("img");img.src=src;img.loading="lazy";
   var meta=document.createElement("div");meta.className="pm";
@@ -1588,35 +1626,30 @@ function addPhotoToGrid(gridId,emptyId,src,who,hasDel,fbField){
   item.appendChild(img);item.appendChild(meta);
   if(hasDel){
     var del=document.createElement("button");del.className="pdel";del.textContent="x";
-    del.onclick=function(){
-      item.remove();
-      // Sync suppression vers Firebase
-      if(cid&&window._fbReady&&fbField){
-        var remaining=getPhotosFromGrid(fbField==="photos_admin"?"aga":"agp");
-        window.fbSavePhotos(cid,fbField,remaining);
-      }
-    };
+    del.onclick=function(){item.remove();savePhotosToFb(gridId,fbField);};
     item.appendChild(del);
   }
-  document.getElementById(gridId).appendChild(item);
+  grid.appendChild(item);
 }
 
-function setupPhotoUp(inputId,gridId,emptyId,syncGrid,syncEmpty,who,fbField){
-  document.getElementById(inputId).onchange=function(){
-    Array.prototype.forEach.call(this.files,function(f){
-      var r=new FileReader();r.onload=function(e){
-        var src=e.target.result;
-        addPhotoToGrid(gridId,emptyId,src,who,true,fbField);
-        if(syncGrid&&syncEmpty)addPhotoToGrid(syncGrid,syncEmpty,src,who,false,null);
-        // Save to Firebase
+function setupPhotoUp(inputId, gridId, emptyId, syncGridId, syncEmptyId, who, fbField){
+  var inp=document.getElementById(inputId);
+  if(!inp)return;
+  inp.onchange=function(){
+    var files=Array.prototype.slice.call(this.files);
+    this.value="";
+    files.forEach(function(f){
+      compressPhoto(f,function(src){
+        addPhotoToGrid(gridId, emptyId, src, who, true, fbField);
+        if(syncGridId&&syncEmptyId) addPhotoToGrid(syncGridId, syncEmptyId, src, who, false, null);
+        // Sauvegarder dans Firebase
         if(cid&&window._fbReady&&fbField){
-          setTimeout(function(){
-            var photos=getPhotosFromGrid(gridId);
-            window.fbSavePhotos(cid,fbField,photos);
-          },300);
+          savePhotosToFb(gridId, fbField);
+        } else if(!cid){
+          toast2("Enregistrez le dossier dabord pour sauver les photos");
         }
-      };r.readAsDataURL(f);
-    });this.value="";
+      });
+    });
   };
 }
 setupPhotoUp("pua","aga","aea","agpa","aepa","Anthony","photos_admin");
