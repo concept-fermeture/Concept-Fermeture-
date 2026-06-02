@@ -412,6 +412,19 @@ window.fbPhotoListen = function(clientId, callback) {
 };
 
 // B - PRIVATE CHANNELS: subcollections for poseur<->admin and ST<->admin
+// Code ST persisté dans Firebase
+window.fbSaveSTPin = async function(pin) {
+  await setDoc(doc(db,"config","st_settings"), {pin:pin, updated:Date.now()}, {merge:true});
+};
+window.fbLoadSTPin = async function() {
+  try {
+    const snap = await getDocs(collection(db,"config"));
+    var pin = null;
+    snap.forEach(function(d){ if(d.id==="st_settings") pin=d.data().pin; });
+    return pin;
+  } catch(e){ return null; }
+};
+
 // Canal prive unique Admin + Poseur + Sous-traitant
 window.fbPrivateListen = function(cid, callback) {
   var q = query(collection(db,"planning_fiches",cid,"private_equipe"), orderBy("ts"));
@@ -593,6 +606,9 @@ var unsubMsgs=null;
         </div>
         <div class="f"><div class="fl">Reference devis (ex: 2026-187)</div>
           <input type="text" id="fvz-ref" placeholder="2026-XXX" oninput="updVZ()">
+        </div>
+        <div class="f"><div class="fl">Montant TTC</div>
+          <input type="text" id="fvz-total" placeholder="ex: 4 280,00 EUR" oninput="updVZ()">
         </div>
         <a id="fvz" href="#" target="_blank" class="bvz" style="margin-top:4px">
           <div><div class="vz-t">Ouvrir le devis signe</div><div id="fvzl" style="font-size:13px;color:#fff">--</div></div>
@@ -960,7 +976,7 @@ var unsubMsgs=null;
 <script>
 function ha(){document.querySelectorAll(".sc").forEach(function(s){s.classList.remove("on");});}
 function goLand(){ha();document.getElementById("s-land").classList.add("on");}
-function goPin(role){ha();document.getElementById("s-pin-"+role).classList.add("on");}
+function goPin(role){ha();document.getElementById("s-pin-"+role).classList.add("on");if(role==="st")loadSTPinFromFB();}
 function goBack(role){cid=null;ha();if(role==="admin"){document.getElementById("s-al").classList.add("on");buildAL();}else if(role==="poseur"){document.getElementById("s-pl").classList.add("on");buildPL();}else{document.getElementById("s-stl").classList.add("on");buildSTL();}}
 function toast2(m){var t=document.getElementById("t2");t.textContent=m;t.classList.add("on");setTimeout(function(){t.classList.remove("on");},2500);}
 function fmtD(d){if(!d)return{day:"--",mo:"--",long:"--"};var p=d.split("-");var y=p[0],mo=p[1],dd=p[2];return{day:dd,mo:MOIS[parseInt(mo)-1],long:DAYSL[new Date(y,mo-1,dd).getDay()]+" "+dd+"/"+mo+"/"+y};}
@@ -986,6 +1002,11 @@ document.getElementById("pi-poseur").oninput=function(){
   }else{document.getElementById("pe-poseur").textContent="Code incorrect";this.value="";setTimeout(function(){document.getElementById("pe-poseur").textContent="";},1500);}
 };
 // PIN SOUS-TRAITANT — vérifie window.stPin à chaque frappe
+// Charger le PIN ST depuis Firebase quand l'écran ST s'affiche
+function loadSTPinFromFB(){
+  if(!window._fbReady)return;
+  window.fbLoadSTPin().then(function(p){if(p){window.stPin=p;stPin=p;}});
+}
 document.getElementById("pi-st").oninput=function(){
   if(this.value.length<4)return;
   if(this.value===window.stPin){
@@ -1001,12 +1022,19 @@ function changeSTPIN(){
   var n=inp.value.trim();
   if(n.length!==4||!/^[0-9]{4}$/.test(n)){toast2("Code invalide - 4 chiffres requis");return;}
   window.stPin=n;
-  stPin=n; // aussi la variable locale
+  stPin=n;
   var disp=document.getElementById("stpin-disp");
   if(disp)disp.value=n;
   inp.value="";
   inp.blur();
-  toast2("Code ST mis a jour : "+n);
+  // Sauvegarder dans Firebase
+  if(window._fbReady){
+    window.fbSaveSTPin(n).then(function(){
+      toast2("Code ST mis a jour et sauvegarde : "+n);
+    }).catch(function(e){toast2("Code mis a jour localement (erreur save: "+e.message+")");});
+  } else {
+    toast2("Code ST mis a jour : "+n);
+  }
 }
 
 // TABS
@@ -1046,6 +1074,14 @@ function toggleArchives(){showArch=!showArch;document.getElementById("aln-arch")
 function buildAL(){
   var b=document.getElementById("alb");b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px'>Chargement...</div>";
   if(!window._fbReady){setTimeout(buildAL,500);return;}
+  // Charger le code ST depuis Firebase
+  window.fbLoadSTPin().then(function(savedPin){
+    if(savedPin){
+      window.stPin=savedPin;stPin=savedPin;
+      var disp=document.getElementById("stpin-disp");
+      if(disp)disp.value=savedPin;
+    }
+  });
   window.fbLoadAll().then(function(list){
     CLIENTS=list;b.innerHTML="";
     var filtered=list.filter(function(c){return showArch?(c.archived===true):(c.archived!==true);});
@@ -1193,6 +1229,7 @@ function saveClient(){
   data.vertuoza_url=data.vz;
   data.ref=document.getElementById("fvz-ref").value.trim()||data.ref;
   data.num_chantier=data.ref;
+  data.total=document.getElementById("fvz-total").value.trim()||"";
   if(!window._fbReady){toast2("Firebase non disponible");return;}
   window.fbSave(cid,data).then(function(newId){
     cid=newId;
@@ -1359,7 +1396,8 @@ function openAD(id){
   document.getElementById("fvz").href=vzUrl||"#";
   document.getElementById("fvz-url").value=vzUrl;
   document.getElementById("fvz-ref").value=vzRef;
-  document.getElementById("fvzl").textContent=vzRef||(vzUrl?"Lien configure":"--");
+  document.getElementById("fvz-total").value=c.total||"";
+  document.getElementById("fvzl").textContent=vzRef+(c.total?" — "+c.total:"");
   document.getElementById("fsem").value=c.semaine||"";
   document.getElementById("stpin-disp").value=stPin;
   var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+id;
@@ -1510,10 +1548,11 @@ function openCL(id){
 function updVZ(){
   var url=document.getElementById("fvz-url").value.trim();
   var ref=document.getElementById("fvz-ref").value.trim();
+  var total=document.getElementById("fvz-total").value.trim();
   var link=document.getElementById("fvz");
   var lbl=document.getElementById("fvzl");
   if(url){link.href=url;}
-  lbl.textContent=ref||(url?"Lien configure":"--");
+  lbl.textContent=(ref||"--")+(total?" — "+total:"");
 }
 
 // FAU (Fiche Auto)
