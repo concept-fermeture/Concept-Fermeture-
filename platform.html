@@ -644,7 +644,7 @@ var unsubMsgs=null;
     <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Messages client</span></div>
       <div class="msgs" id="mc"></div>
     </div>
-    <div style="position:sticky;bottom:80px;background:rgba(242,237,228,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:var(--r);border:1.5px solid var(--bd);box-shadow:0 -2px 12px rgba(20,24,32,.08)">
+    <div class="card" style="border-top:2px solid var(--or)">
       <div class="mc"><textarea class="minp" id="ic" rows="1" placeholder="Repondre au client..."></textarea><button class="bsnd" id="bsc">↑</button></div>
     </div>
   </div>
@@ -727,7 +727,7 @@ var unsubMsgs=null;
     <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive equipe</span></div>
       <div class="msgs" id="mp"></div>
     </div>
-    <div style="position:sticky;bottom:80px;background:rgba(242,237,228,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:var(--r);border:1.5px solid var(--bd);box-shadow:0 -2px 12px rgba(20,24,32,.08)">
+    <div class="card" style="border-top:2px solid var(--or)">
       <div class="mc"><textarea class="minp" id="ip" rows="1" placeholder="Ecrire a l equipe..."></textarea><button class="bsnd" id="bsp">↑</button></div>
     </div>
 
@@ -996,7 +996,10 @@ function ha(){document.querySelectorAll(".sc").forEach(function(s){s.classList.r
 function goLand(){ha();document.querySelector(".save").style.display="none";document.getElementById("s-land").classList.add("on");}
 function goPin(role){ha();document.getElementById("s-pin-"+role).classList.add("on");if(role==="st")loadSTPinFromFB();}
 function stopAllListeners(){
-  stopAllListeners();
+  if(unsubMsgs){try{unsubMsgs();}catch(e){}unsubMsgs=null;}
+  if(unsubPrivP){try{unsubPrivP();}catch(e){}unsubPrivP=null;}
+  if(unsubPrivST){try{unsubPrivST();}catch(e){}unsubPrivST=null;}
+  if(unsubPhotos){try{unsubPhotos();}catch(e){}unsubPhotos=null;}
 }
 function goBack(role){
   cid=null;
