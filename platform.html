@@ -264,7 +264,7 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--nuit);min
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, addDoc, getDocs, onSnapshot, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDocs, getDocsFromServer, onSnapshot, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const fbApp = initializeApp({
   apiKey:"AIzaSyCuvmbehF2OkMi9O77FjlT8Z9mU1aMx7DM",
@@ -359,7 +359,7 @@ function mapDoc(id, d) {
   };
 }
 window.fbLoad = async function() {
-  const snap = await getDocs(collection(db,"planning_fiches"));
+  const snap = await getDocsFromServer(collection(db,"planning_fiches"));
   const list = [];
   snap.forEach(function(d){
     var mapped = mapDoc(d.id, d.data());
@@ -368,7 +368,7 @@ window.fbLoad = async function() {
   return list;
 };
 window.fbLoadAll = async function() {
-  const snap = await getDocs(collection(db,"planning_fiches"));
+  const snap = await getDocsFromServer(collection(db,"planning_fiches"));
   const list = [];
   snap.forEach(function(d){ list.push(mapDoc(d.id, d.data())); });
   return list;
@@ -382,7 +382,7 @@ window.fbArchive = async function(id, isArchived) {
 };
 window.fbDuplicate = async function(id) {
   // Copier le document principal
-  const snap2 = await getDocs(collection(db,"planning_fiches"));
+  const snap2 = await getDocsFromServer(collection(db,"planning_fiches"));
   var data = null;
   snap2.forEach(function(d){ if(d.id===id) data=Object.assign({},d.data()); });
   if(!data) return;
