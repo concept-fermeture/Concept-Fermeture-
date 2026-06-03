@@ -298,7 +298,7 @@ window.fbSave = async function(id, data) {
     materiel: data.mat || [],
     attention: data.att || [],
     note_poseur: data.note || "",
-    hide_poseur: data.hide_poseur || false,
+    visible_poseur: data.visible_poseur !== false,
     st: data.st || false,
     archived: data.archived || false,
     updated_at: new Date().toISOString()
@@ -354,7 +354,7 @@ function mapDoc(id, d) {
     att: Array.isArray(d.attention) ? d.attention : (Array.isArray(d.att) ? d.att : []),
     note: d.note_poseur || d.note || d.notes || "",
     st: d.st || false,
-    hide_poseur: d.hide_poseur || false,
+    visible_poseur: d.visible_poseur !== false,
     archived: d.archived || false
   };
 }
@@ -387,9 +387,9 @@ window.fbDuplicate = async function(id) {
   snap2.forEach(function(d){ if(d.id===id) data=Object.assign({},d.data()); });
   if(!data) return;
   // Conserver tout sauf archived et updated_at
-  // hide_poseur=true par defaut (masque poseur jusqu a confirmation)
+  // visible_poseur=false par defaut (masque poseur jusqu a confirmation)
   data.archived = false;
-  data.hide_poseur = true;
+  data.visible_poseur = false;
   delete data.updated_at;
   data.duplique_de = id;
   const newRef = await addDoc(collection(db,"planning_fiches"), data);
@@ -723,8 +723,8 @@ var unsubMsgs=null;
       </div>
     </div>
     <div class="ck">
-      <input type="checkbox" id="fhp">
-      <div class="ck-l">Masquer aux poseurs</div>
+      <input type="checkbox" id="fvp">
+      <div class="ck-l">Visible par les poseurs</div>
     </div>
     <div class="ck">
       <input type="checkbox" id="fst">
@@ -1239,7 +1239,7 @@ function buildPL(){
     CLIENTS=list;b.innerHTML="";
     var active=["at","ac","ce","cv","pl","ec"];
     var sorted=list.filter(function(c){
-      return active.indexOf(c.statut)>=0 && !c.hide_poseur;
+      return active.indexOf(c.statut)>=0 && c.visible_poseur!==false;
     }).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("pln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun chantier</div>";return;}
@@ -1254,7 +1254,7 @@ function buildSTL(){
   window.fbLoad().then(function(list){
     CLIENTS=list;b.innerHTML="";
     var active=["at","ac","ce","cv","pl","ec"];
-    var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0&&!c.hide_poseur;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
+    var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0&&c.visible_poseur!==false;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("stln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucune fiche assignee</div>";return;}
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openSTD(c.id);}));});
@@ -1286,7 +1286,7 @@ function saveClient(){
     mat:matVals,
     att:attVals,
     note:document.getElementById("fnote").value||"",
-    hide_poseur:document.getElementById("fhp")?document.getElementById("fhp").checked:false,
+    visible_poseur:document.getElementById("fvp")?document.getElementById("fvp").checked:true,
     st:document.getElementById("fst").checked||false,
     updated:new Date().toISOString()
   };
@@ -1300,7 +1300,7 @@ function saveClient(){
   data.ref=document.getElementById("fvzl").textContent.split(" - ")[0]||"";
   data.total=document.getElementById("fvzl").textContent.split(" - ")[1]||"";
   data.vz=document.getElementById("fvz-url").value.trim()||document.getElementById("fvz").getAttribute("href")||"";
-  data.hide_poseur=document.getElementById("fhp")?document.getElementById("fhp").checked:false;
+  data.visible_poseur=document.getElementById("fvp")?document.getElementById("fvp").checked:true;
   data.st=document.getElementById("fst")?document.getElementById("fst").checked:false;
   data.vertuoza_url=data.vz;
   data.ref=document.getElementById("fvz-ref").value.trim()||data.ref;
@@ -1326,7 +1326,7 @@ function saveClient(){
       CLIENTS[_idx].total=data.total;
       CLIENTS[_idx].vz=data.vz;
       CLIENTS[_idx].note=data.note;
-      CLIENTS[_idx].hide_poseur=data.hide_poseur;
+      CLIENTS[_idx].visible_poseur=data.visible_poseur;
       CLIENTS[_idx].st=data.st;
     }
     // Update lien with real ID
@@ -1339,6 +1339,15 @@ function saveClient(){
       var msg="Bonjour "+prenom+", voici votre espace personnel Concept Fermeture pour suivre l avancement de votre projet en temps reel : "+lien+" Pour l installer comme une application sur votre telephone : iPhone : appuyez sur le bouton Partager puis Sur l ecran d accueil. Android : appuyez sur les 3 points puis Ajouter a l ecran d accueil. N hesitez pas a nous contacter pour toute question. Concept Fermeture - +32 493 52 62 85";
       window.open("sms:"+nom+"?body="+encodeURIComponent(msg));
     };
+    // Sauvegarder visible_poseur séparément - toujours en dernier
+    var _fvp=document.getElementById("fvp");
+    var _vp=_fvp?_fvp.checked:true;
+    if(window._fbReady&&newId){
+      window.fbUpdate(newId,{visible_poseur:_vp}).then(function(){
+        var _ci=CLIENTS.findIndex(function(c){return c.id===newId;});
+        if(_ci>=0)CLIENTS[_ci].visible_poseur=_vp;
+      });
+    }
     toast2("Dossier enregistre");
     if(btn){btn.textContent="Enregistrer";btn.style.opacity="1";}
     // Start message listener
@@ -1495,7 +1504,7 @@ function resetAllDynamic(){
   // Vider ss (statut steps)
   var ss=document.getElementById("ss");if(ss)ss.innerHTML="";
   // Reset checkboxes à leur valeur par défaut
-  var fhp=document.getElementById("fhp");if(fhp)fhp.checked=false;
+  var fvp2=document.getElementById("fvp");if(fvp2)fvp2.checked=true;
   var fst=document.getElementById("fst");if(fst)fst.checked=false;
   // Vider poseur info
   ["pd-nom","pd-adr","pd-type"].forEach(function(id){
@@ -1533,7 +1542,7 @@ function openAD(id){
   document.getElementById("fhf").value=c.hF||c.heure_fin||"17:00";
   document.getElementById("fdliv").value=c.dliv||"";
   document.getElementById("fnote").value=c.note||c.note_poseur||"";
-  document.getElementById("fhp").checked=c.hide_poseur||false;
+  document.getElementById("fvp").checked=c.visible_poseur!==false;
   document.getElementById("fst").checked=c.st||false;
   var vzUrl=c.vz||c.vertuoza_url||"";
   var vzRef=c.ref||c.num_chantier||"";
