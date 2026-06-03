@@ -872,9 +872,6 @@ var unsubMsgs=null;
     </div>
     <div class="card"><div class="ch"><span class="ci">📦</span><span class="ct">Materiel</span></div><div class="cb" id="pd-mat"></div></div>
     <div class="card"><div class="ch"><span class="ci">⚠️</span><span class="ct">Points d attention</span></div><div class="cb" id="pd-att"></div></div>
-    <div class="card"><div class="ch"><span class="ci">🖼️</span><span class="ct">Photos equipe</span></div>
-      <div class="cb"></div>
-    </div>
   </div>
   <div id="p-photos" class="tc">
     <div class="pup" onclick="document.getElementById('pup').click()">
@@ -1120,6 +1117,8 @@ function stab(ctx,id,el){
 function buildItem(c,onclick){
   var fd=fmtD(c.date);var st=si(c.statut);
   var unread=(c.msgs||[]).filter(function(m){return m.r==="client";}).length;
+  var _role=typeof role!=="undefined"?role:"admin";
+  var showDot=(_role==="admin"&&c.unread_admin)||(_role==="poseur"&&c.unread_poseur)||(_role==="st"&&c.unread_st)||unread>0;
   var div=document.createElement("div");div.className="item";
   var bar=document.createElement("div");bar.className="item-bar";bar.style.background=SBAR[c.statut]||"#ccc";div.appendChild(bar);
   var dateDiv=document.createElement("div");dateDiv.style.textAlign="center";dateDiv.style.minWidth="30px";
