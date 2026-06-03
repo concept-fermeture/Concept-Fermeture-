@@ -1308,6 +1308,26 @@ function saveClient(){
   if(!window._fbReady){toast2("Firebase non disponible");return;}
   window.fbSave(cid,data).then(function(newId){
     cid=newId;
+    // Mettre à jour CLIENTS en mémoire pour éviter les données périmées
+    var _idx=CLIENTS.findIndex(function(c){return c.id===newId;});
+    if(_idx>=0){
+      CLIENTS[_idx].nom=data.nom;
+      CLIENTS[_idx].adr=data.adr;
+      CLIENTS[_idx].tel=data.tel;
+      CLIENTS[_idx].email=data.email;
+      CLIENTS[_idx].ref=data.ref;
+      CLIENTS[_idx].type=data.type;
+      CLIENTS[_idx].statut=data.statut;
+      CLIENTS[_idx].date=data.date;
+      CLIENTS[_idx].hD=data.hD;
+      CLIENTS[_idx].hF=data.hF;
+      CLIENTS[_idx].dliv=data.dliv;
+      CLIENTS[_idx].total=data.total;
+      CLIENTS[_idx].vz=data.vz;
+      CLIENTS[_idx].note=data.note;
+      CLIENTS[_idx].visible_poseur=data.visible_poseur;
+      CLIENTS[_idx].st=data.st;
+    }
     // Update lien with real ID
     var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+newId;
     document.getElementById("flien").textContent=lien;
