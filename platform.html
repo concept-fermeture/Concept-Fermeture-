@@ -376,14 +376,7 @@ window.fbLoadAll = async function() {
   snap.forEach(function(d){ list.push(mapDoc(d.id, d.data())); });
   return list;
 };
-// Listener temps réel sur la liste complète
-window.fbListenList = function(callback) {
-  return onSnapshot(collection(db,"planning_fiches"), function(snap){
-    var list=[];
-    snap.forEach(function(d){ list.push(mapDoc(d.id, d.data())); });
-    callback(list);
-  });
-};
+
 window.fbArchive = async function(id, isArchived) {
   try {
     await updateDoc(doc(db,"planning_fiches",id), {archived:!isArchived});
@@ -1046,7 +1039,6 @@ function stopAllListeners(){
 }
 function goBack(role){
   cid=null;
-  if(unsubList&&role!=="admin"){unsubList();unsubList=null;}
   stopAllListeners();
   resetAllDynamic();
   ha();
