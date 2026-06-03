@@ -723,7 +723,7 @@ var unsubMsgs=null;
       </div>
     </div>
     <div class="ck">
-      <input type="checkbox" id="fvp" checked>
+      <input type="checkbox" id="fvp">
       <div class="ck-l">Visible par les poseurs</div>
     </div>
     <div class="ck">
@@ -1332,6 +1332,12 @@ function saveClient(){
     var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+newId;
     document.getElementById("flien").textContent=lien;
     document.getElementById("fcopy").onclick=function(){navigator.clipboard.writeText(lien).then(function(){toast2("Lien copie !");});};
+    document.getElementById("fsms").onclick=function(){
+      var nom=document.getElementById("fn").value||"";
+      var prenom=nom.split(" ")[0]||"";
+      var msg="Bonjour "+prenom+", voici votre espace personnel Concept Fermeture pour suivre l avancement de votre projet en temps reel : "+lien+" Pour l installer comme une application sur votre telephone : iPhone : appuyez sur le bouton Partager puis Sur l ecran d accueil. Android : appuyez sur les 3 points puis Ajouter a l ecran d accueil. N hesitez pas a nous contacter pour toute question. Concept Fermeture - +32 493 52 62 85";
+      window.open("sms:"+nom+"?body="+encodeURIComponent(msg));
+    };
     toast2("Dossier enregistre");
     if(btn){btn.textContent="Enregistrer";btn.style.opacity="1";}
     // Start message listener
@@ -1487,6 +1493,9 @@ function resetAllDynamic(){
   ["fmat","fatt"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML="";});
   // Vider ss (statut steps)
   var ss=document.getElementById("ss");if(ss)ss.innerHTML="";
+  // Reset checkboxes à leur valeur par défaut
+  var fvp=document.getElementById("fvp");if(fvp)fvp.checked=true;
+  var fst=document.getElementById("fst");if(fst)fst.checked=false;
   // Vider poseur info
   ["pd-nom","pd-adr","pd-type"].forEach(function(id){
     var el=document.getElementById(id);if(el)el.textContent="--";
@@ -1537,7 +1546,12 @@ function openAD(id){
   var lien="https://concept-fermeture.github.io/Concept-Fermeture-/client.html?client="+id;
   document.getElementById("flien").textContent=lien;
   document.getElementById("fcopy").onclick=function(){navigator.clipboard.writeText(lien).then(function(){toast2("Lien copie !");});};
-  document.getElementById("fsms").onclick=function(){window.open("sms:"+c.tel+"?body="+lien);};
+  document.getElementById("fsms").onclick=function(){
+    var nom=document.getElementById("fn").value||c.nom||"";
+    var prenom=nom.split(" ")[0]||"";
+    var msg="Bonjour "+prenom+", voici votre espace personnel Concept Fermeture pour suivre l avancement de votre projet en temps reel : "+lien+" Pour l installer comme une application sur votre telephone : iPhone : appuyez sur le bouton Partager puis Sur l ecran d accueil. Android : appuyez sur les 3 points puis Ajouter a l ecran d accueil. N hesitez pas a nous contacter pour toute question. Concept Fermeture - +32 493 52 62 85";
+    window.open("sms:"+c.tel+"?body="+encodeURIComponent(msg));
+  };
   updFa();
   var mat=Array.isArray(c.mat)?c.mat:(Array.isArray(c.materiel)?c.materiel:[]);
   var att=Array.isArray(c.att)?c.att:(Array.isArray(c.attention)?c.attention:[]);
