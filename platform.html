@@ -1564,6 +1564,20 @@ function openAD(id){
   var _ae=document.getElementById("aea");if(_ae)_ae.style.display="block";
   // Vue client
   fillVueClient(c);
+  // Save visible_poseur directement au changement
+  var fvpEl=document.getElementById("fvp");
+  if(fvpEl){
+    fvpEl.onchange=function(){
+      var val=this.checked;
+      if(!window._fbReady)return;
+      window.fbUpdate(cid,{visible_poseur:val}).then(function(){
+        // Mettre à jour CLIENTS en mémoire
+        var ci=CLIENTS.findIndex(function(c){return c.id===cid;});
+        if(ci>=0)CLIENTS[ci].visible_poseur=val;
+        toast2(val?"Visible poseurs":"Masque aux poseurs");
+      }).catch(function(e){toast2("Erreur: "+e.message);});
+    };
+  }
   // Bind buttons
   document.getElementById("bsc").onclick=function(){sndMFb("ac");};
   document.getElementById("bsp").onclick=function(){sndMFb("ap");};
