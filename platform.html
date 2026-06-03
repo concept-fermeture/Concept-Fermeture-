@@ -290,6 +290,7 @@ window.fbSave = async function(id, data) {
     type_travail: data.type || "",
     statut: {at:"En attente",ac:"Acompte recu",ce:"Commande en cours",cv:"Commande validee",pl:"Planifie",ec:"En cours",fi:"Termine"}[data.statut] || "En attente",
     date: data.date || "",
+    jours: data.jours || [],
     heure_debut: data.hD || "07:00",
     heure_fin: data.hF || "17:00",
     dliv: data.dliv || "",
@@ -347,6 +348,7 @@ function mapDoc(id, d) {
     date: d.date || d.date_chantier || d.date_pose || "",
     hD: d.heure_debut || d.hD || d.horaire_debut || "07:00",
     hF: d.heure_fin || d.hF || d.horaire_fin || "17:00",
+    jours: d.jours || null,
     dliv: d.dliv || d.date_livraison || "",
     total: d.total || d.montant || "",
     vz: d.vertuoza_url || d.vz || d.lien_vertuoza || "",
@@ -1029,6 +1031,52 @@ var unsubMsgs=null;
 
 <script>
 function ha(){document.querySelectorAll(".sc").forEach(function(s){s.classList.remove("on");});}
+// Jours d'installation
+function getJours(){
+  var rows=document.querySelectorAll("#fjours .jour-row");
+  var jours=[];
+  rows.forEach(function(r){
+    var d=r.querySelector(".j-date").value;
+    var hd=r.querySelector(".j-hd").value;
+    var hf=r.querySelector(".j-hf").value;
+    if(d)jours.push({date:d,hD:hd||"07:00",hF:hf||"17:00"});
+  });
+  return jours;
+}
+
+function addJour(date,hD,hF){
+  var container=document.getElementById("fjours");
+  var row=document.createElement("div");
+  row.className="jour-row";
+  row.style.cssText="display:flex;gap:6px;align-items:center;background:var(--or-p);border:1px solid var(--bd);border-radius:9px;padding:8px 10px";
+  row.innerHTML="<input type='date' class='j-date' value='"+(date||"")+"' style='flex:1.5;font-family:DM Sans,sans-serif;font-size:13px;border:1px solid var(--bd);border-radius:6px;padding:5px 8px;background:#fff;color:var(--nuit)'>"+
+    "<input type='time' class='j-hd' value='"+(hD||"07:00")+"' style='flex:1;font-family:DM Sans,sans-serif;font-size:12px;border:1px solid var(--bd);border-radius:6px;padding:5px 6px;background:#fff;color:var(--nuit)'>"+
+    "<input type='time' class='j-hf' value='"+(hF||"17:00")+"' style='flex:1;font-family:DM Sans,sans-serif;font-size:12px;border:1px solid var(--bd);border-radius:6px;padding:5px 6px;background:#fff;color:var(--nuit)'>"+
+    "<button onclick='this.parentElement.remove()' style='border:none;background:none;color:var(--ng);font-size:16px;cursor:pointer;padding:2px 4px'>×</button>";
+  container.appendChild(row);
+}
+
+function loadJours(c){
+  var container=document.getElementById("fjours");
+  container.innerHTML="";
+  var jours=c.jours;
+  if(!jours||!jours.length){
+    // Compat ancien format
+    if(c.date)jours=[{date:c.date,hD:c.hD||"07:00",hF:c.hF||"17:00"}];
+    else jours=[];
+  }
+  jours.forEach(function(j){addJour(j.date,j.hD,j.hF);});
+  if(!jours.length)addJour(); // Au moins une ligne vide
+}
+
+function fmtJours(jours){
+  if(!jours||!jours.length)return"--";
+  return jours.map(function(j){
+    var d=j.date?fmtD(j.date):"--";
+    return d+" "+j.hD+"-"+j.hF;
+  }).join(" | ");
+}
+
 function goLand(){ha();document.querySelector(".save").style.display="none";document.getElementById("s-land").classList.add("on");}
 
 // Rafraîchissement léger des dots toutes les 30s
@@ -1322,6 +1370,10 @@ function saveClient(){
   data.total=document.getElementById("fvzl").textContent.split(" - ")[1]||"";
   data.vz=document.getElementById("fvz-url").value.trim()||document.getElementById("fvz").getAttribute("href")||"";
   data.visible_poseur=document.getElementById("fvp")?document.getElementById("fvp").checked:true;
+  var _jours=getJours();
+  data.jours=_jours;
+  // Compat: premier jour comme date principale
+  if(_jours.length){data.date=_jours[0].date;data.hD=_jours[0].hD;data.hF=_jours[0].hF;}
   data.st=document.getElementById("fst")?document.getElementById("fst").checked:false;
   data.vertuoza_url=data.vz;
   data.ref=document.getElementById("fvz-ref").value.trim()||data.ref;
@@ -1636,7 +1688,16 @@ function fillVueClient(c){
   document.getElementById("vc-vz").href=vcVz;
   document.getElementById("vc-vzl").textContent=vcRef+(c.total?" — "+c.total:"");
   var fd=fmtD(c.date);
-  document.getElementById("vc-date").textContent=fd.long||"--";
+  var _vcDateEl=document.getElementById("vc-date");
+  if(_vcDateEl){
+    if(c.jours&&c.jours.length>1){
+      _vcDateEl.innerHTML=c.jours.map(function(j,i){
+        return"<div style='margin-bottom:4px'><strong>Jour "+(i+1)+"</strong> — "+fmtD(j.date)+" "+j.hD+"-"+j.hF+"</div>";
+      }).join("");
+    } else {
+      _vcDateEl.textContent=fd.long||"--";
+    }
+  }
   document.getElementById("vc-heure").textContent=c.hD||c.heure_debut||"--";
   document.getElementById("vc-adr").textContent=c.adr||c.adresse||"--";
   renderMsgs("vc-msgs",[],true);
