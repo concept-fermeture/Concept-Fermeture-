@@ -1277,15 +1277,12 @@ function saveClient(){
     adr:document.getElementById("fa").value||"",
     tel:document.getElementById("ft").value||"",
     email:document.getElementById("fe").value||"",
-    ref:document.getElementById("fn").value?document.getElementById("fn").value:"",
-    type:document.querySelector("#fatt")&&document.getElementById("fn").value?"":"",
-    statut:statut,
+    ref:"",type:"",statut:statut,
     date:document.getElementById("fd").value||"",
     hD:document.getElementById("fhd").value||"07:00",
     hF:document.getElementById("fhf").value||"17:00",
     dliv:document.getElementById("fdliv").value||"",
-    total:document.getElementById("fn").value?"":"",
-    vz:document.getElementById("fvz").href||"",
+    total:"",vz:"",
     mat:matVals,
     att:attVals,
     note:document.getElementById("fnote").value||"",
@@ -1302,6 +1299,8 @@ function saveClient(){
   data.ref=document.getElementById("fvzl").textContent.split(" - ")[0]||"";
   data.total=document.getElementById("fvzl").textContent.split(" - ")[1]||"";
   data.vz=document.getElementById("fvz-url").value.trim()||document.getElementById("fvz").getAttribute("href")||"";
+  data.visible_poseur=document.getElementById("fvp")?document.getElementById("fvp").checked:true;
+  data.st=document.getElementById("fst")?document.getElementById("fst").checked:false;
   data.vertuoza_url=data.vz;
   data.ref=document.getElementById("fvz-ref").value.trim()||data.ref;
   data.num_chantier=data.ref;
