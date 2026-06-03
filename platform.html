@@ -515,6 +515,7 @@ var stPin="5678"; window.stPin=stPin;
 var CLIENTS=[];
 var cid=null;
 var aOk=false,pOk=false,stOk=false;
+var currentRole="admin";
 var unsubMsgs=null;
 </script>
 
@@ -1117,7 +1118,7 @@ function stab(ctx,id,el){
 function buildItem(c,onclick){
   var fd=fmtD(c.date);var st=si(c.statut);
   var unread=(c.msgs||[]).filter(function(m){return m.r==="client";}).length;
-  var _role=typeof role!=="undefined"?role:"admin";
+  var _role=currentRole||"admin";
   var showDot=(_role==="admin"&&c.unread_admin)||(_role==="poseur"&&c.unread_poseur)||(_role==="st"&&c.unread_st)||unread>0;
   var div=document.createElement("div");div.className="item";
   var bar=document.createElement("div");bar.className="item-bar";bar.style.background=SBAR[c.statut]||"#ccc";div.appendChild(bar);
@@ -1157,7 +1158,7 @@ function buildAL(){
     var sorted=filtered.sort(function(a,b2){return (a.date||a.date_chantier||"").localeCompare(b2.date||b2.date_chantier||"");});
     document.getElementById("aln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>"+(showArch?"Aucune archive":"Aucun dossier")+"</div>";return;}
-    var role="admin";
+    currentRole="admin";
     sorted.forEach(function(c){
       var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;gap:6px;margin-bottom:8px";
       var item=buildItem(c,function(){cid=c.id;ha();openAD(c.id);});
@@ -1246,7 +1247,7 @@ function buildPL(){
     }).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("pln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun chantier</div>";return;}
-    var role="poseur";
+    currentRole="poseur";
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openPD(c.id);}));});
   }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
 }
@@ -1261,7 +1262,7 @@ function buildSTL(){
     var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0&&c.visible_poseur!==false;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("stln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucune fiche assignee</div>";return;}
-    var role="st";
+    currentRole="st";
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openSTD(c.id);}));});
   }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
 }
