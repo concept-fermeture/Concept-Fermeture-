@@ -354,6 +354,9 @@ function mapDoc(id, d) {
     att: Array.isArray(d.attention) ? d.attention : (Array.isArray(d.att) ? d.att : []),
     note: d.note_poseur || d.note || d.notes || "",
     st: d.st || false,
+    unread_admin: d.unread_admin || false,
+    unread_poseur: d.unread_poseur || false,
+    unread_st: d.unread_st || false,
     visible_poseur: d.visible_poseur !== false,
     archived: d.archived || false
   };
@@ -1155,6 +1158,7 @@ function buildAL(){
     var sorted=filtered.sort(function(a,b2){return (a.date||a.date_chantier||"").localeCompare(b2.date||b2.date_chantier||"");});
     document.getElementById("aln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>"+(showArch?"Aucune archive":"Aucun dossier")+"</div>";return;}
+    var role="admin";
     sorted.forEach(function(c){
       var row=document.createElement("div");row.style.cssText="display:flex;align-items:center;gap:6px;margin-bottom:8px";
       var item=buildItem(c,function(){cid=c.id;ha();openAD(c.id);});
@@ -1243,6 +1247,7 @@ function buildPL(){
     }).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("pln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun chantier</div>";return;}
+    var role="poseur";
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openPD(c.id);}));});
   }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
 }
@@ -1257,6 +1262,7 @@ function buildSTL(){
     var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0&&c.visible_poseur!==false;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("stln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucune fiche assignee</div>";return;}
+    var role="st";
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openSTD(c.id);}));});
   }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
 }
@@ -1392,11 +1398,30 @@ function sndMFb(ctx){
   if(!window._fbReady){toast2("Connexion Firebase...");return;}
   var msg={r:who_map[ctx],t:text,ti:now2(),ts:Date.now()};
   inp.value="";
+  // Marquer non lu selon qui écrit
+  var unread={};
+  if(ctx==="cc"){unread.unread_admin=true;}           // client écrit → admin voit dot
+  if(ctx==="pa"||ctx==="sta"){unread.unread_admin=true;} // équipe écrit → admin voit dot
+  if(ctx==="ac"||ctx==="ap"){unread.unread_poseur=true;unread.unread_st=true;} // admin écrit → poseur/ST voient dot
+  if(Object.keys(unread).length&&window._fbReady){
+    window.fbUpdate(cid,unread);
+    // Mettre à jour la liste visuellement
+    updateListDot(cid, unread);
+  }
   if(ctx==="ap"||ctx==="pa"||ctx==="sta"){
     window.fbPrivateSend(cid,msg).catch(function(e){toast2("Erreur envoi: "+e.message);});
   } else {
     window.fbMsgSend(cid,msg).catch(function(e){toast2("Erreur envoi: "+e.message);});
   }
+}
+
+// Mettre à jour le point rouge dans la liste
+function updateListDot(docId, unread){
+  // Refresh la liste pour refléter le nouveau dot
+  // On recharge juste les dots sans tout recharger
+  document.querySelectorAll(".item").forEach(function(item){
+    item.dataset.docid===docId;
+  });
 }
 
 // STATUT STEPS
@@ -1518,6 +1543,8 @@ function resetAllDynamic(){
 function openAD(id){
   stopAllListeners();
   var c=CLIENTS.find(function(x){return x.id===id;});
+  // Effacer unread_admin quand admin ouvre
+  if(c&&window._fbReady){window.fbUpdate(id,{unread_admin:false});if(c)c.unread_admin=false;}
   if(!c){toast2("Dossier introuvable");return;}
   resetAllDynamic();
   document.getElementById("s-ad").classList.add("on");
@@ -1605,6 +1632,8 @@ function openPD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
   stopAllListeners();
   if(!c){toast2("Dossier introuvable");return;}
+  // Effacer unread_poseur quand poseur ouvre
+  if(window._fbReady){window.fbUpdate(id,{unread_poseur:false});c.unread_poseur=false;}
   resetAllDynamic();
   document.getElementById("s-pd").classList.add("on");
   var tabs=document.querySelectorAll("#s-pd .tab");
@@ -1643,6 +1672,8 @@ function openSTD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
   stopAllListeners();
   if(!c){toast2("Dossier introuvable");return;}
+  // Effacer unread_poseur quand poseur ouvre
+  if(window._fbReady){window.fbUpdate(id,{unread_poseur:false});c.unread_poseur=false;}
   resetAllDynamic();
   document.getElementById("s-std").classList.add("on");
   var tabs=document.querySelectorAll("#s-std .tab");
@@ -1845,7 +1876,12 @@ function setupPhotoUp(inputId, who){
     files.forEach(function(f){
       compressPhoto(f, function(src){
         window.fbPhotoAdd(cid, who, src).then(function(){
-          // Le listener temps reel met a jour automatiquement la grille
+          // Notifier les autres selon qui upload
+          if(who==="Anthony"&&window._fbReady){
+            window.fbUpdate(cid,{unread_poseur:true,unread_st:true});
+          } else if((who==="Poseur"||who==="ST")&&window._fbReady){
+            window.fbUpdate(cid,{unread_admin:true});
+          }
         }).catch(function(e){toast2("Erreur photo: "+e.message);});
       });
     });
