@@ -298,7 +298,7 @@ window.fbSave = async function(id, data) {
     materiel: data.mat || [],
     attention: data.att || [],
     note_poseur: data.note || "",
-    visible_poseur: data.visible_poseur !== false,
+    hide_poseur: data.hide_poseur || false,
     st: data.st || false,
     archived: data.archived || false,
     updated_at: new Date().toISOString()
@@ -354,7 +354,7 @@ function mapDoc(id, d) {
     att: Array.isArray(d.attention) ? d.attention : (Array.isArray(d.att) ? d.att : []),
     note: d.note_poseur || d.note || d.notes || "",
     st: d.st || false,
-    visible_poseur: d.visible_poseur !== false,
+    hide_poseur: d.hide_poseur || false,
     archived: d.archived || false
   };
 }
@@ -387,9 +387,9 @@ window.fbDuplicate = async function(id) {
   snap2.forEach(function(d){ if(d.id===id) data=Object.assign({},d.data()); });
   if(!data) return;
   // Conserver tout sauf archived et updated_at
-  // visible_poseur=false par defaut (masque poseur jusqu a confirmation)
+  // hide_poseur=true par defaut (masque poseur jusqu a confirmation)
   data.archived = false;
-  data.visible_poseur = false;
+  data.hide_poseur = true;
   delete data.updated_at;
   data.duplique_de = id;
   const newRef = await addDoc(collection(db,"planning_fiches"), data);
@@ -723,8 +723,8 @@ var unsubMsgs=null;
       </div>
     </div>
     <div class="ck">
-      <input type="checkbox" id="fvp">
-      <div class="ck-l">Visible par les poseurs</div>
+      <input type="checkbox" id="fhp">
+      <div class="ck-l">Masquer aux poseurs</div>
     </div>
     <div class="ck">
       <input type="checkbox" id="fst">
@@ -1239,7 +1239,7 @@ function buildPL(){
     CLIENTS=list;b.innerHTML="";
     var active=["at","ac","ce","cv","pl","ec"];
     var sorted=list.filter(function(c){
-      return active.indexOf(c.statut)>=0 && c.visible_poseur!==false;
+      return active.indexOf(c.statut)>=0 && !c.hide_poseur;
     }).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("pln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucun chantier</div>";return;}
@@ -1254,7 +1254,7 @@ function buildSTL(){
   window.fbLoad().then(function(list){
     CLIENTS=list;b.innerHTML="";
     var active=["at","ac","ce","cv","pl","ec"];
-    var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0&&c.visible_poseur!==false;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
+    var sorted=list.filter(function(c){return c.st&&active.indexOf(c.statut)>=0&&!c.hide_poseur;}).sort(function(a,b2){return (a.date||"").localeCompare(b2.date||"");});
     document.getElementById("stln").textContent=sorted.length;
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucune fiche assignee</div>";return;}
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openSTD(c.id);}));});
@@ -1286,6 +1286,7 @@ function saveClient(){
     mat:matVals,
     att:attVals,
     note:document.getElementById("fnote").value||"",
+    hide_poseur:document.getElementById("fhp")?document.getElementById("fhp").checked:false,
     st:document.getElementById("fst").checked||false,
     updated:new Date().toISOString()
   };
@@ -1299,7 +1300,7 @@ function saveClient(){
   data.ref=document.getElementById("fvzl").textContent.split(" - ")[0]||"";
   data.total=document.getElementById("fvzl").textContent.split(" - ")[1]||"";
   data.vz=document.getElementById("fvz-url").value.trim()||document.getElementById("fvz").getAttribute("href")||"";
-  data.visible_poseur=document.getElementById("fvp")?document.getElementById("fvp").checked:true;
+  data.hide_poseur=document.getElementById("fhp")?document.getElementById("fhp").checked:false;
   data.st=document.getElementById("fst")?document.getElementById("fst").checked:false;
   data.vertuoza_url=data.vz;
   data.ref=document.getElementById("fvz-ref").value.trim()||data.ref;
@@ -1325,7 +1326,7 @@ function saveClient(){
       CLIENTS[_idx].total=data.total;
       CLIENTS[_idx].vz=data.vz;
       CLIENTS[_idx].note=data.note;
-      CLIENTS[_idx].visible_poseur=data.visible_poseur;
+      CLIENTS[_idx].hide_poseur=data.hide_poseur;
       CLIENTS[_idx].st=data.st;
     }
     // Update lien with real ID
@@ -1494,7 +1495,7 @@ function resetAllDynamic(){
   // Vider ss (statut steps)
   var ss=document.getElementById("ss");if(ss)ss.innerHTML="";
   // Reset checkboxes à leur valeur par défaut
-  var fvp=document.getElementById("fvp");if(fvp)fvp.checked=true;
+  var fhp=document.getElementById("fhp");if(fhp)fhp.checked=false;
   var fst=document.getElementById("fst");if(fst)fst.checked=false;
   // Vider poseur info
   ["pd-nom","pd-adr","pd-type"].forEach(function(id){
@@ -1532,7 +1533,7 @@ function openAD(id){
   document.getElementById("fhf").value=c.hF||c.heure_fin||"17:00";
   document.getElementById("fdliv").value=c.dliv||"";
   document.getElementById("fnote").value=c.note||c.note_poseur||"";
-  document.getElementById("fvp").checked=c.visible_poseur!==false;
+  document.getElementById("fhp").checked=c.hide_poseur||false;
   document.getElementById("fst").checked=c.st||false;
   var vzUrl=c.vz||c.vertuoza_url||"";
   var vzRef=c.ref||c.num_chantier||"";
@@ -1564,20 +1565,7 @@ function openAD(id){
   var _ae=document.getElementById("aea");if(_ae)_ae.style.display="block";
   // Vue client
   fillVueClient(c);
-  // Save visible_poseur directement au changement
-  var fvpEl=document.getElementById("fvp");
-  if(fvpEl){
-    fvpEl.onchange=function(){
-      var val=this.checked;
-      if(!window._fbReady)return;
-      window.fbUpdate(cid,{visible_poseur:val}).then(function(){
-        // Mettre à jour CLIENTS en mémoire
-        var ci=CLIENTS.findIndex(function(c){return c.id===cid;});
-        if(ci>=0)CLIENTS[ci].visible_poseur=val;
-        toast2(val?"Visible poseurs":"Masque aux poseurs");
-      }).catch(function(e){toast2("Erreur: "+e.message);});
-    };
-  }
+
   // Bind buttons
   document.getElementById("bsc").onclick=function(){sndMFb("ac");};
   document.getElementById("bsp").onclick=function(){sndMFb("ap");};
