@@ -643,8 +643,6 @@ var unsubMsgs=null;
     </div>
     <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Messages client</span></div>
       <div class="msgs" id="mc"></div>
-    </div>
-    <div class="card" style="border-top:2px solid var(--or)">
       <div class="mc"><textarea class="minp" id="ic" rows="1" placeholder="Repondre au client..."></textarea><button class="bsnd" id="bsc">↑</button></div>
     </div>
   </div>
@@ -719,18 +717,16 @@ var unsubMsgs=null;
   <!-- TAB POSEUR -->
   <div id="t-poseur" class="tc" style="padding-bottom:100px">
     <div class="rn">Vue poseur - messages client en lecture seule</div>
-      <div style="font-size:28px">⏱️</div>
-    </div>
     <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Conversation client (vue poseur)</span></div>
       <div class="msgs" id="mc-ro"></div>
     </div>
     <div class="card"><div class="ch"><span class="ci">🔒</span><span class="ct">Canal prive equipe</span></div>
       <div class="msgs" id="mp"></div>
-    </div>
-    <div class="card" style="border-top:2px solid var(--or)">
       <div class="mc"><textarea class="minp" id="ip" rows="1" placeholder="Ecrire a l equipe..."></textarea><button class="bsnd" id="bsp">↑</button></div>
     </div>
-
+    <div class="card"><div class="ch"><span class="ci">📷</span><span class="ct">Photos equipe</span></div>
+      <div class="cb"><div class="pg" id="agpa"></div><div id="aepa" class="mempty">Aucune photo</div></div>
+    </div>
   </div>
 
   <!-- TAB VUE CLIENT -->
@@ -1419,8 +1415,8 @@ function resetAllDynamic(){
   });
   var vcProg=document.getElementById("vc-prog");if(vcProg)vcProg.innerHTML="";
   // Vider photos
-  ["aga","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
-  ["aea","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
+  ["aga","agpa","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
+  ["aea","aepa","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
   // Vider inputs texte
   ["fn","fa","ft","fe","fd","fhd","fhf","fdliv","fnote","fvz-url","fvz-ref","fvz-total","fsem","flien","pd-nom","pd-adr","pd-telnum","pd-type"].forEach(function(id){
     var el=document.getElementById(id);
@@ -1723,8 +1719,8 @@ function startPhotoListener(clientId){
   if(unsubPhotos){unsubPhotos();unsubPhotos=null;}
   if(!clientId||!window._fbReady)return;
   // Vider les grilles
-  ["aga","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
-  ["aea","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
+  ["aga","agpa","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
+  ["aea","aepa","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
 
   unsubPhotos=window.fbPhotoListen(clientId, function(photos){
     // Vider toutes les grilles
@@ -1737,7 +1733,8 @@ function startPhotoListener(clientId){
       var pid=p.id;
 
       // aga : Admin "Photos equipe" = toutes les photos, Anthony peut supprimer toutes
-      mkPhotoTile("aga","aea",p.src,lbl,pid);
+      mkPhotoTile("aga","aea",p.src,lbl,pid);      // admin mes photos
+      mkPhotoTile("agpa","aepa",p.src,lbl,null); // admin onglet poseur
 
       // agp : Poseur voit tout, peut supprimer les siennes
       var pidP=(p.who==="Poseur") ? pid : null;
