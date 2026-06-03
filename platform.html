@@ -280,10 +280,48 @@ window._fbReady = true;
 
 // Expose Firebase functions globally for use in non-module script
 window.fbSave = async function(id, data) {
-  if(id) { await setDoc(doc(db,"clients",id), data, {merge:true}); return id; }
-  else { const ref = await addDoc(collection(db,"clients"), data); return ref.id; }
+  // Mapper vers les champs planning_fiches
+  var pf = {
+    client_nom: data.nom || "",
+    adresse: data.adr || "",
+    contact_tel: data.tel || "",
+    email: data.email || "",
+    num_chantier: data.ref || "",
+    type_travail: data.type || "",
+    statut: {at:"En attente",ac:"Acompte recu",ce:"Commande en cours",cv:"Commande validee",pl:"Planifie",ec:"En cours",fi:"Termine"}[data.statut] || "En attente",
+    date: data.date || "",
+    heure_debut: data.hD || "07:00",
+    heure_fin: data.hF || "17:00",
+    dliv: data.dliv || "",
+    total: data.total || "",
+    vertuoza_url: data.vz || "",
+    materiel: data.mat || [],
+    attention: data.att || [],
+    note_poseur: data.note || "",
+    visible_poseur: data.visible_poseur !== false,
+    st: data.st || false,
+    archived: data.archived || false,
+    updated_at: new Date().toISOString()
+  };
+  if(id) {
+    await setDoc(doc(db,"planning_fiches",id), pf, {merge:true});
+    return id;
+  } else {
+    const ref = await addDoc(collection(db,"planning_fiches"), pf);
+    return ref.id;
+  }
 };
-window.fbDelete = async function(id) { await deleteDoc(doc(db,"clients",id)); };
+window.fbDelete = async function(id) {
+  await deleteDoc(doc(db,"planning_fiches",id));
+  try {
+    const photos = await getDocs(collection(db,"planning_fiches",id,"photos"));
+    for(const p of photos.docs){ await deleteDoc(p.ref); }
+    const msgs = await getDocs(collection(db,"planning_fiches",id,"messages"));
+    for(const m of msgs.docs){ await deleteDoc(m.ref); }
+    const priv = await getDocs(collection(db,"planning_fiches",id,"private_equipe"));
+    for(const m of priv.docs){ await deleteDoc(m.ref); }
+  } catch(e){}
+};
 // Mapping statut planning_fiches -> v5
 var STATUT_MAP = {
   "En attente":"at","Planifie":"pl","Planifié":"pl","Planifie":"pl",
