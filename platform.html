@@ -608,6 +608,7 @@ var unsubMsgs=null;
       <div class="cb">
         <div class="f"><div class="fl">Nom</div><input type="text" id="fn"></div>
         <div class="f"><div class="fl">Adresse</div><input type="text" id="fa"></div>
+        <div class="f"><div class="fl">Type de travaux</div><input type="text" id="ftype" placeholder="ex: Pose portail / cloture"></div>
         <div class="r2">
           <div class="f"><div class="fl">Tel</div><input type="tel" id="ft"></div>
           <div class="f"><div class="fl">Email</div><input type="email" id="fe"></div>
@@ -740,7 +741,6 @@ var unsubMsgs=null;
         <div class="ir"><div class="il">Etat</div><div id="vc-badge"></div></div>
         <div class="ir"><div class="il">Reference</div><div class="iv" style="font-family:monospace;font-weight:700;color:var(--or)" id="vc-ref">--</div></div>
         <div class="ir"><div class="il">Travaux</div><div class="iv" id="vc-type">--</div></div>
-        <div class="ir"><div class="il">Montant TTC</div><div class="iv" style="font-size:18px;font-weight:700" id="vc-total">--</div></div>
       </div>
     </div>
     <!-- Progression -->
@@ -1155,7 +1155,7 @@ function newClient(){
   document.getElementById("ad-ti").innerHTML="Nouveau <span>Client</span>";
   document.getElementById("ad-su").textContent="A renseigner";
   buildSS("at");
-  ["fn","fa","ft","fe","fd","fhd","fhf","fdliv","fnote"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
+  ["fn","fa","ft","fe","ftype","fd","fhd","fhf","fdliv","fnote"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
   document.getElementById("fhd").value="07:00";
   document.getElementById("fhf").value="17:00";
   document.getElementById("fst").checked=false;
@@ -1256,6 +1256,8 @@ function saveClient(){
   };
   // Gather fields more precisely
   data.nom=document.getElementById("fn").value||"";
+  data.type=document.getElementById("ftype").value||"";
+  data.type_travail=data.type;
   data.adr=document.getElementById("fa").value||"";
   data.tel=document.getElementById("ft").value||"";
   data.email=document.getElementById("fe").value||"";
@@ -1418,7 +1420,7 @@ function resetAllDynamic(){
   ["aga","agpa","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
   ["aea","aepa","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
   // Vider inputs texte
-  ["fn","fa","ft","fe","fd","fhd","fhf","fdliv","fnote","fvz-url","fvz-ref","fvz-total","fsem","flien","pd-nom","pd-adr","pd-telnum","pd-type"].forEach(function(id){
+  ["fn","fa","ft","fe","ftype","fd","fhd","fhf","fdliv","fnote","fvz-url","fvz-ref","fvz-total","fsem","flien","pd-nom","pd-adr","pd-telnum","pd-type"].forEach(function(id){
     var el=document.getElementById(id);
     if(!el)return;
     if(el.tagName==="A"||el.tagName==="DIV")el.textContent="--";
@@ -1450,7 +1452,7 @@ function openAD(id){
   tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
   tcs.forEach(function(t,i){t.classList.toggle("on",i===0);});
   var fd=fmtD(c.date);
-  document.getElementById("ad-ey").textContent=c.ref+" - "+c.type;
+  document.getElementById("ad-ey").textContent=(c.ref||"")+" - "+(c.type||c.type_travail||"");
   document.getElementById("ad-ti").innerHTML=c.nom.split(" ")[0]+" <span>"+c.nom.split(" ").slice(1).join(" ")+"</span>";
   document.getElementById("ad-su").textContent=fd.long+" - "+c.hD+"-"+c.hF;
   buildSS(c.statut);
@@ -1458,6 +1460,7 @@ function openAD(id){
   document.getElementById("fa").value=c.adr||c.adresse||"";
   document.getElementById("ft").value=c.tel||c.contact_tel||"";
   document.getElementById("fe").value=c.email||"";
+  document.getElementById("ftype").value=c.type||c.type_travail||"";
   document.getElementById("fd").value=c.date||c.date_chantier||"";
   document.getElementById("fhd").value=c.hD||c.heure_debut||"07:00";
   document.getElementById("fhf").value=c.hF||c.heure_fin||"17:00";
@@ -1501,7 +1504,8 @@ function fillVueClient(c){
   var st=si(c.statut);
   document.getElementById("vc-badge").innerHTML="<span class='chip "+c.statut+"' style='font-size:11px;padding:5px 10px'>"+ico(st)+" "+st.l+"</span>";
   document.getElementById("vc-ref").textContent=c.ref||c.num_chantier||"--";
-  document.getElementById("vc-type").textContent=c.type||c.type_travail||"--";
+  var vcType=c.type||c.type_travail||"";
+  document.getElementById("vc-type").textContent=vcType||"--";
   buildProg("vc-prog",c.statut);
   var vcVz=c.vz||c.vertuoza_url||"#";
   var vcRef=c.ref||c.num_chantier||"";
