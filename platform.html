@@ -835,7 +835,7 @@ var unsubMsgs=null;
     </div>
     <div class="card"><div class="ch"><span class="ci">📦</span><span class="ct">Materiel</span></div><div class="cb" id="pd-mat"></div></div>
     <div class="card"><div class="ch"><span class="ci">⚠️</span><span class="ct">Points d attention</span></div><div class="cb" id="pd-att"></div></div>
-    <div class="card"><div class="ch"><span class="ci">🖼️</span><span class="ct">Photos d Anthony</span></div>
+    <div class="card"><div class="ch"><span class="ci">🖼️</span><span class="ct">Photos equipe</span></div>
       <div class="cb"></div>
     </div>
   </div>
@@ -944,7 +944,6 @@ var unsubMsgs=null;
         <div class="ir"><div class="il">Etat</div><div id="cl-badge"></div></div>
         <div class="ir"><div class="il">Reference</div><div class="iv" style="font-family:monospace;font-weight:700;color:var(--or)" id="cl-ref">--</div></div>
         <div class="ir"><div class="il">Travaux</div><div class="iv" id="cl-type">--</div></div>
-        <div class="ir"><div class="il">Montant TTC</div><div class="iv" style="font-size:18px;font-weight:700" id="cl-total">--</div></div>
       </div>
     </div>
     <div class="card"><div class="ch"><span class="ci">📈</span><span class="ct">Avancement</span></div>
@@ -1454,16 +1453,17 @@ function openAD(id){
 function fillVueClient(c){
   var st=si(c.statut);
   document.getElementById("vc-badge").innerHTML="<span class='chip "+c.statut+"' style='font-size:11px;padding:5px 10px'>"+ico(st)+" "+st.l+"</span>";
-  document.getElementById("vc-ref").textContent=c.ref;
-  document.getElementById("vc-type").textContent=c.type;
-  document.getElementById("vc-total").textContent=c.total;
+  document.getElementById("vc-ref").textContent=c.ref||c.num_chantier||"--";
+  document.getElementById("vc-type").textContent=c.type||c.type_travail||"--";
   buildProg("vc-prog",c.statut);
-  document.getElementById("vc-vz").href=c.vz;
-  document.getElementById("vc-vzl").textContent=c.ref+" - "+c.total;
+  var vcVz=c.vz||c.vertuoza_url||"#";
+  var vcRef=c.ref||c.num_chantier||"";
+  document.getElementById("vc-vz").href=vcVz;
+  document.getElementById("vc-vzl").textContent=vcRef+(c.total?" — "+c.total:"");
   var fd=fmtD(c.date);
-  document.getElementById("vc-date").textContent=fd.long;
-  document.getElementById("vc-heure").textContent=c.hD;
-  document.getElementById("vc-adr").textContent=c.adr;
+  document.getElementById("vc-date").textContent=fd.long||"--";
+  document.getElementById("vc-heure").textContent=c.hD||c.heure_debut||"--";
+  document.getElementById("vc-adr").textContent=c.adr||c.adresse||"--";
   renderMsgs("vc-msgs",[],true);
 }
 
