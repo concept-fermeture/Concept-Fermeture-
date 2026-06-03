@@ -209,7 +209,7 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--nuit);min
 .pline.dn{background:var(--or)}
 
 /* SAVE */
-.save{position:fixed;bottom:0;left:0;right:0;padding:11px 14px 18px;background:rgba(242,237,228,.96);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--bd);z-index:100;display:flex;gap:8px}
+.save{position:fixed;bottom:0;left:0;right:0;padding:11px 14px 18px;background:rgba(242,237,228,.96);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--bd);z-index:100;display:none;gap:8px}
 .bsave{flex:2;padding:13px;border-radius:11px;border:none;background:var(--nuit);color:var(--or);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.04em}
 .bpdf{flex:1;padding:13px;border-radius:11px;border:1.5px solid var(--bd2);background:var(--blanc);color:var(--slate);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
 
@@ -315,7 +315,6 @@ function mapDoc(id, d) {
     mat: Array.isArray(d.materiel) ? d.materiel : (Array.isArray(d.mat) ? d.mat : []),
     att: Array.isArray(d.attention) ? d.attention : (Array.isArray(d.att) ? d.att : []),
     note: d.note_poseur || d.note || d.notes || "",
-    heures_prestees: d.heures_prestees || "",
     st: d.st || false,
     visible_poseur: d.visible_poseur !== false,
     archived: d.archived || false
@@ -720,11 +719,6 @@ var unsubMsgs=null;
   <!-- TAB POSEUR -->
   <div id="t-poseur" class="tc" style="padding-bottom:100px">
     <div class="rn">Vue poseur - messages client en lecture seule</div>
-    <div id="ad-heures-display" style="display:none;background:var(--or-d);border:1.5px solid var(--or);border-radius:11px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--or)">Heures prestees</div>
-        <div style="font-size:22px;font-weight:700;color:var(--nuit);margin-top:4px" id="ad-heures-val">--</div>
-      </div>
       <div style="font-size:28px">⏱️</div>
     </div>
     <div class="card"><div class="ch"><span class="ci">💬</span><span class="ct">Conversation client (vue poseur)</span></div>
@@ -833,13 +827,6 @@ var unsubMsgs=null;
         <a id="pd-waze" href="#" class="bwaze">Ouvrir dans Waze</a>
         <a id="pd-tel" href="#" class="bcall"><span style="font-size:18px">📞</span><div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.08em">Contact</div><div id="pd-teln" style="font-family:monospace;font-size:14px;font-weight:600;color:var(--nuit)">--</div></div><span style="color:var(--ok);font-size:16px">→</span></a>
         <div class="ir"><div class="il">Travaux</div><div class="iv" id="pd-type">--</div></div>
-        <div style="background:var(--or-d);border:1.5px solid var(--or);border-radius:11px;padding:13px 14px;display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--or)">Heures prestees</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <input type="text" id="pd-heures" placeholder="ex: 7h30" style="flex:1;font-family:DM Sans,sans-serif;font-size:18px;font-weight:700;color:var(--nuit);background:var(--blanc);border:1.5px solid var(--bd);border-radius:9px;padding:10px 14px;outline:none;-webkit-appearance:none">
-            <button onclick="saveHeures()" style="padding:10px 16px;border-radius:9px;border:none;background:var(--nuit);color:var(--or);font-family:DM Sans,sans-serif;font-size:13px;font-weight:700;cursor:pointer">Enregistrer</button>
-          </div>
-        </div>
         <a id="pd-vz" href="#" target="_blank" class="bvz">
           <div><div class="vz-t">Devis signe Vertuoza</div><div id="pd-vzl" style="font-size:13px;color:#fff">--</div></div>
           <span class="vz-b">Vertuoza</span>
@@ -1007,9 +994,9 @@ var unsubMsgs=null;
 
 <script>
 function ha(){document.querySelectorAll(".sc").forEach(function(s){s.classList.remove("on");});}
-function goLand(){ha();document.getElementById("s-land").classList.add("on");}
+function goLand(){ha();document.querySelector(".save").style.display="none";document.getElementById("s-land").classList.add("on");}
 function goPin(role){ha();document.getElementById("s-pin-"+role).classList.add("on");if(role==="st")loadSTPinFromFB();}
-function goBack(role){cid=null;ha();if(role==="admin"){document.getElementById("s-al").classList.add("on");buildAL();}else if(role==="poseur"){document.getElementById("s-pl").classList.add("on");buildPL();}else{document.getElementById("s-stl").classList.add("on");buildSTL();}}
+function goBack(role){cid=null;ha();document.querySelector(".save").style.display="none";if(role==="admin"){document.getElementById("s-al").classList.add("on");buildAL();}else if(role==="poseur"){document.getElementById("s-pl").classList.add("on");buildPL();}else{document.getElementById("s-stl").classList.add("on");buildSTL();}}
 function toast2(m){var t=document.getElementById("t2");t.textContent=m;t.classList.add("on");setTimeout(function(){t.classList.remove("on");},2500);}
 function fmtD(d){if(!d)return{day:"--",mo:"--",long:"--"};var p=d.split("-");var y=p[0],mo=p[1],dd=p[2];return{day:dd,mo:MOIS[parseInt(mo)-1],long:DAYSL[new Date(y,mo-1,dd).getDay()]+" "+dd+"/"+mo+"/"+y};}
 function now2(){return new Date().toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"});}
@@ -1149,6 +1136,7 @@ function buildAL(){
 function newClient(){
   cid=null;ha();
   document.getElementById("s-ad").classList.add("on");
+  document.querySelector(".save").style.display="flex";
   var tabs=document.querySelectorAll("#s-ad .tab");
   var tcs=document.querySelectorAll("#s-ad .tc");
   tabs.forEach(function(t,i){t.classList.toggle("on",i===0);});
@@ -1166,8 +1154,8 @@ function newClient(){
   document.getElementById("flien").textContent="Enregistrez pour generer le lien";
   document.getElementById("fmat").innerHTML="";
   document.getElementById("fatt").innerHTML="";
-  ["aga","agap"].forEach(function(g){document.getElementById(g).innerHTML="";});
-  ["aea","aeap"].forEach(function(e){document.getElementById(e).style.display="block";});
+  var _ag=document.getElementById("aga");if(_ag)_ag.innerHTML="";
+  var _ae=document.getElementById("aea");if(_ae)_ae.style.display="block";
   if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
   document.getElementById("mc").innerHTML="<div class='mempty'>Aucun message</div>";
 }
@@ -1223,20 +1211,6 @@ function buildSTL(){
     if(!sorted.length){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--gris);font-size:13px;font-style:italic'>Aucune fiche assignee</div>";return;}
     sorted.forEach(function(c){b.appendChild(buildItem(c,function(){cid=c.id;ha();openSTD(c.id);}));});
   }).catch(function(e){b.innerHTML="<div style='text-align:center;padding:20px;color:var(--ng);font-size:13px'>Erreur connexion</div>";});
-}
-
-// HEURES PRESTEES (poseur)
-function saveHeures(){
-  var val=document.getElementById("pd-heures").value.trim();
-  if(!val){toast2("Entrez les heures prestees");return;}
-  if(!cid||!window._fbReady){toast2("Ouvrez un dossier dabord");return;}
-  window.fbUpdate(cid,{heures_prestees:val}).then(function(){
-    toast2("Heures enregistrees : "+val);
-    // Mettre a jour affichage admin si visible
-    var hdisp=document.getElementById("ad-heures-display");
-    var hval=document.getElementById("ad-heures-val");
-    if(hdisp&&hval){hdisp.style.display="flex";hval.textContent=val;}
-  }).catch(function(e){toast2("Erreur: "+e.message);});
 }
 
 // SAVE CLIENT
@@ -1423,6 +1397,7 @@ function rmEmpty(el){var e=el.querySelector(".mempty");if(e)e.remove();}
 function openAD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
   document.getElementById("s-ad").classList.add("on");
+  document.querySelector(".save").style.display="flex";
   // Reset tabs
   var tabs=document.querySelectorAll("#s-ad .tab");
   var tcs=document.querySelectorAll("#s-ad .tc");
@@ -1465,18 +1440,10 @@ function openAD(id){
   renderMsgs("mc",[],false);
   renderMsgs("mc-ro",[],false);
   renderMsgs("mp",[],false);
-  ["aga","agap"].forEach(function(g){document.getElementById(g).innerHTML="";});
-  ["aea","aeap"].forEach(function(e){document.getElementById(e).style.display="block";});
+  var _ag=document.getElementById("aga");if(_ag)_ag.innerHTML="";
+  var _ae=document.getElementById("aea");if(_ae)_ae.style.display="block";
   // Vue client
   fillVueClient(c);
-  // Heures prestees
-  var h=c.heures_prestees||"";
-  var hdisp=document.getElementById("ad-heures-display");
-  var hval=document.getElementById("ad-heures-val");
-  if(hdisp&&hval){
-    hdisp.style.display=h?"flex":"none";
-    hval.textContent=h||"--";
-  }
   // Bind buttons
   document.getElementById("bsc").onclick=function(){sndMFb("ac");};
   document.getElementById("bsp").onclick=function(){sndMFb("ap");};
@@ -1524,12 +1491,11 @@ function openPD(id){
   document.getElementById("pd-tel").href="tel:"+pdTel;
   document.getElementById("pd-teln").textContent=pdTel;
   document.getElementById("pd-type").textContent=pdType;
-  document.getElementById("pd-heures").value=c.heures_prestees||"";
   document.getElementById("pd-vz").href=pdVz;
   document.getElementById("pd-vzl").textContent=pdRef+" - "+(c.total||"");
   fillMatAtt("pd-mat","pd-att",c);
-  ["agp","agpa"].forEach(function(g){document.getElementById(g).innerHTML="";});
-  ["aep","aepa"].forEach(function(e){document.getElementById(e).style.display="block";});
+  var _agp=document.getElementById("agp");if(_agp)_agp.innerHTML="";
+  var _aep=document.getElementById("aep");if(_aep)_aep.style.display="block";
   renderMsgs("pd-mc",[],false);
   renderMsgs("pd-mp",[],false);
   document.getElementById("bspa").onclick=function(){sndMFb("pa");};
@@ -1670,9 +1636,10 @@ function compressPhoto(file, callback){
 
 // Ajouter une tuile photo dans une grille
 function mkPhotoTile(gridId, emptyId, src, who, photoId){
+  if(!gridId)return;
   var grid=document.getElementById(gridId);
-  var empty=document.getElementById(emptyId);
   if(!grid)return;
+  var empty=emptyId?document.getElementById(emptyId):null;
   if(empty)empty.style.display="none";
   var item=document.createElement("div");
   item.className="pi";
