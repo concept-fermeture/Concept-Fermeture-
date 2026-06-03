@@ -1285,7 +1285,6 @@ var unsubPrivP=null, unsubPrivST=null, unsubPhotos=null;
 
 // MESSAGES FIREBASE
 function startMsgListener(clientId){
-  stopAllListeners();
   if(!window._fbReady||!clientId)return;
 
   // Canal client (tous)
@@ -1440,6 +1439,7 @@ function resetAllDynamic(){
 }
 
 function openAD(id){
+  stopAllListeners();
   var c=CLIENTS.find(function(x){return x.id===id;});
   if(!c){toast2("Dossier introuvable");return;}
   resetAllDynamic();
@@ -1518,6 +1518,7 @@ function fillVueClient(c){
 // POSEUR DETAIL
 function openPD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
+  stopAllListeners();
   if(!c){toast2("Dossier introuvable");return;}
   resetAllDynamic();
   document.getElementById("s-pd").classList.add("on");
@@ -1555,6 +1556,7 @@ function openPD(id){
 // ST DETAIL
 function openSTD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
+  stopAllListeners();
   if(!c){toast2("Dossier introuvable");return;}
   resetAllDynamic();
   document.getElementById("s-std").classList.add("on");
