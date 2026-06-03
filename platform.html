@@ -995,7 +995,19 @@ var unsubMsgs=null;
 function ha(){document.querySelectorAll(".sc").forEach(function(s){s.classList.remove("on");});}
 function goLand(){ha();document.querySelector(".save").style.display="none";document.getElementById("s-land").classList.add("on");}
 function goPin(role){ha();document.getElementById("s-pin-"+role).classList.add("on");if(role==="st")loadSTPinFromFB();}
-function goBack(role){cid=null;ha();document.querySelector(".save").style.display="none";if(role==="admin"){document.getElementById("s-al").classList.add("on");buildAL();}else if(role==="poseur"){document.getElementById("s-pl").classList.add("on");buildPL();}else{document.getElementById("s-stl").classList.add("on");buildSTL();}}
+function stopAllListeners(){
+  stopAllListeners();
+}
+function goBack(role){
+  cid=null;
+  stopAllListeners();
+  resetAllDynamic();
+  ha();
+  document.querySelector(".save").style.display="none";
+  if(role==="admin"){document.getElementById("s-al").classList.add("on");buildAL();}
+  else if(role==="poseur"){document.getElementById("s-pl").classList.add("on");buildPL();}
+  else{document.getElementById("s-stl").classList.add("on");buildSTL();}
+}
 function toast2(m){var t=document.getElementById("t2");t.textContent=m;t.classList.add("on");setTimeout(function(){t.classList.remove("on");},2500);}
 function fmtD(d){if(!d)return{day:"--",mo:"--",long:"--"};var p=d.split("-");var y=p[0],mo=p[1],dd=p[2];return{day:dd,mo:MOIS[parseInt(mo)-1],long:DAYSL[new Date(y,mo-1,dd).getDay()]+" "+dd+"/"+mo+"/"+y};}
 function now2(){return new Date().toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"});}
@@ -1273,10 +1285,7 @@ var unsubPrivP=null, unsubPrivST=null, unsubPhotos=null;
 
 // MESSAGES FIREBASE
 function startMsgListener(clientId){
-  if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
-  if(unsubPrivP){unsubPrivP();unsubPrivP=null;}
-  if(unsubPrivST){unsubPrivST();unsubPrivST=null;}
-  if(unsubPhotos){unsubPhotos();unsubPhotos=null;}
+  stopAllListeners();
   if(!window._fbReady||!clientId)return;
 
   // Canal client (tous)
@@ -1393,8 +1402,47 @@ function sndM(ctx){
 function rmEmpty(el){var e=el.querySelector(".mempty");if(e)e.remove();}
 
 // ADMIN DETAIL
+function resetAllDynamic(){
+  // Vider tous les champs dynamiques
+  var empty="<div class='mempty'>Aucun message</div>";
+  ["mc","mc-ro","mp","pd-mc","pd-mp","std-mc","std-mp","vc-msgs"].forEach(function(id){
+    var el=document.getElementById(id);if(el){el.innerHTML=empty;}
+  });
+  // Vider vue client
+  ["vc-badge","vc-ref","vc-type","vc-vzl"].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.innerHTML="--";
+  });
+  ["vc-date","vc-heure","vc-adr"].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.textContent="--";
+  });
+  var vcProg=document.getElementById("vc-prog");if(vcProg)vcProg.innerHTML="";
+  // Vider photos
+  ["aga","agp","stpg"].forEach(function(g){var el=document.getElementById(g);if(el)el.innerHTML="";});
+  ["aea","aep","stae"].forEach(function(e){var el=document.getElementById(e);if(el)el.style.display="block";});
+  // Vider inputs texte
+  ["fn","fa","ft","fe","fd","fhd","fhf","fdliv","fnote","fvz-url","fvz-ref","fvz-total","fsem","flien","pd-nom","pd-adr","pd-telnum","pd-type"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(el.tagName==="A"||el.tagName==="DIV")el.textContent="--";
+    else el.value="";
+  });
+  // Vider mat/att
+  ["fmat","fatt"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML="";});
+  // Vider ss (statut steps)
+  var ss=document.getElementById("ss");if(ss)ss.innerHTML="";
+  // Vider poseur info
+  ["pd-nom","pd-adr","pd-type"].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.textContent="--";
+  });
+  ["pd-mat","pd-att","std-mat","std-att"].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.innerHTML="";
+  });
+}
+
 function openAD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
+  if(!c){toast2("Dossier introuvable");return;}
+  resetAllDynamic();
   document.getElementById("s-ad").classList.add("on");
   document.querySelector(".save").style.display="flex";
   // Reset tabs
@@ -1470,6 +1518,8 @@ function fillVueClient(c){
 // POSEUR DETAIL
 function openPD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
+  if(!c){toast2("Dossier introuvable");return;}
+  resetAllDynamic();
   document.getElementById("s-pd").classList.add("on");
   var tabs=document.querySelectorAll("#s-pd .tab");
   var tcs=document.querySelectorAll("#s-pd .tc");
@@ -1505,6 +1555,8 @@ function openPD(id){
 // ST DETAIL
 function openSTD(id){
   var c=CLIENTS.find(function(x){return x.id===id;});
+  if(!c){toast2("Dossier introuvable");return;}
+  resetAllDynamic();
   document.getElementById("s-std").classList.add("on");
   var tabs=document.querySelectorAll("#s-std .tab");
   var tcs=document.querySelectorAll("#s-std .tc");
